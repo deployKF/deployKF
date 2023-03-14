@@ -10,9 +10,9 @@ metadata:
     app.kubernetes.io/component: oauth2-proxy
 spec:
   gateways:
-    - {{ .Values.argoflow.gateway.namespace }}/{{ .Values.argoflow.gateway.name }}
+    - {{ .Values.deployKF.gateway.namespace }}/{{ .Values.deployKF.gateway.name }}
   hosts:
-    - {{ .Values.argoflow.gateway.hostname | quote }}
+    - {{ .Values.deployKF.gateway.hostname | quote }}
   http:
     - name: oauth2-proxy-route
       match:
@@ -20,7 +20,7 @@ spec:
             prefix: /oauth2/
       route:
         - destination:
-            host: oauth2-proxy.{{ .Release.Namespace }}.svc.{{ .Values.argoflow.clusterDomain }}
+            host: oauth2-proxy.{{ .Release.Namespace }}.svc.{{ .Values.deployKF.clusterDomain }}
             port:
               number: 4180
 

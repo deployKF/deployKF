@@ -79,7 +79,7 @@ spec:
 
             ## minio - console
             - name: MINIO_BROWSER_REDIRECT_URL
-              {{- if .Values.argoflow.gateway.tls.enabled }}
+              {{- if .Values.deployKF.gateway.tls.enabled }}
               value: "https://minio-console.{{ .Values.argoflow_helpers.kubeflow_gateway.https_endpoint }}"
               {{- else }}
               value: "http://minio-console.{{ .Values.argoflow_helpers.kubeflow_gateway.http_endpoint }}"
@@ -87,7 +87,7 @@ spec:
 
             ## minio - openid
             - name: MINIO_IDENTITY_OPENID_CONFIG_URL
-              {{- if .Values.argoflow.gateway.tls.enabled }}
+              {{- if .Values.deployKF.gateway.tls.enabled }}
               value: "https://{{ .Values.argoflow_helpers.kubeflow_gateway.https_endpoint }}/dex/.well-known/openid-configuration"
               {{- else }}
               value: "http://{{ .Values.argoflow_helpers.kubeflow_gateway.http_endpoint }}/dex/.well-known/openid-configuration"
@@ -106,7 +106,7 @@ spec:
             - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
               value: {{ .Values.minio.identity.openid.policyClaim | quote }}
             - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
-              {{- if .Values.argoflow.gateway.tls.enabled }}
+              {{- if .Values.deployKF.gateway.tls.enabled }}
               value: "https://minio-console.{{ .Values.argoflow_helpers.kubeflow_gateway.https_endpoint }}/oauth_callback"
               {{- else }}
               value: "http://minio-console.{{ .Values.argoflow_helpers.kubeflow_gateway.http_endpoint }}/oauth_callback"
@@ -199,7 +199,7 @@ spec:
         {{- if .Values.argoflow_helpers.kubeflow_gateway.is_self_signed_cert }}
         - name: gateway-root-ca-cert
           configMap:
-            name: {{ .Values.argoflow.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}
+            name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}
             items:
               - key: root-cert.pem
                 path: root-cert.pem

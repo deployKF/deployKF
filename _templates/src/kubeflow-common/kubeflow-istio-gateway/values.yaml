@@ -1,4 +1,4 @@
-argoflow:
+deployKF:
   clusterDomain: cluster.local
 
   kubeflow:

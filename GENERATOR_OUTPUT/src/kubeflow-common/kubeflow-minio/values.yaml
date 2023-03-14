@@ -4,7 +4,7 @@ argoflow_helpers:
     https_endpoint: "kubeflow.example.com:8443"
     is_self_signed_cert: "true"
 
-argoflow:
+deployKF:
   clusterDomain: cluster.local
 
   certManager:

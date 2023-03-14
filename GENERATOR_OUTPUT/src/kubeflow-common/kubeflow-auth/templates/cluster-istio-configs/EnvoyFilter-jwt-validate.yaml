@@ -13,7 +13,7 @@
 #metadata:
 #  name: kubeflow-auth--jwt-validate
 #  ## NOTE: this is in the root istio namespace, so that it can select pods across all namespaces
-#  namespace: {{ .Values.argoflow.istio.namespace | quote }}
+#  namespace: {{ .Values.deployKF.istio.namespace | quote }}
 #  labels:
 #    helm.sh/chart: {{ include "kubeflow-auth.labels.chart" . }}
 #    app.kubernetes.io/name: {{ include "kubeflow-auth.labels.name" . }}
@@ -49,7 +49,7 @@
 #              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-jwtprovider
 #              dex_provider:
 #                ## the issuing principal, must match the `iss` field in the JWT
-#                {{- if .Values.argoflow.gateway.tls.enabled }}
+#                {{- if .Values.deployKF.gateway.tls.enabled }}
 #                issuer: "https://{{ .Values.argoflow_helpers.kubeflow_gateway.https_endpoint }}/dex"
 #                {{- else }}
 #                issuer: "http://{{ .Values.argoflow_helpers.kubeflow_gateway.http_endpoint }}/dex"
@@ -59,8 +59,8 @@
 #                remote_jwks:
 #                  ## the HTTP URI to fetch the JWKS
 #                  http_uri:
-#                    uri: "http://dex.{{ .Release.Namespace }}.svc.{{ .Values.argoflow.clusterDomain }}:5556/dex/keys"
-#                    cluster: "outbound|5556||dex.{{ .Release.Namespace }}.svc.{{ .Values.argoflow.clusterDomain }}"
+#                    uri: "http://dex.{{ .Release.Namespace }}.svc.{{ .Values.deployKF.clusterDomain }}:5556/dex/keys"
+#                    cluster: "outbound|5556||dex.{{ .Release.Namespace }}.svc.{{ .Values.deployKF.clusterDomain }}"
 #                    timeout: 5.00s
 #
 #                  ## duration after which the cached JWKS should be expired
@@ -126,7 +126,7 @@
 #              end
 #
 #              function envoy_on_request(request_handle)
-#                local userid_header = request_handle:headers():get({{ .Values.argoflow.kubeflow.useridHeader | quote }})
+#                local userid_header = request_handle:headers():get({{ .Values.deployKF.kubeflow.useridHeader | quote }})
 #
 #                -- only check `userid_header` if it's set
 #                if (userid_header ~= nil) then

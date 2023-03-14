@@ -1,4 +1,4 @@
-{{- if gt (.Values.argoflow.gateway.xffNumTrustedHops | int) 0 }}
+{{- if gt (.Values.deployKF.gateway.xffNumTrustedHops | int) 0 }}
 ################
 ## This EnvoyFilter sets the number of hops from the right side of a `x-forwarded-for` HTTP header to trust
 ## when envoy is determining the origin client's IP address.
@@ -15,7 +15,7 @@ metadata:
 spec:
   workloadSelector:
     labels:
-      {{- toYaml .Values.argoflow.gateway.selectorLabels | nindent 6 }}
+      {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
   configPatches:
     - applyTo: NETWORK_FILTER
       match:
@@ -33,5 +33,5 @@ spec:
 
             ## the number of additional ingress proxy hops from the right side of the `x-forwarded-for` HTTP header
             ## to trust when determining the origin client’s IP address
-            xff_num_trusted_hops: {{ .Values.argoflow.gateway.xffNumTrustedHops | int }}
+            xff_num_trusted_hops: {{ .Values.deployKF.gateway.xffNumTrustedHops | int }}
 {{- end }}

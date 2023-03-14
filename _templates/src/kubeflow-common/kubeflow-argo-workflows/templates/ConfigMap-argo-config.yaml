@@ -54,8 +54,8 @@ data:
     s3:
       endpoint: {{ .Values.argoflow_helpers.kubeflow_pipelines.object_store.endpoint | quote }}
       insecure: {{ .Values.argoflow_helpers.kubeflow_pipelines.object_store.not_use_ssl }}
-      bucket: {{ .Values.argoflow.pipelines.bucket.name | quote }}
-      region: {{ .Values.argoflow.pipelines.bucket.region | quote }}
+      bucket: {{ .Values.deployKF.pipelines.bucket.name | quote }}
+      region: {{ .Values.deployKF.pipelines.bucket.region | quote }}
       keyFormat: {{ `artifacts/{{ workflow.namespace }}/{{ workflow.name }}/{{ workflow.creationTimestamp.Y }}/{{ workflow.creationTimestamp.m }}/{{ workflow.creationTimestamp.d }}/{{ pod.name }}` }}
       accessKeySecret:
         name: {{ .Values.argoflow_helpers.kubeflow_pipelines.object_store.auth.secret_name | quote }}
@@ -82,7 +82,7 @@ data:
 
   sso: |
     ## This is the root URL of the OIDC provider
-    {{- if .Values.argoflow.gateway.tls.enabled }}
+    {{- if .Values.deployKF.gateway.tls.enabled }}
     issuer: "https://{{ .Values.argoflow_helpers.kubeflow_gateway.https_endpoint }}/dex"
     {{- else }}
     issuer: "http://{{ .Values.argoflow_helpers.kubeflow_gateway.http_endpoint }}/dex"
@@ -115,7 +115,7 @@ data:
       {{- end }}
 
     ## This is the OIDC redirect URL
-    {{- if .Values.argoflow.gateway.tls.enabled }}
+    {{- if .Values.deployKF.gateway.tls.enabled }}
     redirectUrl: "https://argo-server.{{ .Values.argoflow_helpers.kubeflow_gateway.https_endpoint }}/oauth2/callback"
     {{- else }}
     redirectUrl: "http://argo-server.{{ .Values.argoflow_helpers.kubeflow_gateway.http_endpoint }}/oauth2/callback"

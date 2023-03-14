@@ -19,22 +19,22 @@ metadata:
 spec:
   workloadSelector:
     labels:
-      {{- toYaml .Values.argoflow.gateway.selectorLabels | nindent 6 }}
+      {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
   hosts:
-    - {{ .Values.argoflow.gateway.hostname | quote }}
-    - "argo-server.{{ .Values.argoflow.gateway.hostname }}"
-    - "minio-api.{{ .Values.argoflow.gateway.hostname }}"
-    - "minio-console.{{ .Values.argoflow.gateway.hostname }}"
+    - {{ .Values.deployKF.gateway.hostname | quote }}
+    - "argo-server.{{ .Values.deployKF.gateway.hostname }}"
+    - "minio-api.{{ .Values.deployKF.gateway.hostname }}"
+    - "minio-console.{{ .Values.deployKF.gateway.hostname }}"
   location: MESH_INTERNAL
   ports:
     - name: http
-      number: {{ .Values.argoflow.gateway.ports.http | int }}
+      number: {{ .Values.deployKF.gateway.ports.http | int }}
       protocol: HTTP
-      targetPort: {{ .Values.argoflow.gateway.ports.http | int }}
-    {{- if .Values.argoflow.gateway.tls.enabled }}
+      targetPort: {{ .Values.deployKF.gateway.ports.http | int }}
+    {{- if .Values.deployKF.gateway.tls.enabled }}
     - name: https
-      number: {{ .Values.argoflow.gateway.ports.https | int }}
+      number: {{ .Values.deployKF.gateway.ports.https | int }}
       protocol: HTTPS
-      targetPort: {{ .Values.argoflow.gateway.ports.https | int }}
+      targetPort: {{ .Values.deployKF.gateway.ports.https | int }}
     {{- end }}
   resolution: STATIC

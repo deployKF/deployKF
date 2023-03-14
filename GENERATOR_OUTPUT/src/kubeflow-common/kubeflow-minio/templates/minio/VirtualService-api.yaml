@@ -10,13 +10,13 @@ metadata:
     app.kubernetes.io/component: minio
 spec:
   gateways:
-    - {{ .Values.argoflow.gateway.namespace }}/{{ .Values.argoflow.gateway.name }}
+    - {{ .Values.deployKF.gateway.namespace }}/{{ .Values.deployKF.gateway.name }}
   hosts:
-    - minio-api.{{ .Values.argoflow.gateway.hostname }}
+    - minio-api.{{ .Values.deployKF.gateway.hostname }}
   http:
     - name: minio-api-route
       route:
         - destination:
-            host: minio-api.{{ .Release.Namespace }}.svc.{{ .Values.argoflow.clusterDomain }}
+            host: minio-api.{{ .Release.Namespace }}.svc.{{ .Values.deployKF.clusterDomain }}
             port:
               number: 9000

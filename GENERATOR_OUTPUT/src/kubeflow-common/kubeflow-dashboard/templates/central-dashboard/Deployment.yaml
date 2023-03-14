@@ -46,11 +46,11 @@ spec:
           {{- end }}
           env:
             - name: USERID_HEADER
-              value: {{ .Values.argoflow.kubeflow.useridHeader | quote }}
+              value: {{ .Values.deployKF.kubeflow.useridHeader | quote }}
             - name: USERID_PREFIX
               value: ""
             - name: PROFILES_KFAM_SERVICE_HOST
-              value: "kfam-api.{{ .Release.Namespace }}.svc.{{ .Values.argoflow.clusterDomain }}"
+              value: "kfam-api.{{ .Release.Namespace }}.svc.{{ .Values.deployKF.clusterDomain }}"
             - name: PROFILES_KFAM_SERVICE_PORT
               value: "8081"
             - name: REGISTRATION_FLOW

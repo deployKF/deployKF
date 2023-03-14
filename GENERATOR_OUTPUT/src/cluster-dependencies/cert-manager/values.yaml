@@ -1,4 +1,4 @@
-argoflow:
+deployKF:
 
   certManager:
     clusterIssuer:

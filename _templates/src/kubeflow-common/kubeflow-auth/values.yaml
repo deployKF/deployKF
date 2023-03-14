@@ -4,7 +4,7 @@ argoflow_helpers:
     https_endpoint: {{< (tmpl.Exec "kubeflow_gateway.https_endpoint" .) | quote >}}
     is_self_signed_cert: {{< (tmpl.Exec "kubeflow_gateway.is_self_signed_cert" .) | quote >}}
 
-argoflow:
+deployKF:
   clusterDomain: cluster.local
 
   kubeflow:

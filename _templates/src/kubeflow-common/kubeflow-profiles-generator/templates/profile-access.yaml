@@ -26,7 +26,7 @@ metadata:
 spec:
   rules:
     - when:
-        - key: request.headers[{{ $.Values.argoflow.kubeflow.useridHeader }}]
+        - key: request.headers[{{ $.Values.deployKF.kubeflow.useridHeader }}]
           values:
             - {{ $user.email | quote }}
 ---

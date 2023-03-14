@@ -49,7 +49,7 @@ spec:
           command:
             - /manager
             - -userid-header
-            - {{ .Values.argoflow.kubeflow.useridHeader | quote }}
+            - {{ .Values.deployKF.kubeflow.useridHeader | quote }}
             - -userid-prefix
             - ""
             {{- if .Values.profileController.workloadIdentity }}

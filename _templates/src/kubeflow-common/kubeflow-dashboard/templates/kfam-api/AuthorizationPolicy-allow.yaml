@@ -21,7 +21,7 @@ spec:
     - from:
         - source:
             principals:
-              - "{{ .Values.argoflow.clusterDomain }}/ns/{{ .Release.Namespace }}/sa/central-dashboard"
+              - "{{ .Values.deployKF.clusterDomain }}/ns/{{ .Release.Namespace }}/sa/central-dashboard"
       to:
         - operation:
             ports:

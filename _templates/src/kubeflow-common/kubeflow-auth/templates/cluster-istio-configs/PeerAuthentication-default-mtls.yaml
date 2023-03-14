@@ -9,7 +9,7 @@
 #metadata:
 #  name: kubeflow-auth--default-mtls
 #  ## NOTE: this is in the root istio namespace, so that it can select pods across all namespaces
-#  namespace: {{ .Values.argoflow.istio.namespace | quote }}
+#  namespace: {{ .Values.deployKF.istio.namespace | quote }}
 #  labels:
 #    helm.sh/chart: {{ include "kubeflow-auth.labels.chart" . }}
 #    app.kubernetes.io/name: {{ include "kubeflow-auth.labels.name" . }}

@@ -14,7 +14,7 @@ metadata:
 spec:
   workloadSelector:
     labels:
-      {{- toYaml .Values.argoflow.gateway.selectorLabels | nindent 6 }}
+      {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
   configPatches:
     ################################################################################
     ## FILTER 1 - Set JWT `Authorization` header from oauth2-proxy
@@ -42,8 +42,8 @@ spec:
             ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-httpservice
             http_service:
               server_uri:
-                uri: "http://oauth2-proxy.{{ .Values.argoflow.auth.namespace }}.svc.{{ .Values.argoflow.clusterDomain }}:4180"
-                cluster: "outbound|4180||oauth2-proxy.{{ .Values.argoflow.auth.namespace }}.svc.{{ .Values.argoflow.clusterDomain }}"
+                uri: "http://oauth2-proxy.{{ .Values.deployKF.auth.namespace }}.svc.{{ .Values.deployKF.clusterDomain }}:4180"
+                cluster: "outbound|4180||oauth2-proxy.{{ .Values.deployKF.auth.namespace }}.svc.{{ .Values.deployKF.clusterDomain }}"
                 timeout: 5.00s
 
               ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-authorizationrequest
@@ -86,7 +86,7 @@ spec:
                     - exact: set-cookie
                       ignore_case: true
 
-    {{- if not (eq .Values.argoflow.kubeflow.useridHeader "x-auth-request-email") }}
+    {{- if not (eq .Values.deployKF.kubeflow.useridHeader "x-auth-request-email") }}
     ################################################################################
     ## FILTER 2 - Set USERID_HEADER from `x-auth-request-email`
     ################################################################################
@@ -130,7 +130,7 @@ spec:
                 -- set Kubeflow USERID_HEADER from 'x-auth-request-email'
                 if (x_auth_request_email ~= nil) then
                   request_handle:headers():replace(
-                    "{{ .Values.argoflow.kubeflow.useridHeader }}",
+                    "{{ .Values.deployKF.kubeflow.useridHeader }}",
                     x_auth_request_email
                   )
                 end

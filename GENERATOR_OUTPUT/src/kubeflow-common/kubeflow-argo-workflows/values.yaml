@@ -17,7 +17,7 @@ argoflow_helpers:
         access_key_key: "username"
         secret_key_key: "password"
 
-argoflow:
+deployKF:
   clusterDomain: cluster.local
 
   certManager:

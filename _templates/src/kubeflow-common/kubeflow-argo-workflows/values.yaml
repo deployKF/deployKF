@@ -17,7 +17,7 @@ argoflow_helpers:
         access_key_key: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.access_key_key" .) | quote >}}
         secret_key_key: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_key_key" .) | quote >}}
 
-argoflow:
+deployKF:
   clusterDomain: cluster.local
 
   certManager:

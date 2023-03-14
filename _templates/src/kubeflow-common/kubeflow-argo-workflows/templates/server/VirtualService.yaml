@@ -11,13 +11,13 @@ metadata:
     app.kubernetes.io/sub-component: server
 spec:
   gateways:
-    - {{ .Values.argoflow.gateway.namespace }}/{{ .Values.argoflow.gateway.name }}
+    - {{ .Values.deployKF.gateway.namespace }}/{{ .Values.deployKF.gateway.name }}
   hosts:
-    - argo-server.{{ .Values.argoflow.gateway.hostname }}
+    - argo-server.{{ .Values.deployKF.gateway.hostname }}
   http:
     - name: argo-server-route
       route:
         - destination:
-            host: argo-server.{{ .Release.Namespace }}.svc.{{ .Values.argoflow.clusterDomain }}
+            host: argo-server.{{ .Release.Namespace }}.svc.{{ .Values.deployKF.clusterDomain }}
             port:
               number: 2746

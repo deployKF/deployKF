@@ -23,7 +23,7 @@ spec:
     - from:
         - source:
             principals:
-              - "{{ .Values.argoflow.clusterDomain }}/ns/{{ .Values.argoflow.gateway.namespace }}/sa/{{ .Values.argoflow.gateway.serviceAccount }}"
+              - "{{ .Values.deployKF.clusterDomain }}/ns/{{ .Values.deployKF.gateway.namespace }}/sa/{{ .Values.deployKF.gateway.serviceAccount }}"
       to:
         - operation:
             ports:

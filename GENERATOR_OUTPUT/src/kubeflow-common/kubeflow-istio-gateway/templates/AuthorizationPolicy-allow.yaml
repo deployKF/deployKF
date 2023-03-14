@@ -14,13 +14,13 @@ spec:
   action: ALLOW
   selector:
     matchLabels:
-      {{- toYaml .Values.argoflow.gateway.selectorLabels | nindent 6 }}
+      {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
   rules:
     ## allow requests to HTTP and HTTPS ports (from inside the istio mesh)
     - to:
         - operation:
             ports:
-              - {{ .Values.argoflow.gateway.ports.http | quote }}
-              {{- if .Values.argoflow.gateway.tls.enabled }}
-              - {{ .Values.argoflow.gateway.ports.https | quote }}
+              - {{ .Values.deployKF.gateway.ports.http | quote }}
+              {{- if .Values.deployKF.gateway.tls.enabled }}
+              - {{ .Values.deployKF.gateway.ports.https | quote }}
               {{- end }}

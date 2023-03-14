@@ -47,7 +47,7 @@ spec:
           command:
             - /access-management
             - -userid-header
-            - {{ .Values.argoflow.kubeflow.useridHeader | quote }}
+            - {{ .Values.deployKF.kubeflow.useridHeader | quote }}
             - -userid-prefix
             - ""
             {{- if .Values.kfamAPI.adminEmail }}

@@ -1,4 +1,4 @@
-{{- if .Values.argoflow.gateway.tls.enabled }}
+{{- if .Values.deployKF.gateway.tls.enabled }}
 ################
 ## This VirtualService is here to redirect all HTTP traffic to HTTPS.
 ## We can't use the `Gateway/spec.servers[*].tls.httpsRedirect`, as it blindly swaps the schema from `http://` to `https://`
@@ -16,12 +16,12 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   gateways:
-    - {{ .Release.Namespace }}/{{ .Values.argoflow.gateway.name }}
+    - {{ .Release.Namespace }}/{{ .Values.deployKF.gateway.name }}
   hosts:
-    - {{ .Values.argoflow.gateway.hostname | quote }}
+    - {{ .Values.deployKF.gateway.hostname | quote }}
     ## TODO: minio-console is still not redirecting properly
     ##       https://istio.io/latest/docs/ops/best-practices/traffic-management/#split-virtual-services
-    - "*.{{ .Values.argoflow.gateway.hostname }}"
+    - "*.{{ .Values.deployKF.gateway.hostname }}"
   http:
     - name: https-redirect-route
       match:
@@ -29,6 +29,6 @@ spec:
             exact: http
       redirect:
         scheme: https
-        port: {{ .Values.argoflow.gateway.ports.https | int }}
+        port: {{ .Values.deployKF.gateway.ports.https | int }}
         redirectCode: 302
 {{- end }}

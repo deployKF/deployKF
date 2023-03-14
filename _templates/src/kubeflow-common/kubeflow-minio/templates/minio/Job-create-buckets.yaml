@@ -51,7 +51,7 @@ spec:
 
               ## add an alias for the local minio server
               mc alias set "myminio" \
-                {{- if .Values.argoflow.gateway.tls.enabled }}
+                {{- if .Values.deployKF.gateway.tls.enabled }}
                 {{ printf "https://minio-api.%s" .Values.argoflow_helpers.kubeflow_gateway.https_endpoint | quote }} \
                 {{- else }}
                 {{ printf "http://minio-api.%s" .Values.argoflow_helpers.kubeflow_gateway.http_endpoint | quote }} \
@@ -107,7 +107,7 @@ spec:
         {{- if .Values.argoflow_helpers.kubeflow_gateway.is_self_signed_cert }}
         - name: gateway-root-ca-cert
           configMap:
-            name: {{ .Values.argoflow.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}
+            name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}
             items:
               - key: root-cert.pem
                 path: root-cert.pem

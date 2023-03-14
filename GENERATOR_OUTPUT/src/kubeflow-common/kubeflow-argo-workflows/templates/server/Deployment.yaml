@@ -107,7 +107,7 @@ spec:
 {{/*        {{- if .Values.argoflow_helpers.kubeflow_gateway.is_self_signed_cert }}*/}}
 {{/*        - name: gateway-root-ca-cert*/}}
 {{/*          configMap:*/}}
-{{/*            name: {{ .Values.argoflow.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}*/}}
+{{/*            name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}*/}}
 {{/*            items:*/}}
 {{/*              - key: root-cert.pem*/}}
 {{/*                path: root-cert.pem*/}}

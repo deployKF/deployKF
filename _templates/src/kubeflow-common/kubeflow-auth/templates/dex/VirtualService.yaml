@@ -10,9 +10,9 @@ metadata:
     app.kubernetes.io/component: dex
 spec:
   gateways:
-    - {{ .Values.argoflow.gateway.namespace }}/{{ .Values.argoflow.gateway.name }}
+    - {{ .Values.deployKF.gateway.namespace }}/{{ .Values.deployKF.gateway.name }}
   hosts:
-    - {{ .Values.argoflow.gateway.hostname | quote }}
+    - {{ .Values.deployKF.gateway.hostname | quote }}
   http:
     - name: dex-route
       match:
@@ -20,6 +20,6 @@ spec:
             prefix: /dex/
       route:
         - destination:
-            host: dex.{{ .Release.Namespace }}.svc.{{ .Values.argoflow.clusterDomain }}
+            host: dex.{{ .Release.Namespace }}.svc.{{ .Values.deployKF.clusterDomain }}
             port:
               number: 5556
