@@ -63,7 +63,7 @@ spec:
           command:
             - "oauth2-proxy"
             - "--config=/etc/oauth2-proxy/oauth2-proxy.cfg"
-            {{- if .Values.argoflow_helpers.kubeflow_gateway.is_self_signed_cert }}
+            {{- if .Values.deployKF_helpers.kubeflow_gateway.is_self_signed_cert }}
             ## if our certificate is self-signed, we must trust its Certification Authority (CA)
             - "--provider-ca-file=/etc/oauth2-proxy/certs/root-cert.pem"
             {{- end }}
@@ -86,7 +86,7 @@ spec:
               mountPath: /etc/oauth2-proxy/oauth2-proxy.cfg
               subPath: oauth2-proxy.cfg
               readOnly: true
-            {{- if .Values.argoflow_helpers.kubeflow_gateway.is_self_signed_cert }}
+            {{- if .Values.deployKF_helpers.kubeflow_gateway.is_self_signed_cert }}
             ## TODO: check if oauth2-proxy needs to restart when CA cert changes
             - name: gateway-root-ca-cert
               mountPath: /etc/oauth2-proxy/certs/
@@ -102,7 +102,7 @@ spec:
         - name: oauth2-proxy-config
           secret:
             secretName: oauth2-proxy-config
-        {{- if .Values.argoflow_helpers.kubeflow_gateway.is_self_signed_cert }}
+        {{- if .Values.deployKF_helpers.kubeflow_gateway.is_self_signed_cert }}
         - name: gateway-root-ca-cert
           configMap:
             name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}

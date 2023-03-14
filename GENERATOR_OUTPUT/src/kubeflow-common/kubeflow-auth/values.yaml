@@ -1,4 +1,4 @@
-argoflow_helpers:
+deployKF_helpers:
   kubeflow_gateway:
     http_endpoint: "kubeflow.example.com:8080"
     https_endpoint: "kubeflow.example.com:8443"

@@ -52,17 +52,17 @@ data:
 
     # configs for s3 object store
     s3:
-      endpoint: {{ .Values.argoflow_helpers.kubeflow_pipelines.object_store.endpoint | quote }}
-      insecure: {{ .Values.argoflow_helpers.kubeflow_pipelines.object_store.not_use_ssl }}
+      endpoint: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.endpoint | quote }}
+      insecure: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.not_use_ssl }}
       bucket: {{ .Values.deployKF.pipelines.bucket.name | quote }}
       region: {{ .Values.deployKF.pipelines.bucket.region | quote }}
       keyFormat: {{ `artifacts/{{ workflow.namespace }}/{{ workflow.name }}/{{ workflow.creationTimestamp.Y }}/{{ workflow.creationTimestamp.m }}/{{ workflow.creationTimestamp.d }}/{{ pod.name }}` }}
       accessKeySecret:
-        name: {{ .Values.argoflow_helpers.kubeflow_pipelines.object_store.auth.secret_name | quote }}
-        key: {{ .Values.argoflow_helpers.kubeflow_pipelines.object_store.auth.access_key_key | quote }}
+        name: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_name | quote }}
+        key: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.access_key_key | quote }}
       secretKeySecret:
-        name: {{ .Values.argoflow_helpers.kubeflow_pipelines.object_store.auth.secret_name | quote }}
-        key: {{ .Values.argoflow_helpers.kubeflow_pipelines.object_store.auth.secret_key_key | quote }}
+        name: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_name | quote }}
+        key: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_key_key | quote }}
 
   ## TODO: review this config
   #persistence: |
@@ -83,14 +83,14 @@ data:
   sso: |
     ## This is the root URL of the OIDC provider
     {{- if .Values.deployKF.gateway.tls.enabled }}
-    issuer: "https://{{ .Values.argoflow_helpers.kubeflow_gateway.https_endpoint }}/dex"
+    issuer: "https://{{ .Values.deployKF_helpers.kubeflow_gateway.https_endpoint }}/dex"
     {{- else }}
-    issuer: "http://{{ .Values.argoflow_helpers.kubeflow_gateway.http_endpoint }}/dex"
+    issuer: "http://{{ .Values.deployKF_helpers.kubeflow_gateway.http_endpoint }}/dex"
     {{- end }}
 
     ## If TLS certificate verification is skipped for SSO endpoints
     ## TODO: remove once argo-server supports using local CA files (https://github.com/argoproj/argo-workflows/issues/7198)
-    {{- if .Values.argoflow_helpers.kubeflow_gateway.is_self_signed_cert }}
+    {{- if .Values.deployKF_helpers.kubeflow_gateway.is_self_signed_cert }}
     insecureSkipVerify: true
     {{- else }}
     insecureSkipVerify: false
@@ -116,9 +116,9 @@ data:
 
     ## This is the OIDC redirect URL
     {{- if .Values.deployKF.gateway.tls.enabled }}
-    redirectUrl: "https://argo-server.{{ .Values.argoflow_helpers.kubeflow_gateway.https_endpoint }}/oauth2/callback"
+    redirectUrl: "https://argo-server.{{ .Values.deployKF_helpers.kubeflow_gateway.https_endpoint }}/oauth2/callback"
     {{- else }}
-    redirectUrl: "http://argo-server.{{ .Values.argoflow_helpers.kubeflow_gateway.http_endpoint }}/oauth2/callback"
+    redirectUrl: "http://argo-server.{{ .Values.deployKF_helpers.kubeflow_gateway.http_endpoint }}/oauth2/callback"
     {{- end }}
 
     ## Additional OIDC scopes to request

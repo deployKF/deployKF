@@ -50,9 +50,9 @@
 #              dex_provider:
 #                ## the issuing principal, must match the `iss` field in the JWT
 #                {{- if .Values.deployKF.gateway.tls.enabled }}
-#                issuer: "https://{{ .Values.argoflow_helpers.kubeflow_gateway.https_endpoint }}/dex"
+#                issuer: "https://{{ .Values.deployKF_helpers.kubeflow_gateway.https_endpoint }}/dex"
 #                {{- else }}
-#                issuer: "http://{{ .Values.argoflow_helpers.kubeflow_gateway.http_endpoint }}/dex"
+#                issuer: "http://{{ .Values.deployKF_helpers.kubeflow_gateway.http_endpoint }}/dex"
 #                {{- end }}
 #
 #                ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-remotejwks

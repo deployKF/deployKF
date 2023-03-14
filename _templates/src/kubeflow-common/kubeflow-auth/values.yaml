@@ -1,4 +1,4 @@
-argoflow_helpers:
+deployKF_helpers:
   kubeflow_gateway:
     http_endpoint: {{< (tmpl.Exec "kubeflow_gateway.http_endpoint" .) | quote >}}
     https_endpoint: {{< (tmpl.Exec "kubeflow_gateway.https_endpoint" .) | quote >}}
