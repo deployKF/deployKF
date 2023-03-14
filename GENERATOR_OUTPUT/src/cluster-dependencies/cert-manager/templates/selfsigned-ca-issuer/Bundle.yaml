@@ -10,10 +10,10 @@ spec:
         key: "ca.crt"
   target:
     ## creates a ConfigMap with the same name as this Bundle that contains the key "root-cert.pem"
-    ## in each Namespace that has the label "argoflow.github.io/inject-root-ca-cert=enabled"
+    ## in each Namespace that has the label "deploykf.github.io/inject-root-ca-cert=enabled"
     configMap:
       key: "root-cert.pem"
     namespaceSelector:
       matchLabels:
-        argoflow.github.io/inject-root-ca-cert: "enabled"
+        deploykf.github.io/inject-root-ca-cert: "enabled"
 {{- end }}

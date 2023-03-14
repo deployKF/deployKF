@@ -4,4 +4,4 @@ metadata:
   name: "kubeflow-minio"
   labels:
     istio-injection: enabled
-    argoflow.github.io/inject-root-ca-cert: enabled
+    deploykf.github.io/inject-root-ca-cert: enabled

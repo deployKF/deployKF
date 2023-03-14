@@ -43,7 +43,7 @@ cluster_dependencies:
         caIssuerName: selfsigned-ca-issuer
         caSecretName: selfsigned-ca-issuer-root-cert
 
-        ## using trust-manager, each Namespace with the "argoflow.github.io/inject-root-ca-cert=enabled" label
+        ## using trust-manager, each Namespace with the "deploykf.github.io/inject-root-ca-cert=enabled" label
         ## is injected with a ConfigMap containing a "root-cert.pem" key that contains the self-signed root CA
         ## applications can then trust the issued gateway certificates by trusting this CA
         injectedConfigMapName: kubeflow-gateway-issuer-root-ca-cert

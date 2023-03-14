@@ -4,4 +4,4 @@ metadata:
   name: "kubeflow-mysql"
   labels:
     istio-injection: disabled
-    argoflow.github.io/inject-root-ca-cert: enabled
+    deploykf.github.io/inject-root-ca-cert: enabled
