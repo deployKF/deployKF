@@ -1,0 +1,4 @@
+# Allow Kustomize var to replace following fields.
+varReference:
+  - path: data/ingress
+    kind: ConfigMap

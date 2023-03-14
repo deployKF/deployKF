@@ -1,0 +1,24 @@
+{{- range $profile_name, $profile := .Values.profiles }}
+---
+apiVersion: kubeflow.org/v1
+kind: Profile
+metadata:
+  name: {{ $profile_name | quote }}
+  labels:
+    helm.sh/chart: {{ include "kubeflow-profiles-generator.labels.chart" $ }}
+    app.kubernetes.io/name: {{ include "kubeflow-profiles-generator.labels.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+spec:
+  owner:
+    kind: User
+    name: {{ $.Values.admin.email | quote }}
+  {{- if $profile.resourceQuotaSpec }}
+  resourceQuotaSpec: {{ $profile.resourceQuotaSpec | toYaml | nindent 4 }}
+  {{- else }}
+  resourceQuotaSpec: {}
+  {{- end }}
+  {{- if $profile.plugins }}
+  plugins: {{ $profile.plugins | toYaml | nindent 4 }}
+  {{- end }}
+{{- end }}

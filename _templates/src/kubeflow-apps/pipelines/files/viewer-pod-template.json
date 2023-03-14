@@ -1,0 +1,37 @@
+{
+  "spec": {
+    "serviceAccountName": "default-editor",
+    "containers": [
+      {
+        "env": [
+          {
+            "name": "AWS_REGION",
+            "value": {{< .Values.kubeflow_apps.pipelines.bucket.region | quote >}}
+          },
+          {
+            "name": "AWS_S3_ENDPOINT",
+            "value": {{< (tmpl.Exec "kubeflow_pipelines.object_store.endpoint" .) | quote >}}
+          },
+          {
+            "name": "AWS_ACCESS_KEY_ID",
+            "valueFrom": {
+              "secretKeyRef": {
+                "name": {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_name" .) | quote >}},
+                "key": {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.access_key_key" .) | quote >}}
+              }
+            }
+          },
+          {
+            "name": "AWS_SECRET_ACCESS_KEY",
+            "valueFrom": {
+              "secretKeyRef": {
+                "name": {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_name" .) | quote >}},
+                "key": {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_key_key" .) | quote >}}
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

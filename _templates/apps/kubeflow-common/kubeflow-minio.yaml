@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kf-common--minio
+  namespace: {{< .Values.argocd.namespace | quote >}}
+  labels:
+    app.kubernetes.io/name: kubeflow-minio
+    app.kubernetes.io/component: kubeflow-common
+    app.kubernetes.io/part-of: kubeflow
+spec:
+  project: {{< .Values.argocd.project | quote >}}
+  source:
+    repoURL: {{< .Values.repo.url | quote >}}
+    targetRevision: {{< .Values.repo.revision | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "src/kubeflow-common/kubeflow-minio" | quote >}}
+  destination:
+    server: {{< .Values.argocd.destination.server | quote >}}
+    namespace: {{< .Values.kubeflow_common.kubeflow_minio.namespace | quote >}}

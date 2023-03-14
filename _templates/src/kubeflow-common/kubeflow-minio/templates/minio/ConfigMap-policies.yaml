@@ -1,0 +1,16 @@
+{{- if .Values.minio.policies }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: minio-policies
+  labels:
+    helm.sh/chart: {{ include "kubeflow-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-minio.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: minio
+data:
+  {{- range $policy := .Values.minio.policies }}
+  {{ printf "%s.json" $policy.name | quote }}: {{ $policy.policy | toJson | quote }}
+  {{- end }}
+{{- end }}

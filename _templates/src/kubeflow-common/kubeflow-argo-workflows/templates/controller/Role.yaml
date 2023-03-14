@@ -1,0 +1,28 @@
+## The rules come from upstream manifests.
+## https://github.com/argoproj/argo-workflows/blob/v3.3.10/manifests/cluster-install/workflow-controller-rbac/workflow-controller-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: argo-workflow-controller
+  labels:
+    helm.sh/chart: {{ include "kubeflow-argo-workflows.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: argo
+    app.kubernetes.io/sub-component: workflow-controller
+rules:
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - create
+      - get
+      - update
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get

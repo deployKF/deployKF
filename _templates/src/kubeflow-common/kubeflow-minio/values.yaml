@@ -1,0 +1,142 @@
+argoflow_helpers:
+  kubeflow_gateway:
+    http_endpoint: {{< (tmpl.Exec "kubeflow_gateway.http_endpoint" .) | quote >}}
+    https_endpoint: {{< (tmpl.Exec "kubeflow_gateway.https_endpoint" .) | quote >}}
+    is_self_signed_cert: {{< (tmpl.Exec "kubeflow_gateway.is_self_signed_cert" .) | quote >}}
+
+argoflow:
+  clusterDomain: cluster.local
+
+  certManager:
+    clusterIssuer:
+      selfSigned:
+        injectedConfigMapName: {{< .Values.cluster_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
+
+  auth:
+    namespace: {{< .Values.kubeflow_common.kubeflow_auth.namespace | quote >}}
+
+  gateway:
+    namespace: {{< .Values.kubeflow_common.kubeflow_istio_gateway.namespace | quote >}}
+    serviceAccount: {{< .Values.kubeflow_common.kubeflow_istio_gateway.serviceAccount.name | quote >}}
+    name: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.name | quote >}}
+    hostname: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.hostname | quote >}}
+    tls:
+      enabled: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.tls.enabled >}}
+
+
+########################################
+## COMPONENT | minio
+########################################
+minio:
+  ## configs for the minio container image
+  ##
+  image:
+    repository: minio/minio
+    tag: RELEASE.2023-02-17T17-52-43Z
+    pullPolicy: IfNotPresent
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
+
+  ## configs for the mc container image
+  ##
+  mcImage:
+    repository: minio/mc
+    tag: RELEASE.2023-02-16T19-20-11Z
+    pullPolicy: IfNotPresent
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
+
+  ## resource requests/limits for the minio Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## persistence configs for minio
+  ##
+  persistence:
+    enabled: true
+
+    ## the name of an existing PersistentVolumeClaim to use
+    ## - if non-emtpy, you must manually create a PVC with this name
+    ##
+    existingClaim: ""
+
+    ## the sub-path within the PersistentVolume to mount, instead of the root
+    ##
+    subPath: ""
+
+    ## the name of the StorageClass requested by the PersistentVolumeClaim
+    ## - if set to "", then `PersistentVolumeClaim/spec.storageClassName` is omitted
+    ## - if set to "-", then `PersistentVolumeClaim/spec.storageClassName` is set to ""
+    ##
+    storageClass: ""
+
+    ## the access mode of the PersistentVolumeClaim
+    ##
+    accessMode: ReadWriteOnce
+
+    ## the initial size for the PersistentVolumeClaim to request
+    ## - kubernetes allows the PVC to grow in size as needed, starting from this value
+    ##   (if your StorageClass has `allowVolumeExpansion=true`)
+    ##
+    size: 5Gi
+
+  ## root user configs for minio
+  ##
+  rootUser:
+    username: {{< .Values.kubeflow_common.kubeflow_minio.rootUser.username | quote >}}
+    password: {{< .Values.kubeflow_common.kubeflow_minio.rootUser.password | quote >}}
+    existingSecret: {{< .Values.kubeflow_common.kubeflow_minio.rootUser.existingSecret | quote >}}
+    existingSecretUsernameKey: {{< .Values.kubeflow_common.kubeflow_minio.rootUser.existingSecretUsernameKey | quote >}}
+    existingSecretPasswordKey: {{< .Values.kubeflow_common.kubeflow_minio.rootUser.existingSecretPasswordKey | quote >}}
+
+  ## identity configs for minio
+  ##
+  identity:
+    ## OpenID configs for minio
+    ##
+    openid:
+      ## TODO: explain how this can be set to "groups" when using LDAP/OAUTH as your dex connector
+      policyClaim: "aud"
+
+      clientId: "minio-console"
+      ## TODO: we can remove the need to set these here by moving them into the auth chart, and replicating secrets
+      clientSecret:
+        ## TODO: we currently use hard-coded `value` environment variables in the deployment, use secret
+        value: "bbbbbbbbbbbbbbbb"
+        existingSecret: ""
+        existingSecretKey: "client_secret"
+
+  ## minio access policies to create with a post-install job
+  ##
+  policies:
+    ## TODO: consider if we can use policy conditions to assign access based on email (all users are assigned `minio-console`)
+    ##       https://min.io/docs/minio/linux/administration/identity-access-management/policy-based-access-control.html#supported-s3-policy-condition-keys
+    - name: minio-console
+      policy:
+        version: "2012-10-17"
+        statement:
+          - effect: Allow
+            action:
+              - "admin:*"
+          - effect: Allow
+            action:
+              - "kms:*"
+          - effect: Allow
+            action:
+              - "s3:*"
+            resource:
+              - "arn:aws:s3:::*"
+
+  ## minio buckets to create with a post-install job
+  ##
+  buckets:
+    ## TODO: should we be taking the bucket name from kubeflow-pipelines value, or forcing user to align them?
+    - name: {{< .Values.kubeflow_apps.pipelines.bucket.name | quote >}}
+      versioning: false
+
+  ## TODO: consider adding programmatic creation of access keys
+  #accessKeys: []

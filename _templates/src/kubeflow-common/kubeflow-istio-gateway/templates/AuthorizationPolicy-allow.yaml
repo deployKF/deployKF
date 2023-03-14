@@ -1,0 +1,26 @@
+################
+## This AuthorizationPolicy ensures that Pods in the mesh can access the kubeflow-istio-gateway Pods.
+################
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: kubeflow-istio-gateway--allow
+  labels:
+    helm.sh/chart: {{ include "kubeflow-istio-gateway.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-istio-gateway.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      {{- toYaml .Values.argoflow.gateway.selectorLabels | nindent 6 }}
+  rules:
+    ## allow requests to HTTP and HTTPS ports (from inside the istio mesh)
+    - to:
+        - operation:
+            ports:
+              - {{ .Values.argoflow.gateway.ports.http | quote }}
+              {{- if .Values.argoflow.gateway.tls.enabled }}
+              - {{ .Values.argoflow.gateway.ports.https | quote }}
+              {{- end }}

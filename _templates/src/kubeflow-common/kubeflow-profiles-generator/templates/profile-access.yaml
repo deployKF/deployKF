@@ -1,0 +1,55 @@
+{{- range $profile_name, $profile := .Values.profiles }}
+{{- range $user_name := $profile.usersWithAccess }}
+{{- $user := get $.Values.users $user_name }}
+{{- if not $user}}
+{{- fail (printf "failed to generate profile '%s', there is no key in `users` called '%s'" $profile_name $user_name) }}
+{{- end }}
+{{- /*
+Kubeflow generates the `AuthorizationPolicy` and `RoleBinding` resource names from the
+user's email by replacing any special characters with '-' and casting to lower-case
+*/}}
+{{- $resource_name := regexReplaceAll "[^0-9a-zA-Z]" $user.email "-" | lower }}
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: user-{{ $resource_name }}-clusterrole-edit
+  namespace: {{ $profile_name | quote }}
+  annotations:
+    role: edit
+    user: {{ $user.email | quote }}
+  labels:
+    helm.sh/chart: {{ include "kubeflow-profiles-generator.labels.chart" $ }}
+    app.kubernetes.io/name: {{ include "kubeflow-profiles-generator.labels.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+spec:
+  rules:
+    - when:
+        - key: request.headers[{{ $.Values.argoflow.kubeflow.useridHeader }}]
+          values:
+            - {{ $user.email | quote }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: user-{{ $resource_name }}-clusterrole-edit
+  namespace: {{ $profile_name | quote }}
+  annotations:
+    role: edit
+    user: {{ $user.email | quote }}
+  labels:
+    helm.sh/chart: {{ include "kubeflow-profiles-generator.labels.chart" $ }}
+    app.kubernetes.io/name: {{ include "kubeflow-profiles-generator.labels.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubeflow-edit
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: {{ $user.email | quote }}
+{{- end }}
+{{- end }}

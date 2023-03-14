@@ -1,0 +1,24 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: central-dashboard
+  labels:
+    helm.sh/chart: {{ include "kubeflow-dashboard.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-dashboard.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: central-dashboard
+spec:
+  gateways:
+    - {{ .Values.argoflow.gateway.namespace }}/{{ .Values.argoflow.gateway.name }}
+  hosts:
+    - {{ .Values.argoflow.gateway.hostname | quote }}
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: central-dashboard.{{ .Release.Namespace }}.svc.{{ .Values.argoflow.clusterDomain }}
+            port:
+              number: 80

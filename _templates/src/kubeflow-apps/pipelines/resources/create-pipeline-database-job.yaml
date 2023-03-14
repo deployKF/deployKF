@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-pipeline-database
+  namespace: kubeflow
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - name: create-pipeline-database
+          image: public.ecr.aws/atcommons/utils/mysql-db-creator:latest
+          imagePullPolicy: Always
+          env:
+            ## ===============
+            ## MySQL Configs
+            ## ===============
+            - name: HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: dbHost
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: dbPort
+            - name: DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: pipelineDb
+
+            ## ===============
+            ## MySQL Secrets
+            ## ===============
+            - name: USERNAME
+              valueFrom:
+                secretKeyRef:
+                  {{<- if .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret >}}
+                  name: {{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret | quote >}}
+                  key: {{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecretUsernameKey | quote >}}
+                  {{<- else >}}
+                  name: pipelines-mysql-secret
+                  key: username
+                  {{<- end >}}
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{<- if .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret >}}
+                  name: {{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret | quote >}}
+                  key: {{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecretPasswordKey | quote >}}
+                  {{<- else >}}
+                  name: pipelines-mysql-secret
+                  key: password
+                  {{<- end >}}
+      restartPolicy: Never
+  backoffLimit: 5

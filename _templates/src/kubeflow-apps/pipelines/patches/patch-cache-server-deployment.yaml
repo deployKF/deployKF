@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache-server
+spec:
+  template:
+    spec:
+      containers:
+        - name: server
+          env:
+            ## ================================
+            ## MySQL Secrets
+            ## ================================
+            - name: DBCONFIG_USER
+              valueFrom:
+                secretKeyRef:
+                  {{<- if .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret >}}
+                  name: {{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret | quote >}}
+                  key: {{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecretUsernameKey | quote >}}
+                  {{<- else >}}
+                  name: pipelines-mysql-secret
+                  key: username
+                  {{<- end >}}
+            - name: DBCONFIG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{<- if .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret >}}
+                  name: {{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret | quote >}}
+                  key: {{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecretPasswordKey | quote >}}
+                  {{<- else >}}
+                  name: pipelines-mysql-secret
+                  key: password
+                  {{<- end >}}

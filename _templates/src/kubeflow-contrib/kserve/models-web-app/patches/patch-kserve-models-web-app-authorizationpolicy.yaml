@@ -1,0 +1,11 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: kserve-models-web-app
+  namespace: kubeflow
+spec:
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/{{< .Values.kubeflow_common.kubeflow_istio_gateway.namespace >}}/sa/{{< .Values.kubeflow_common.kubeflow_istio_gateway.serviceAccount.name >}}

@@ -1,0 +1,161 @@
+argoflow_helpers:
+  kubeflow_gateway:
+    http_endpoint: {{< (tmpl.Exec "kubeflow_gateway.http_endpoint" .) | quote >}}
+    https_endpoint: {{< (tmpl.Exec "kubeflow_gateway.https_endpoint" .) | quote >}}
+    is_self_signed_cert: {{< (tmpl.Exec "kubeflow_gateway.is_self_signed_cert" .) | quote >}}
+
+argoflow:
+  clusterDomain: cluster.local
+
+  kubeflow:
+    namespace: kubeflow
+    useridHeader: kubeflow-userid
+
+  certManager:
+    clusterIssuer:
+      selfSigned:
+        injectedConfigMapName: {{< .Values.cluster_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
+
+  istio:
+    namespace: {{< .Values.cluster_dependencies.istio.namespace | quote >}}
+
+  gateway:
+    namespace: {{< .Values.kubeflow_common.kubeflow_istio_gateway.namespace | quote >}}
+    serviceAccount: {{< .Values.kubeflow_common.kubeflow_istio_gateway.serviceAccount.name | quote >}}
+    name: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.name | quote >}}
+    hostname: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.hostname | quote >}}
+    tls:
+      enabled: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.tls.enabled >}}
+
+
+########################################
+## COMPONENT | dex
+########################################
+dex:
+  ## configs for the dex container image
+  ##
+  image:
+    repository: ghcr.io/dexidp/dex
+    tag: v2.35.3
+    pullPolicy: IfNotPresent
+    pullSecret: ""
+    uid: 1001
+    gid: 1001
+
+  ## resource requests/limits for the dex Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## OpenID client configs for dex
+  ##
+  clients:
+
+    ## OpenID client for oauth2-proxy
+    ## - [WARNING] these configs must align with `oauth2Proxy.oidc.*`
+    ##
+    oauth2Proxy:
+      clientId: "oauth2-proxy"
+      clientSecret:
+        value: "bbbbbbbbbbbbbbbb"
+        ## TODO: test with existing secret
+        existingSecret: ""
+        existingSecretKey: "client_secret"
+
+    ## OpenID client for minio-console
+    ##
+    minio:
+      enabled: {{< .Values.kubeflow_common.kubeflow_minio.enabled >}}
+      clientId: "minio-console"
+      clientSecret:
+        value: "bbbbbbbbbbbbbbbb"
+        ## TODO: test with existing secret
+        existingSecret: ""
+        existingSecretKey: "client_secret"
+
+    ## OpenID client for argo-server
+    ##
+    argoServer:
+      enabled: {{< .Values.kubeflow_common.kubeflow_argo_workflows.enabled >}}
+      clientId: "argo-server"
+      clientSecret:
+        value: "bbbbbbbbbbbbbbbb"
+        ## TODO: test with existing secret
+        existingSecret: ""
+        existingSecretKey: "client_secret"
+
+  ## TODO: replace `staticPasswords` with a list, allowing `existingSecret` as one of the keys
+  staticPasswords:
+    value:
+      ## default user (user: "admin@example.com", pass: "admin")
+      - email: "admin@example.com"
+        ## bcrypt hash of "admin": `echo "admin" | htpasswd -BinC 10 NULL | cut -d: -f2`
+        hash: "$2y$10$uIPSv59XLpcS6iFGltZkOep/QuJv8z7Nry6n.LsRXb2Qt0Wsenzbu"
+        username: "admin@example.com"
+        userID: "00000000-0000-0000-0000-000000000000"
+
+    existingSecret: ""
+    existingSecretKey: "static_passwords"
+
+  ## TODO: replace `connectors` with a list, allowing `existingSecret` as one of the keys
+  connectors:
+    value: []
+
+    existingSecret: ""
+    existingSecretKey: "connectors"
+
+
+########################################
+## COMPONENT | oauth2-proxy
+########################################
+oauth2Proxy:
+  ## configs for the oauth2-proxy container image
+  ##
+  image:
+    repository: quay.io/oauth2-proxy/oauth2-proxy
+    tag: v7.4.0
+    pullPolicy: IfNotPresent
+    pullSecret: ""
+    uid: 65532
+    gid: 65532
+
+  ## resource requests/limits for the oauth2-proxy Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## OpenID configs for oauth2-proxy
+  ##
+  oidc:
+    clientId: "oauth2-proxy"
+    clientSecret:
+      value: "bbbbbbbbbbbbbbbb"
+
+      ## TODO: test with existing secret
+      existingSecret: ""
+      existingSecretKey: "client_secret"
+
+  ## cookie configs for oauth2-proxy
+  ##
+  cookie:
+    ## sets oauth2-proxy config: `cookie_name`
+    ##
+    name: _kubeflow_token
+
+    ## sets oauth2-proxy config: `cookie_expire`
+    ##
+    expire: 12h
+
+    ## sets oauth2-proxy config: `cookie_refresh`
+    ##
+    ## TODO: ensure `cookie_refresh` is actually working by setting to a very short value and checkin that the cookie is updated on refresh
+    refresh: 1h
+
+    ## sets oauth2-proxy config: `cookie_secret`
+    ##
+    secret:
+      value: cccccccccccccccc
+      existingSecret: ""
+      existingSecretKey: "cookie_secret"

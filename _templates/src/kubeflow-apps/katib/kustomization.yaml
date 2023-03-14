@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: kubeflow
+
+resources:
+  - github.com/kubeflow/manifests/apps/katib/upstream/installs/katib-with-kubeflow?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
+  - resources/create-katib-database-job.yaml
+
+patchesStrategicMerge:
+  - patches/patch-katib-db-manager-deployment.yaml
+  - patches/patch-katib-ui-virtualservice.yaml
+
+  ## removals
+  - patches/removals/mysql-resources.yaml
+
+configMapGenerator:
+  - name: katib-mysql-config
+    literals:
+      - dbHost="{{< .Values.kubeflow_apps.katib.mysql.host >}}"
+      - dbPort="{{< .Values.kubeflow_apps.katib.mysql.port >}}"
+      - dbName="{{< .Values.kubeflow_apps.katib.mysql.database >}}"
+
+images:
+  - name: docker.io/kubeflowkatib/katib-controller
+    newName: docker.io/kubeflowkatib/katib-controller
+    newTag: v0.14.0
+  - name: docker.io/kubeflowkatib/katib-db-manager
+    newName: docker.io/kubeflowkatib/katib-db-manager
+    newTag: v0.14.0
+  - name: docker.io/kubeflowkatib/katib-ui
+    newName: docker.io/kubeflowkatib/katib-ui
+    newTag: v0.14.0
+
+  ## NOTE: this image tag is separate to Katib itself
+  - name: public.ecr.aws/atcommons/utils/mysql-db-creator
+    newName: public.ecr.aws/atcommons/utils/mysql-db-creator
+    newTag: latest

@@ -1,0 +1,109 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespaces/kubeflow.yaml
+
+  ##########################
+  ## cluster-dependencies ##
+  ##########################
+  {{<- if .Values.cluster_dependencies.cert_manager.enabled >}}
+  - cluster-dependencies/cert-manager.yaml
+  - namespaces/cert-manager.yaml
+  {{<- end >}}
+
+  {{<- if .Values.cluster_dependencies.istio.enabled >}}
+  - cluster-dependencies/istio.yaml
+  - namespaces/istio.yaml
+  {{<- end >}}
+
+  {{<- if .Values.cluster_dependencies.knative.enabled >}}
+  - cluster-dependencies/knative--knative-eventing.yaml
+  - cluster-dependencies/knative--knative-serving.yaml
+  {{<- end >}}
+  
+  {{<- if .Values.cluster_dependencies.kyverno.enabled >}}
+  - cluster-dependencies/kyverno.yaml
+  - namespaces/kyverno.yaml
+  {{<- end >}}
+  
+  {{<- if .Values.cluster_dependencies.sealed_secrets.enabled >}}
+  - cluster-dependencies/sealed-secrets.yaml
+  - namespaces/sealed-secrets.yaml
+  {{<- end >}}
+
+  ###################
+  ## kubeflow-apps ##
+  ###################
+  {{<- if .Values.kubeflow_apps.katib.enabled >}}
+  - kubeflow-apps/katib.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_apps.notebooks.enabled >}}
+  - kubeflow-apps/notebooks--jupyter-web-app.yaml
+  - kubeflow-apps/notebooks--notebook-controller.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_apps.pipelines.enabled >}}
+  - kubeflow-apps/pipelines.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_apps.poddefaults_webhook.enabled >}}
+  - kubeflow-apps/poddefaults-webhook.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_apps.tensorboards.enabled >}}
+  - kubeflow-apps/tensorboards--tensorboard-controller.yaml
+  - kubeflow-apps/tensorboards--tensorboards-web-app.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_apps.training_operator.enabled >}}
+  - kubeflow-apps/training-operator.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_apps.volumes.enabled >}}
+  - kubeflow-apps/volumes--volumes-web-app.yaml
+  {{<- end >}}
+
+  #####################
+  ## kubeflow-common ##
+  #####################
+  {{<- if .Values.kubeflow_common.kubeflow_argo_workflows.enabled >}}
+  - kubeflow-common/kubeflow-argo-workflows.yaml
+  - namespaces/kubeflow-argo-workflows.yaml
+  {{<- end >}}
+  
+  {{<- if .Values.kubeflow_common.kubeflow_auth.enabled >}}
+  - kubeflow-common/kubeflow-auth.yaml
+  - namespaces/kubeflow-auth.yaml
+  {{<- end >}}
+  
+  {{<- if .Values.kubeflow_common.kubeflow_dashboard.enabled >}}
+  - kubeflow-common/kubeflow-dashboard.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_common.kubeflow_istio_gateway.enabled >}}
+  - kubeflow-common/kubeflow-istio-gateway.yaml
+  - namespaces/kubeflow-istio-gateway.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_common.kubeflow_minio.enabled >}}
+  - kubeflow-common/kubeflow-minio.yaml
+  - namespaces/kubeflow-minio.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_common.kubeflow_mysql.enabled >}}
+  - kubeflow-common/kubeflow-mysql.yaml
+  - namespaces/kubeflow-mysql.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_common.kubeflow_profiles_generator.enabled >}}
+  - kubeflow-common/kubeflow-profiles-generator.yaml
+  {{<- end >}}
+
+  ######################
+  ## kubeflow-contrib ##
+  ######################
+  {{<- if .Values.kubeflow_contrib.kserve.enabled >}}
+  - kubeflow-contrib/kserve--kserve.yaml
+  - kubeflow-contrib/kserve--models-web-app.yaml
+  {{<- end >}}

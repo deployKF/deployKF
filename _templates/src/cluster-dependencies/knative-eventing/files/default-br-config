@@ -1,0 +1,10 @@
+clusterDefault:
+  brokerClass: MTChannelBasedBroker
+  apiVersion: v1
+  kind: ConfigMap
+  name: config-br-default-channel
+  namespace: {{< .Values.cluster_dependencies.knative.namespace.eventing | quote >}}
+  delivery:
+    retry: 10
+    backoffPolicy: exponential
+    backoffDelay: PT0.2S

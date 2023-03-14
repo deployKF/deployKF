@@ -1,0 +1,114 @@
+argoflow_helpers:
+  kubeflow_gateway:
+    http_endpoint: {{< (tmpl.Exec "kubeflow_gateway.http_endpoint" .) | quote >}}
+    https_endpoint: {{< (tmpl.Exec "kubeflow_gateway.https_endpoint" .) | quote >}}
+    is_self_signed_cert: {{< (tmpl.Exec "kubeflow_gateway.is_self_signed_cert" .) | quote >}}
+
+  kubeflow_pipelines:
+    use_embedded_minio: {{< (tmpl.Exec "kubeflow_pipelines.use_embedded_minio" .) | quote >}}
+    object_store:
+      hostname: {{< (tmpl.Exec "kubeflow_pipelines.object_store.hostname" .) | quote >}}
+      port: {{< (tmpl.Exec "kubeflow_pipelines.object_store.port" .) | quote >}}
+      endpoint: {{< (tmpl.Exec "kubeflow_pipelines.object_store.endpoint" .) | quote >}}
+      not_use_ssl: {{< (tmpl.Exec "kubeflow_pipelines.object_store.not_use_ssl" .) | quote >}}
+      auth:
+        secret_name: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_name" .) | quote >}}
+        secret_namespace: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_namespace" .) | quote >}}
+        access_key_key: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.access_key_key" .) | quote >}}
+        secret_key_key: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_key_key" .) | quote >}}
+
+argoflow:
+  clusterDomain: cluster.local
+
+  certManager:
+    clusterIssuer:
+      selfSigned:
+        injectedConfigMapName: {{< .Values.cluster_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
+
+  auth:
+    namespace: {{< .Values.kubeflow_common.kubeflow_auth.namespace | quote >}}
+
+  gateway:
+    namespace: {{< .Values.kubeflow_common.kubeflow_istio_gateway.namespace | quote >}}
+    serviceAccount: {{< .Values.kubeflow_common.kubeflow_istio_gateway.serviceAccount.name | quote >}}
+    name: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.name | quote >}}
+    hostname: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.hostname | quote >}}
+    tls:
+      enabled: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.tls.enabled >}}
+
+  pipelines:
+    bucket:
+      name: {{< .Values.kubeflow_apps.pipelines.bucket.name | quote >}}
+      region: {{< .Values.kubeflow_apps.pipelines.bucket.region | quote >}}
+
+
+########################################
+## COMPONENT | controller
+########################################
+controller:
+  ## configs for the argo workflow-controller container image
+  ##
+  image:
+    repository: quay.io/argoproj/workflow-controller
+    tag: v3.3.10
+    pullPolicy: IfNotPresent
+    pullSecret: ""
+    uid: 8737
+    gid: 8737
+
+  ## configs for the argo workflow-controller executor container image
+  ##
+  executorImage:
+    repository: quay.io/argoproj/argoexec
+    tag: v3.3.10
+    pullPolicy: IfNotPresent
+
+  ## resource requests/limits for the argo workflow-controller Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## resource requests/limits for the argo workflow-controller executor Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  executorResources: {}
+
+
+########################################
+## COMPONENT | server
+########################################
+server:
+  ## configs for the argo-server container image
+  ##
+  image:
+    repository: quay.io/argoproj/argocli
+    tag: v3.3.10
+    pullPolicy: IfNotPresent
+    pullSecret: ""
+    uid: 8737
+    gid: 8737
+
+  ## resource requests/limits for the argo-server Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## identity configs for argo-server
+  ##
+  ## TODO: update once "SSO Impersonate" feature is added (https://github.com/argoproj/argo-workflows/pull/7193)
+  identity:
+
+    ## OpenID configs for argo-server
+    ##
+    openid:
+      clientId: "argo-server"
+
+      ## TODO: we can remove the need to set these here by moving them to the auth chart, and replicating the secrets
+      clientSecret:
+        value: "bbbbbbbbbbbbbbbb"
+        ## TODO: test with existing secret
+        existingSecret: ""
+        existingSecretKey: "client_secret"

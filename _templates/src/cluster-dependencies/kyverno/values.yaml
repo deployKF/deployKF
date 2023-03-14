@@ -1,0 +1,31 @@
+## as we reference the "kyverno" chart (https://kyverno.github.io/kyverno/) in `dependencies` of Chart.yaml,
+## we must indent our values under `kyverno:` in this file
+kyverno:
+  fullnameOverride: kyverno
+
+  ## we use HA as the kyverno validation webhook going down will block all resource updates on the cluster
+  ## (NOTE: 3 is the only HA option supported by Kyverno)
+  replicaCount: 3
+
+  image:
+    repository: ghcr.io/kyverno/kyverno
+    #tag: latest
+
+  initImage:
+    repository: ghcr.io/kyverno/kyvernopre
+    #tag: latest
+
+  cleanupController:
+    enabled: true
+    replicas: 1
+    image:
+      repository: ghcr.io/kyverno/cleanup-controller
+      #tag: latest
+
+  ## we must give extra permissions so that kyverno can generate resources within profile namespaces
+  generatecontrollerExtraResources:
+    - authorizationpolicies
+    - deployments
+    - destinationrules
+    - poddefaults
+    - services

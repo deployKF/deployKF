@@ -1,0 +1,8 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: metadata-grpc
+  namespace: kubeflow
+spec:
+  gateways:
+    - {{< .Values.kubeflow_common.kubeflow_istio_gateway.namespace >}}/{{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.name >}}

@@ -1,0 +1,7 @@
+apiVersion: v2
+name: cluster-dependencies--kyverno
+version: 1.0.0
+dependencies:
+  - name: kyverno
+    version: 2.7.0
+    repository: https://kyverno.github.io/kyverno

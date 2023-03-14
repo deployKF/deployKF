@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kf-contrib--kserve--kserve
+  namespace: {{< .Values.argocd.namespace | quote >}}
+  labels:
+    app.kubernetes.io/name: kserve
+    app.kubernetes.io/component: kubeflow-contrib
+    app.kubernetes.io/part-of: kubeflow
+spec:
+  project: {{< .Values.argocd.project | quote >}}
+  source:
+    repoURL: {{< .Values.repo.url | quote >}}
+    targetRevision: {{< .Values.repo.revision | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "src/kubeflow-contrib/kserve/kserve" | quote >}}
+  destination:
+    server: {{< .Values.argocd.destination.server | quote >}}
+    namespace: kubeflow
