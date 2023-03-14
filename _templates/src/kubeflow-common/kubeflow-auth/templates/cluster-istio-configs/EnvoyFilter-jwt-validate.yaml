@@ -2,7 +2,7 @@
 ##
 ################
 ## This EnvoyFilter verifies the JWT inside the "Authorization" header of incoming requests to Pods with the
-## `helm.kubeflow.org/jwt-validate: "true"` label.
+## `deploykf.github.io/jwt-validate: "true"` label.
 ## ---
 ## This will NOT reject requests that have no "Authorization" header set.
 ## However, "FILTER 2" sets `envoy.filters.http.lua.jwt_validate[userid.is_valid]` dynamic metadata that we use with `where`
@@ -23,7 +23,7 @@
 #spec:
 #  workloadSelector:
 #    labels:
-#      helm.kubeflow.org/jwt-validate: "true"
+#      deploykf.github.io/jwt-validate: "true"
 #  configPatches:
 #    ######################################################################
 #    ## FILTER 1 - Validate JWT `authorization` header
