@@ -3,7 +3,7 @@
 
 repo:
   url: https://github.com/deployKF/deployKF
-  revision: rewrite
+  revision: dev
   generatorOutputPath: ./GENERATOR_OUTPUT/
 
 

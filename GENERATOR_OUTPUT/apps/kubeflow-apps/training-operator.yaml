@@ -11,7 +11,7 @@ spec:
   project: "default"
   source:
     repoURL: "https://github.com/deployKF/deployKF"
-    targetRevision: "rewrite"
+    targetRevision: "dev"
     path: "GENERATOR_OUTPUT/src/kubeflow-apps/training-operator"
   destination:
     server: "https://kubernetes.default.svc"
