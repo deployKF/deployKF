@@ -145,6 +145,9 @@ centralDashboard:
       - text: Kubeflow Website
         desc: Official Kubeflow website
         link: https://www.kubeflow.org/
+      - text: deployKF Website
+        desc: The tool that deployed your Kubeflow!
+        link: https://github.com/deployKF/deployKF
       {{<- if .Values.kubeflow_apps.pipelines.enabled >}}
       - text: Kubeflow Pipelines Documentation
         desc: Documentation for Kubeflow Pipelines
