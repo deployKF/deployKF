@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-metadata-database
+  namespace: kubeflow
+spec:
+  template:
+    metadata:
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      containers:
+        - name: create-metadata-database
+          image: public.ecr.aws/atcommons/utils/mysql-db-creator:latest
+          imagePullPolicy: Always
+          env:
+            ## ===============
+            ## MySQL Configs
+            ## ===============
+            - name: HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: dbHost
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: dbPort
+            - name: DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: mlmdDb
+
+            ## ===============
+            ## MySQL Secrets
+            ## ===============
+            - name: USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: pipelines-mysql-secret
+                  key: username
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pipelines-mysql-secret
+                  key: password
+      restartPolicy: Never
+  backoffLimit: 5

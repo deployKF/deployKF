@@ -1,0 +1,7 @@
+apiVersion: v2
+name: kubeflow-istio-gateway
+version: 1.0.0
+dependencies:
+  - name: gateway
+    version: 1.14.6
+    repository: https://istio-release.storage.googleapis.com/charts

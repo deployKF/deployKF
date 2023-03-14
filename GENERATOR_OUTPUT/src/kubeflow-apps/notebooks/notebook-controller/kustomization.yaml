@@ -1,0 +1,30 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: kubeflow
+
+resources:
+  - github.com/kubeflow/manifests/apps/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
+
+patchesStrategicMerge:
+  ## NOTE: the upstream v1.6.1 manifests do not include parameters for notebook culling,
+  ##       so we fix it temporarily with this patch (fixed in https://github.com/kubeflow/kubeflow/pull/6689)
+  - patches/patch-notebook-controller-deployment.yaml
+
+configMapGenerator:
+  - name: config
+    behavior: merge
+    literals:
+      - USE_ISTIO="true"
+      - ISTIO_GATEWAY="kubeflow-istio-gateway/kubeflow-gateway"
+      - CLUSTER_DOMAIN="cluster.local"
+      - ENABLE_CULLING="false"
+      - CULL_IDLE_TIME="1440"
+      - IDLENESS_CHECK_PERIOD="1"
+
+images:
+  - name: docker.io/kubeflownotebookswg/notebook-controller
+    newName: docker.io/kubeflownotebookswg/notebook-controller
+    newTag: v1.6.1

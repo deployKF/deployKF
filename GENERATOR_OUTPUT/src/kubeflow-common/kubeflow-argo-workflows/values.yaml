@@ -1,0 +1,114 @@
+argoflow_helpers:
+  kubeflow_gateway:
+    http_endpoint: "kubeflow.example.com:8080"
+    https_endpoint: "kubeflow.example.com:8443"
+    is_self_signed_cert: "true"
+
+  kubeflow_pipelines:
+    use_embedded_minio: "true"
+    object_store:
+      hostname: "minio-api.kubeflow-minio.svc.cluster.local"
+      port: "9000"
+      endpoint: "minio-api.kubeflow-minio.svc.cluster.local:9000"
+      not_use_ssl: "true"
+      auth:
+        secret_name: "minio-root-user"
+        secret_namespace: "kubeflow-minio"
+        access_key_key: "username"
+        secret_key_key: "password"
+
+argoflow:
+  clusterDomain: cluster.local
+
+  certManager:
+    clusterIssuer:
+      selfSigned:
+        injectedConfigMapName: "kubeflow-gateway-issuer-root-ca-cert"
+
+  auth:
+    namespace: "kubeflow-auth"
+
+  gateway:
+    namespace: "kubeflow-istio-gateway"
+    serviceAccount: "kubeflow-gateway"
+    name: "kubeflow-gateway"
+    hostname: "kubeflow.example.com"
+    tls:
+      enabled: true
+
+  pipelines:
+    bucket:
+      name: "kubeflow-pipelines"
+      region: ""
+
+
+########################################
+## COMPONENT | controller
+########################################
+controller:
+  ## configs for the argo workflow-controller container image
+  ##
+  image:
+    repository: quay.io/argoproj/workflow-controller
+    tag: v3.3.10
+    pullPolicy: IfNotPresent
+    pullSecret: ""
+    uid: 8737
+    gid: 8737
+
+  ## configs for the argo workflow-controller executor container image
+  ##
+  executorImage:
+    repository: quay.io/argoproj/argoexec
+    tag: v3.3.10
+    pullPolicy: IfNotPresent
+
+  ## resource requests/limits for the argo workflow-controller Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## resource requests/limits for the argo workflow-controller executor Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  executorResources: {}
+
+
+########################################
+## COMPONENT | server
+########################################
+server:
+  ## configs for the argo-server container image
+  ##
+  image:
+    repository: quay.io/argoproj/argocli
+    tag: v3.3.10
+    pullPolicy: IfNotPresent
+    pullSecret: ""
+    uid: 8737
+    gid: 8737
+
+  ## resource requests/limits for the argo-server Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## identity configs for argo-server
+  ##
+  ## TODO: update once "SSO Impersonate" feature is added (https://github.com/argoproj/argo-workflows/pull/7193)
+  identity:
+
+    ## OpenID configs for argo-server
+    ##
+    openid:
+      clientId: "argo-server"
+
+      ## TODO: we can remove the need to set these here by moving them to the auth chart, and replicating the secrets
+      clientSecret:
+        value: "bbbbbbbbbbbbbbbb"
+        ## TODO: test with existing secret
+        existingSecret: ""
+        existingSecretKey: "client_secret"

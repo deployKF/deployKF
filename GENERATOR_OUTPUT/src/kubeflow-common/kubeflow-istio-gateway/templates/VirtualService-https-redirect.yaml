@@ -1,0 +1,34 @@
+{{- if .Values.argoflow.gateway.tls.enabled }}
+################
+## This VirtualService is here to redirect all HTTP traffic to HTTPS.
+## We can't use the `Gateway/spec.servers[*].tls.httpsRedirect`, as it blindly swaps the schema from `http://` to `https://`
+## without changing the port, and we allow users to specify non-standard HTTPS ports. Additionally, we disable ExtAuthz
+## on this redirect route, so that we redirect to HTTPS before authorizing.
+################
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: https-redirect
+  labels:
+    helm.sh/chart: {{ include "kubeflow-istio-gateway.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-istio-gateway.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  gateways:
+    - {{ .Release.Namespace }}/{{ .Values.argoflow.gateway.name }}
+  hosts:
+    - {{ .Values.argoflow.gateway.hostname | quote }}
+    ## TODO: minio-console is still not redirecting properly
+    ##       https://istio.io/latest/docs/ops/best-practices/traffic-management/#split-virtual-services
+    - "*.{{ .Values.argoflow.gateway.hostname }}"
+  http:
+    - name: https-redirect-route
+      match:
+        - scheme:
+            exact: http
+      redirect:
+        scheme: https
+        port: {{ .Values.argoflow.gateway.ports.https | int }}
+        redirectCode: 302
+{{- end }}

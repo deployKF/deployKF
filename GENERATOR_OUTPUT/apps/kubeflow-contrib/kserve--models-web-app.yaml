@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kf-contrib--kserve--models-web-app
+  namespace: "argocd"
+  labels:
+    app.kubernetes.io/name: kserve
+    app.kubernetes.io/component: kubeflow-contrib
+    app.kubernetes.io/part-of: kubeflow
+spec:
+  project: "default"
+  source:
+    repoURL: "https://github.com/deployKF/deployKF"
+    targetRevision: "rewrite"
+    path: "GENERATOR_OUTPUT/src/kubeflow-contrib/kserve/models-web-app"
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: kubeflow

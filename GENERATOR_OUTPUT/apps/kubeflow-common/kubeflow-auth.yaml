@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kf-common--kubeflow-auth
+  namespace: "argocd"
+  labels:
+    app.kubernetes.io/name: kubeflow-auth
+    app.kubernetes.io/component: kubeflow-common
+    app.kubernetes.io/part-of: kubeflow
+spec:
+  project: "default"
+  source:
+    repoURL: "https://github.com/deployKF/deployKF"
+    targetRevision: "rewrite"
+    path: "GENERATOR_OUTPUT/src/kubeflow-common/kubeflow-auth"
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: "kubeflow-auth"

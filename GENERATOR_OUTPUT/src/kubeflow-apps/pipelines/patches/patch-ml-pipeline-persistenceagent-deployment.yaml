@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-pipeline-persistenceagent
+spec:
+  template:
+    spec:
+      containers:
+        - name: ml-pipeline-persistenceagent
+          env:
+            ## ================================
+            ## UserID Configs
+            ## ================================
+            - name: KUBEFLOW_USERID_HEADER
+              value: null
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: USERID_HEADER
+            - name: KUBEFLOW_USERID_PREFIX
+              value: null
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: USERID_PREFIX

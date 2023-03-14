@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-pipeline-ui
+spec:
+  template:
+    spec:
+      containers:
+        - name: ml-pipeline-ui
+          env:
+            ## TODO: consider supporting the argo "log archive" feature (disabled by default)
+            ##       https://github.com/kubeflow/pipelines/blob/2.0.0-alpha.5/frontend/server/configs.ts#L83-L91
+
+            ## ================================
+            ## UserID Configs
+            ## ================================
+            - name: KUBEFLOW_USERID_HEADER
+              value: null
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: USERID_HEADER
+            - name: KUBEFLOW_USERID_PREFIX
+              value: null
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: USERID_PREFIX
+
+            ## TODO: explain why we set configs for both Minio & S3, and ensure its actually necessary.
+            ##       (it's mostly to prevent us having to ask the users what kind of object store their endpoint is)
+
+            ## ================================
+            ## Minio - Object Store Configs
+            ## ================================
+            - name: MINIO_NAMESPACE
+              ## must be empty, or kubeflow pipelines will attempt to append the namespace to MINIO_HOST
+              value: ""
+            - name: MINIO_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: bucketHost
+            - name: MINIO_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: bucketPort
+            - name: MINIO_SSL
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: bucketSecure
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "minio-root-user"
+                  key: "username"
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "minio-root-user"
+                  key: "password"
+
+            ## ================================
+            ## S3 - Object Store Configs
+            ## ================================
+            - name: AWS_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: bucketRegion
+            - name: AWS_S3_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: bucketEndpoint
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: "minio-root-user"
+                  key: "username"
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: "minio-root-user"
+                  key: "password"
+
+            ## ================================
+            ## Other Configs
+            ## ================================
+            ## we must explicitly disable calls to the GKE metadata API, as many users are not on GKE
+            ## https://github.com/kubeflow/pipelines/issues/3070
+            - name: DISABLE_GKE_METADATA
+              value: "true"

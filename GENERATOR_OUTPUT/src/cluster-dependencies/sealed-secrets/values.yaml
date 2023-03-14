@@ -1,0 +1,9 @@
+## as we reference the "sealed-secrets" chart (https://bitnami-labs.github.io/sealed-secrets) in `dependencies` of Chart.yaml,
+## we must indent our values under `sealed-secrets:` in this file
+sealed-secrets:
+  fullnameOverride: sealed-secrets
+
+  image:
+    registry: docker.io
+    repository: bitnami/sealed-secrets-controller
+    #tag: latest

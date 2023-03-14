@@ -1,0 +1,206 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  labels:
+    helm.sh/chart: {{ include "kubeflow-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-minio.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: minio
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "kubeflow-minio.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: minio
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "kubeflow-minio.labels.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: minio
+    spec:
+      {{- if .Values.minio.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.minio.image.pullSecret }}
+      {{- end }}
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      serviceAccountName: minio
+      securityContext: {}
+      ## TODO: replace the "wait" in the container start command with an init-container that actually checks resolvability
+      initContainers: []
+      containers:
+        - name: minio
+          image: {{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}
+          imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
+          securityContext:
+            ## TODO: we must manually trust our self-signed CAs until an issue with minio console is fixed
+            ##       https://github.com/minio/console/issues/2681
+            runAsUser: 0
+            #runAsUser: {{ .Values.minio.image.uid }}
+            runAsGroup: {{ .Values.minio.image.gid }}
+          {{- if .Values.minio.resources }}
+          resources:
+            {{- toYaml .Values.minio.resources | nindent 12 }}
+          {{- end }}
+          env:
+            ## minio - root credentials
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.minio.rootUser.existingSecret }}
+                  name: {{ .Values.minio.rootUser.existingSecret | quote }}
+                  key: {{ .Values.minio.rootUser.existingSecretUsernameKey | quote }}
+                  {{- else }}
+                  name: minio-root-user
+                  key: username
+                  {{- end }}
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.minio.rootUser.existingSecret }}
+                  name: {{ .Values.minio.rootUser.existingSecret | quote }}
+                  key: {{ .Values.minio.rootUser.existingSecretPasswordKey | quote }}
+                  {{- else }}
+                  name: minio-root-user
+                  key: password
+                  {{- end }}
+
+            ## minio - console
+            - name: MINIO_BROWSER_REDIRECT_URL
+              {{- if .Values.argoflow.gateway.tls.enabled }}
+              value: "https://minio-console.{{ .Values.argoflow_helpers.kubeflow_gateway.https_endpoint }}"
+              {{- else }}
+              value: "http://minio-console.{{ .Values.argoflow_helpers.kubeflow_gateway.http_endpoint }}"
+              {{- end }}
+
+            ## minio - openid
+            - name: MINIO_IDENTITY_OPENID_CONFIG_URL
+              {{- if .Values.argoflow.gateway.tls.enabled }}
+              value: "https://{{ .Values.argoflow_helpers.kubeflow_gateway.https_endpoint }}/dex/.well-known/openid-configuration"
+              {{- else }}
+              value: "http://{{ .Values.argoflow_helpers.kubeflow_gateway.http_endpoint }}/dex/.well-known/openid-configuration"
+              {{- end }}
+            - name: MINIO_IDENTITY_OPENID_CLIENT_ID
+              value: {{ .Values.minio.identity.openid.clientId | quote }}
+            - name: MINIO_IDENTITY_OPENID_CLIENT_SECRET
+              {{- if .Values.minio.identity.openid.clientSecret.existingSecret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.minio.identity.openid.clientSecret.existingSecret | quote }}
+                  key: {{ .Values.minio.identity.openid.clientSecret.existingSecretKey | quote }}
+              {{- else }}
+              value: {{ .Values.minio.identity.openid.clientSecret.value | quote }}
+              {{- end }}
+            - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
+              value: {{ .Values.minio.identity.openid.policyClaim | quote }}
+            - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
+              {{- if .Values.argoflow.gateway.tls.enabled }}
+              value: "https://minio-console.{{ .Values.argoflow_helpers.kubeflow_gateway.https_endpoint }}/oauth_callback"
+              {{- else }}
+              value: "http://minio-console.{{ .Values.argoflow_helpers.kubeflow_gateway.http_endpoint }}/oauth_callback"
+              {{- end }}
+          command:
+            - "/bin/bash"
+            - "-c"
+          args:
+            ## TODO: ensure that the "wait" is still required in newer istio
+            ##
+            ## TODO: we must manually trust our self-signed CAs until an issue with minio console is fixed
+            ##       https://github.com/minio/console/issues/2681
+            - |
+              ## wait for "DNS Proxy" entries to propagate,
+              ## if Minio's initial OPENID check fails, it never tries again
+              echo "Waiting 10s for Istio DNS Proxy"
+              for run in {1..10}; do
+                echo ".";
+                sleep 1;
+              done
+
+              echo "Updating CA Trust"
+              update-ca-trust
+
+              ## run minio
+              exec /usr/bin/docker-entrypoint.sh \
+                minio server \
+                  "/minio-data" \
+                  --address=:9000 \
+                  --console-address=:9001 \
+                  --certs-dir=/etc/minio/certs/
+          ports:
+            - name: http-api
+              containerPort: 9000
+              protocol: TCP
+            - name: http-console
+              containerPort: 9001
+              protocol: TCP
+          livenessProbe:
+            ## TODO: tune & make values
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 5
+            httpGet:
+              path: /minio/health/live
+              port: http-api
+          readinessProbe:
+            ## TODO: tune & make values
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 5
+            httpGet:
+              path: /minio/health/live
+              port: http-api
+          volumeMounts:
+            {{- if .Values.minio.persistence.enabled }}
+            - name: minio-data
+              mountPath: "/minio-data"
+              {{- if .Values.minio.persistence.subPath }}
+              subPath: {{ .Values.minio.persistence.subPath | quote }}
+              {{- end }}
+            {{- else }}
+            - name: minio-data
+              mountPath: "/minio-data"
+            {{- end }}
+            {{- if .Values.argoflow_helpers.kubeflow_gateway.is_self_signed_cert }}
+            ## TODO: check if minio needs to restart is CA cert changes
+            - name: gateway-root-ca-cert
+              mountPath: "/etc/minio/certs/CAs/"
+              readOnly: true
+            ## TODO: we must manually trust our self-signed CAs until an issue with minio console is fixed
+            ##       https://github.com/minio/console/issues/2681
+            - name: gateway-root-ca-cert
+              mountPath: "/etc/pki/ca-trust/source/anchors/"
+              readOnly: true
+            {{- end }}
+      volumes:
+        {{- if .Values.minio.persistence.enabled }}
+        - name: minio-data
+          persistentVolumeClaim:
+            {{- if .Values.minio.persistence.existingClaim }}
+            claimName: {{ .Values.minio.persistence.existingClaim | quote }}
+            {{- else }}
+            claimName: minio-data
+            {{- end }}
+        {{- else }}
+        - name: minio-data
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.argoflow_helpers.kubeflow_gateway.is_self_signed_cert }}
+        - name: gateway-root-ca-cert
+          configMap:
+            name: {{ .Values.argoflow.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}
+            items:
+              - key: root-cert.pem
+                path: root-cert.pem
+        {{- end }}

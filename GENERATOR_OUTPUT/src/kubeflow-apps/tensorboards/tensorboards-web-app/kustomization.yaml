@@ -1,0 +1,38 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: kubeflow
+
+resources:
+  - github.com/kubeflow/manifests/apps/tensorboard/tensorboards-web-app/upstream/overlays/istio?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
+
+patchesStrategicMerge:
+  - patches/patch-tensorboards-web-app-virtualservice.yaml
+
+configMapGenerator:
+  - name: parameters
+    behavior: merge
+    literals:
+      - TWA_CLUSTER_DOMAIN="cluster.local"
+      - TWA_USERID_HEADER="kubeflow-userid"
+      - TWA_USERID_PREFIX=""
+      - TWA_PREFIX="/tensorboards"
+      - TWA_APP_SECURE_COOKIES="true"
+
+images:
+  - name: docker.io/kubeflownotebookswg/tensorboards-web-app
+    newName: docker.io/kubeflownotebookswg/tensorboards-web-app
+    newTag: v1.6.1
+
+vars:
+  ## NOTE: the upstream v1.6.1 manifests forgot to set TWA_APP_SECURE_COOKIES as a variable,
+  ##       so we fix it temporarily here (fixed in https://github.com/kubeflow/kubeflow/pull/6688)
+  - name: TWA_APP_SECURE_COOKIES
+    objref:
+      apiVersion: v1
+      kind: ConfigMap
+      name: parameters
+    fieldref:
+      fieldpath: data.TWA_APP_SECURE_COOKIES

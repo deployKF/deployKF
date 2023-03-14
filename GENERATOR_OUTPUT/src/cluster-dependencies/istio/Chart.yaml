@@ -1,0 +1,12 @@
+apiVersion: v2
+name: cluster-dependencies--istio
+version: 1.0.0
+dependencies:
+  - name: base
+    alias: istio-base
+    version: 1.14.6
+    repository: https://istio-release.storage.googleapis.com/charts
+  - name: istiod
+    alias: istio-discovery
+    version: 1.14.6
+    repository: https://istio-release.storage.googleapis.com/charts

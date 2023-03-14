@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: minio-console
+  labels:
+    helm.sh/chart: {{ include "kubeflow-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-minio.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: minio
+spec:
+  gateways:
+    - {{ .Values.argoflow.gateway.namespace }}/{{ .Values.argoflow.gateway.name }}
+  hosts:
+    - minio-console.{{ .Values.argoflow.gateway.hostname }}
+  http:
+    - name: minio-console-route
+      route:
+        - destination:
+            host: minio-console.{{ .Release.Namespace }}.svc.{{ .Values.argoflow.clusterDomain }}
+            port:
+              number: 9001

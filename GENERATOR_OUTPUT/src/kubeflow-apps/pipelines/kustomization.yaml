@@ -1,0 +1,138 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: kubeflow
+
+resources:
+  - github.com/kubeflow/manifests/apps/pipeline/upstream/env/platform-agnostic-multi-user?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
+  - resources/create-cache-database-job.yaml
+  - resources/create-metadata-database-job.yaml
+  - resources/create-pipeline-database-job.yaml
+  - resources/generate-profile-resources-clusterpolicy.yaml
+  - resources/clone-bucket-secret-clusterpolicy.yaml
+  - resources/pipelines-mysql-secret.yaml
+
+patchesStrategicMerge:
+  - patches/patch-cache-server-deployment.yaml
+  - patches/patch-metadata-grpc-deployment-deployment.yaml
+  - patches/patch-metadata-grpc-virtualservice.yaml
+  - patches/patch-ml-pipeline-deployment.yaml
+  - patches/patch-ml-pipeline-persistenceagent-deployment.yaml
+  - patches/patch-ml-pipeline-ui-authorizationpolicy.yaml
+  - patches/patch-ml-pipeline-ui-deployment.yaml
+  - patches/patch-ml-pipeline-ui-virtualservice.yaml
+
+  ## removals
+  - patches/removals/argo-workflows-resources.yaml
+  - patches/removals/metacontroller-resources.yaml
+  - patches/removals/minio-resources.yaml
+  - patches/removals/mysql-resources.yaml
+  - patches/removals/profile-controller-resources.yaml
+
+configMapGenerator:
+  - name: pipeline-install-config
+    behavior: merge
+    literals:
+      ## TODO: using the config-map for configs, will prevent the automatic restart of pods when they change
+      ##       perhaps we should just use gomplate to directly template the values in
+
+      ## ================================
+      ## UserID Configs
+      ## ================================
+      - USERID_HEADER="kubeflow-userid"
+      - USERID_PREFIX=""
+
+      ## ================================
+      ## App Configs
+      ## ================================
+      - appName="pipeline"
+      #- appVersion="2.0.0-alpha.5"
+      - autoUpdatePipelineDefaultVersion="true"
+      - cronScheduleTimezone="UTC"
+      ## TODO: ensure this has gomplate values, and is actually used in the manifests
+      - cacheImage="gcr.io/google-containers/busybox"
+      - cacheNodeRestrictions="false"
+
+      ## ================================
+      ## Bucket Configs
+      ## ================================
+      - bucketName="kubeflow-pipelines"
+      - bucketRegion=""
+
+      ## ================================
+      ## Object Store Configs
+      ## ================================
+      ## TODO: we have removed ConfigMap/kfp-launcher from profile controller, is `defaultPipelineRoot` needed?
+      ##       (it seems to be related to launcher_v2.go)
+      - defaultPipelineRoot=""
+      - bucketSecure="false"
+      - bucketHost="minio-api.kubeflow-minio.svc.cluster.local"
+      - bucketPort="9000"
+      - bucketEndpoint="minio-api.kubeflow-minio.svc.cluster.local:9000"
+
+      ## ================================
+      ## UserID Configs
+      ## ================================
+      - ConMaxLifeTime="120s"
+      - dbHost="kubeflow-mysql.kubeflow-mysql.svc.cluster.local"
+      - dbPort="3306"
+      - cacheDb="kfp_cache"
+      - mlmdDb="kfp_metadata"
+      - pipelineDb="kfp_pipelines"
+
+  - name: ml-pipeline-ui-configmap
+    behavior: merge
+    files:
+      - files/viewer-pod-template.json
+
+images:
+  - name: gcr.io/ml-pipeline/cache-deployer
+    newName: gcr.io/ml-pipeline/cache-deployer
+    newTag: 2.0.0-alpha.5
+  - name: gcr.io/ml-pipeline/cache-server
+    newName: gcr.io/ml-pipeline/cache-server
+    newTag: 2.0.0-alpha.5
+  - name: gcr.io/ml-pipeline/metadata-envoy
+    newName: gcr.io/ml-pipeline/metadata-envoy
+    newTag: 2.0.0-alpha.5
+  - name: gcr.io/ml-pipeline/metadata-writer
+    newName: gcr.io/ml-pipeline/metadata-writer
+    newTag: 2.0.0-alpha.5
+  - name: gcr.io/ml-pipeline/api-server
+    newName: gcr.io/ml-pipeline/api-server
+    newTag: 2.0.0-alpha.5
+  - name: gcr.io/ml-pipeline/persistenceagent
+    newName: gcr.io/ml-pipeline/persistenceagent
+    newTag: 2.0.0-alpha.5
+  - name: gcr.io/ml-pipeline/scheduledworkflow
+    newName: gcr.io/ml-pipeline/scheduledworkflow
+    newTag: 2.0.0-alpha.5
+  - name: gcr.io/ml-pipeline/frontend
+    newName: gcr.io/ml-pipeline/frontend
+    newTag: 2.0.0-alpha.5
+  - name: gcr.io/ml-pipeline/viewer-crd-controller
+    newName: gcr.io/ml-pipeline/viewer-crd-controller
+    newTag: 2.0.0-alpha.5
+  - name: gcr.io/ml-pipeline/visualization-server
+    newName: gcr.io/ml-pipeline/visualization-server
+    newTag: 2.0.0-alpha.5
+
+  ## NOTE: these image tags are separate to Kubeflow Pipelines itself
+  - name: gcr.io/ml-pipeline/argoexec
+    newName: gcr.io/ml-pipeline/argoexec
+    newTag: v3.3.8-license-compliance
+  - name: gcr.io/ml-pipeline/workflow-controller
+    newName: gcr.io/ml-pipeline/workflow-controller
+    newTag: v3.3.8-license-compliance
+
+  ## NOTE: this image tag is separate to Kubeflow Pipelines itself
+  - name: gcr.io/tfx-oss-public/ml_metadata_store_server
+    newName: gcr.io/tfx-oss-public/ml_metadata_store_server
+    newTag: 1.5.0
+
+  ## NOTE: this image tag is separate to Kubeflow Pipelines itself
+  - name: public.ecr.aws/atcommons/utils/mysql-db-creator
+    newName: public.ecr.aws/atcommons/utils/mysql-db-creator
+    newTag: latest

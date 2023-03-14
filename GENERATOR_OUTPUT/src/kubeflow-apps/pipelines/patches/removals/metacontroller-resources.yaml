@@ -1,0 +1,46 @@
+## NOTE: this will remove all resources related to metacontroller
+---
+$patch: delete
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: compositecontrollers.metacontroller.k8s.io
+---
+$patch: delete
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: controllerrevisions.metacontroller.k8s.io
+---
+$patch: delete
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: decoratorcontrollers.metacontroller.k8s.io
+---
+$patch: delete
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: meta-controller-service
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: meta-controller-cluster-role-binding
+---
+$patch: delete
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: metacontroller
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: metacontroller.k8s.io/v1alpha1
+kind: CompositeController
+metadata:
+  name: kubeflow-pipelines-profile-controller
+  namespace: kubeflow

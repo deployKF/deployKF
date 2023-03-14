@@ -1,0 +1,39 @@
+## NOTE: this will remove all resources related to the baked-in MinIO cluster
+---
+$patch: delete
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+---
+$patch: delete
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-pvc
+---
+$patch: delete
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio-service
+---
+$patch: delete
+kind: Secret
+apiVersion: v1
+metadata:
+  name: mlpipeline-minio-artifact
+---
+$patch: delete
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: minio-service
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: ml-pipeline-minio
+  namespace: kubeflow

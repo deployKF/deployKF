@@ -1,0 +1,76 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: kubeflow
+
+resources:
+  ## NOTE: this points to the `kserve/kserve` repo, not the `kubeflow/manifests` (because it's a contrib app)
+  - github.com/kserve/kserve/config/overlays/kubeflow?ref=48146646d76a133da09bf65f1c84f69df9e2a0e6 # tag=v0.8.0
+
+patchesStrategicMerge:
+  - patches/patch-inferenceservice-config.yaml
+
+configMapGenerator:
+  - name: kserve-config
+    behavior: merge
+    literals:
+      - ingressDomain="kubeflow.example.com"
+      - istioGatewayNamespace="kubeflow-istio-gateway"
+      - istioGatewayName="kubeflow-gateway"
+      - istioGatewayServiceName="kubeflow-gateway"
+      - knativeGatewayNamespace="knative-serving"
+      - knativeGatewayName="knative-local-gateway"
+
+images:
+  - name: kserve/kserve-controller
+    newName: kserve/kserve-controller
+    newTag: v0.8.0
+
+vars:
+  - name: ingressDomain
+    objref:
+      kind: ConfigMap
+      name: kserve-config
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.ingressDomain
+  - name: istioGatewayNamespace
+    objref:
+      kind: ConfigMap
+      name: kserve-config
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.istioGatewayNamespace
+  - name: istioGatewayName
+    objref:
+      kind: ConfigMap
+      name: kserve-config
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.istioGatewayName
+  - name: istioGatewayServiceName
+    objref:
+      kind: ConfigMap
+      name: kserve-config
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.istioGatewayServiceName
+  - name: knativeGatewayNamespace
+    objref:
+      kind: ConfigMap
+      name: kserve-config
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.knativeGatewayNamespace
+  - name: knativeGatewayName
+    objref:
+      kind: ConfigMap
+      name: kserve-config
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.knativeGatewayName
+
+configurations:
+  - configurations.yaml

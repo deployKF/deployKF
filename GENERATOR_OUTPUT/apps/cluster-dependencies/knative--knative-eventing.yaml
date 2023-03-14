@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kf-dep--knative--knative-eventing
+  namespace: "argocd"
+  labels:
+    app.kubernetes.io/name: knative-eventing
+    app.kubernetes.io/component: cluster-dependencies
+    app.kubernetes.io/part-of: kubeflow
+spec:
+  project: "default"
+  source:
+    repoURL: "https://github.com/deployKF/deployKF"
+    targetRevision: "rewrite"
+    path: "GENERATOR_OUTPUT/src/cluster-dependencies/knative-eventing"
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: "knative-eventing"

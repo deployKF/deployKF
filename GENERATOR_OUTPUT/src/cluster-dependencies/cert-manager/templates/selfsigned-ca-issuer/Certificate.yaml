@@ -1,0 +1,17 @@
+{{- if and (.Values.argoflow.certManager.clusterIssuer.enabled) (eq .Values.argoflow.certManager.clusterIssuer.type "SELF_SIGNED") }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.argoflow.certManager.clusterIssuer.selfSigned.caIssuerName | quote }}
+spec:
+  isCA: true
+  commonName: {{ .Values.argoflow.certManager.clusterIssuer.selfSigned.caIssuerName | quote }}
+  secretName: {{ .Values.argoflow.certManager.clusterIssuer.selfSigned.caSecretName | quote }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: {{ .Values.argoflow.certManager.clusterIssuer.selfSigned.caIssuerName | quote }}
+    kind: Issuer
+    group: cert-manager.io
+{{- end }}

@@ -1,0 +1,82 @@
+argoflow:
+
+  certManager:
+    clusterIssuer:
+      enabled: true
+      issuerName: "kubeflow-gateway-issuer"
+      type: "SELF_SIGNED"
+      selfSigned:
+        caIssuerName: "selfsigned-ca-issuer"
+        caSecretName: "selfsigned-ca-issuer-root-cert"
+        injectedConfigMapName: "kubeflow-gateway-issuer-root-ca-cert"
+
+## as we reference the "cert-manager" chart (https://charts.jetstack.io) in `dependencies` of Chart.yaml,
+## we must indent our values under `cert-manager:` in this file
+cert-manager:
+  fullnameOverride: cert-manager
+
+  installCRDs: true
+
+  replicaCount: 1
+
+  image:
+    repository: quay.io/jetstack/cert-manager-controller
+    #tag: latest
+
+  securityContext:
+    # TODO: document using with AWS IRSA: https://cert-manager.io/docs/configuration/acme/dns01/route53/
+    fsGroup: 65534
+
+  serviceAccount:
+    create: true
+    name: "cert-manager"
+    # TODO: document using with AWS IRSA: https://cert-manager.io/docs/configuration/acme/dns01/route53/
+    annotations: {}
+
+  extraArgs:
+    # When this flag is enabled, secrets will be automatically removed when the certificate resource is deleted
+    - --enable-certificate-owner-ref=true
+
+  prometheus:
+    enabled: false
+
+  webhook:
+    replicaCount: 1
+    image:
+      repository: quay.io/jetstack/cert-manager-webhook
+      #tag: latest
+
+  cainjector:
+    enabled: true
+    replicaCount: 1
+    image:
+      repository: quay.io/jetstack/cert-manager-cainjector
+      #tag: latest
+
+  acmesolver:
+    image:
+      repository: quay.io/jetstack/cert-manager-acmesolver
+      #tag: latest
+
+  startupapicheck:
+    enabled: true
+    image:
+      repository: quay.io/jetstack/cert-manager-ctl
+      #tag: latest
+
+## as we reference the "trust-manager" chart (https://charts.jetstack.io) in `dependencies` of Chart.yaml,
+## we must indent our values under `trust-manager:` in this file
+trust-manager:
+  replicaCount: 1
+
+  image:
+    repository: quay.io/jetstack/trust-manager
+    #tag: latest
+
+  defaultPackageImage:
+    repository: quay.io/jetstack/cert-manager-package-debian
+    #tag: latest
+
+  app:
+    trust:
+      namespace: "cert-manager"

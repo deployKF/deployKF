@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-pipeline
+spec:
+  template:
+    spec:
+      containers:
+        - name: ml-pipeline-api-server
+          env:
+            ## ================================
+            ## UserID Configs
+            ## ================================
+            - name: KUBEFLOW_USERID_HEADER
+              value: null
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: USERID_HEADER
+            - name: KUBEFLOW_USERID_PREFIX
+              value: null
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: USERID_PREFIX
+
+            ## ================================
+            ## MySQL Secrets
+            ## ================================
+            - name: DBCONFIG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: pipelines-mysql-secret
+                  key: username
+            - name: DBCONFIG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pipelines-mysql-secret
+                  key: password
+
+            ## ================================
+            ## Bucket Configs
+            ## ================================
+            - name: OBJECTSTORECONFIG_BUCKETNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: bucketName
+            - name: OBJECTSTORECONFIG_REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: bucketRegion
+
+            ## ================================
+            ## Object Store Configs
+            ## ================================
+            - name: OBJECTSTORECONFIG_SECURE
+              value: null
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: bucketSecure
+            - name: OBJECTSTORECONFIG_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: bucketHost
+            - name: OBJECTSTORECONFIG_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: bucketPort
+            - name: OBJECTSTORECONFIG_ACCESSKEY
+              valueFrom:
+                secretKeyRef:
+                  name: "minio-root-user"
+                  key: "username"
+            - name: OBJECTSTORECONFIG_SECRETACCESSKEY
+              valueFrom:
+                secretKeyRef:
+                  name: "minio-root-user"
+                  key: "password"

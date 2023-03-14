@@ -1,0 +1,22 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: argo-workflow-controller-allow
+  labels:
+    helm.sh/chart: {{ include "kubeflow-argo-workflows.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: argo
+    app.kubernetes.io/sub-component: workflow-controller
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: argo
+      app.kubernetes.io/sub-component: workflow-controller
+  ## setting `[]` means no requests will match this policy
+  rules: []

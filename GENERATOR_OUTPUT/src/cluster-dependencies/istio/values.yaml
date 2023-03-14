@@ -1,0 +1,49 @@
+global:
+  istioNamespace: "istio-system"
+
+  #imagePullPolicy: IfNotPresent
+  #imagePullSecrets: []
+  #hub: docker.io/istio
+  #tag: latest
+  #proxy:
+  #  image: proxyv2
+  #  clusterDomain: cluster.local
+  #proxy_init:
+  #  image: proxyv2
+
+
+## we reference the "base" chart (https://istio-release.storage.googleapis.com/charts) in `dependencies` of Chart.yaml,
+## with an alias of "istio-base", so we must indent the values for "base" under `istio-base`
+istio-base: {}
+
+
+## we reference the "istiod" chart (https://istio-release.storage.googleapis.com/charts) in `dependencies` of Chart.yaml,
+## with an alias of "istio-discovery", so we must indent the values for "istiod" under `istio-discovery`
+istio-discovery:
+  pilot:
+    #hub: docker.io/istio
+    #tag: latest
+    #image: pilot
+
+  sidecarInjectorWebhook:
+    enableNamespacesByDefault: false
+    #injectedAnnotations:
+    #  cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+
+  meshConfig:
+    trustDomain: cluster.local
+    #enablePrometheusMerge: true
+
+    ## TODO: disable after development (prints all istio access logs to STDOUT)
+    accessLogFile: /dev/stdout
+
+    ## enable the istio "DNS Proxying" feature
+    ## (allows this Pods to reference the kubeflow-istio-gateway using the DNS name from its ServiceEntry)
+    defaultConfig:
+      proxyMetadata:
+        ISTIO_META_DNS_CAPTURE: "true"
+        ISTIO_META_DNS_AUTO_ALLOCATE: "true"
+
+      ## TODO: if this works, write a doc explaining that this is needed to prevent a race-condition
+      ##       where the DNS is not available from istio until a few seconds after the pods starts
+      holdApplicationUntilProxyStarts: true

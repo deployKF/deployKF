@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kf-app--tensorboards--tensorboards-web-app
+  namespace: "argocd"
+  labels:
+    app.kubernetes.io/name: tensorboards-web-app
+    app.kubernetes.io/component: kubeflow-apps
+    app.kubernetes.io/part-of: kubeflow
+spec:
+  project: "default"
+  source:
+    repoURL: "https://github.com/deployKF/deployKF"
+    targetRevision: "rewrite"
+    path: "GENERATOR_OUTPUT/src/kubeflow-apps/tensorboards/tensorboards-web-app"
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: kubeflow

@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: kubeflow
+
+resources:
+  - github.com/kubeflow/manifests/apps/tensorboard/tensorboard-controller/upstream/overlays/kubeflow?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
+
+configMapGenerator:
+  - name: tensorboard-controller-config
+    behavior: merge
+    literals:
+      - ISTIO_GATEWAY="kubeflow-istio-gateway/kubeflow-gateway"
+      - RWO_PVC_SCHEDULING="True"
+      #- TENSORBOARD_IMAGE="tensorflow/tensorflow:2.1.0"
+
+images:
+  - name: docker.io/kubeflownotebookswg/tensorboard-controller
+    newName: docker.io/kubeflownotebookswg/tensorboard-controller
+    newTag: v1.6.1
+  - name: gcr.io/kubebuilder/kube-rbac-proxy
+    newName: gcr.io/kubebuilder/kube-rbac-proxy
+    newTag: v0.8.0

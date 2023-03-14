@@ -1,0 +1,130 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dex
+  labels:
+    helm.sh/chart: {{ include "kubeflow-auth.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-auth.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: dex
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "kubeflow-auth.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: dex
+  template:
+    metadata:
+      annotations:
+        checksum/secret-dex: {{ include (print $.Template.BasePath "/dex/Secret-config.yaml") . | sha256sum }}
+        checksum/secret-oauth2-proxy: {{ include (print $.Template.BasePath "/oauth2-proxy/Secret-config.yaml") . | sha256sum }}
+      labels:
+        app.kubernetes.io/name: {{ include "kubeflow-auth.labels.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: dex
+    spec:
+      {{- if .Values.dex.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.dex.image.pullSecret }}
+      {{- end }}
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      serviceAccountName: dex
+      securityContext: {}
+      containers:
+        - name: dex
+          image: {{ .Values.dex.image.repository }}:{{ .Values.dex.image.tag }}
+          imagePullPolicy: {{ .Values.dex.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.dex.image.uid }}
+            runAsGroup: {{ .Values.dex.image.gid }}
+          {{- if .Values.dex.resources }}
+          resources:
+            {{- toYaml .Values.dex.resources | nindent 12 }}
+          {{- end }}
+          env:
+            ## the official dex image supports using gomplate to template its config file
+            ## we set unique gomplate delimiters (so we don't have to escape them inside our helm templates)
+            - name: GOMPLATE_LEFT_DELIM
+              value: "<<"
+            - name: GOMPLATE_RIGHT_DELIM
+              value: ">>"
+
+            - name: CONFIG__STATIC_PASSWORDS
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.dex.staticPasswords.existingSecret }}
+                  name: {{ .Values.dex.staticPasswords.existingSecret | quote }}
+                  key: {{ .Values.dex.staticPasswords.existingSecretKey | quote }}
+                  {{- else }}
+                  name: dex-config
+                  key: static_passwords
+                  {{- end }}
+            - name: CONFIG__CONNECTORS
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.dex.connectors.existingSecret }}
+                  name: {{ .Values.dex.connectors.existingSecret | quote }}
+                  key: {{ .Values.dex.connectors.existingSecretKey | quote }}
+                  {{- else }}
+                  name:  dex-config
+                  key: connectors
+                  {{- end }}
+
+            ## TODO: make pod restart when secret changes to get updates (probably using sidecar to check)
+            {{- if .Values.dex.clients.oauth2Proxy.clientSecret.existingSecret }}
+            - name: CONFIG__CLIENT_SECRET__OAUTH2_PROXY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.dex.clients.oauth2Proxy.clientSecret.existingSecret | quote }}
+                  key: {{ .Values.dex.clients.oauth2Proxy.clientSecret.existingSecretKey | quote }}
+            {{- end }}
+            {{- if .Values.dex.clients.minio.clientSecret.existingSecret }}
+            - name: CONFIG__CLIENT_SECRET__MINIO
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.dex.clients.minio.clientSecret.existingSecret | quote }}
+                  key: {{ .Values.dex.clients.minio.clientSecret.existingSecretKey | quote }}
+            {{- end }}
+            {{- if .Values.dex.clients.argoServer.clientSecret.existingSecret }}
+            - name: CONFIG__CLIENT_SECRET__ARGO_SERVER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.dex.clients.argoServer.clientSecret.existingSecret | quote }}
+                  key: {{ .Values.dex.clients.argoServer.clientSecret.existingSecretKey | quote }}
+            {{- end }}
+          args:
+            - "dex"
+            - "serve"
+            - "/etc/dex/config.yaml"
+          ports:
+            - name: http
+              containerPort: 5556
+              protocol: TCP
+            - name: telemetry
+              containerPort: 5558
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            httpGet:
+              path: /healthz/live
+              port: telemetry
+          readinessProbe:
+            httpGet:
+              path: /healthz/ready
+              port: telemetry
+          volumeMounts:
+            - name: dex-config
+              mountPath: /etc/dex/config.yaml
+              subPath: config.yaml
+              readOnly: true
+      volumes:
+        - name: dex-config
+          secret:
+            secretName: dex-config

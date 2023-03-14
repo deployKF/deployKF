@@ -1,0 +1,71 @@
+argoflow:
+  kubeflow:
+    useridHeader: kubeflow-userid
+
+
+## details for the super-admin (which will be the OWNER of ALL profiles)
+##
+admin:
+  email: admin@example.com
+
+
+## details of user entities that can be referenced in `profiles.*.access_users`
+##
+users:
+
+  ## an example user called "person-1"
+  ##
+  person-1:
+    email: person-1@example.com
+
+  ## an example user called "person-2"
+  ##
+  person-2:
+    email: person-2@example.com
+
+
+## definitions of kubeflow profiles to generate
+##
+profiles:
+
+  ## an example profile called "team-1" with both "person-1" and "person-2"
+  ##
+  team-1:
+    usersWithAccess:
+      - person-1
+      - person-2
+
+    ## the resource quota for this profile
+    ## - spec for ResourceQuotaSpec:
+    ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcequotaspec-v1-core
+    ##
+    resourceQuotaSpec: {}
+
+    ## the list of plugins to apply to this profile
+    ##
+    ## ____ EXAMPLE _______________
+    ##  plugins:
+    ##    ## EKS IRSA plugin
+    ##    ##  https://github.com/kubeflow/kubeflow/blob/v1.6.1/components/profile-controller/controllers/plugin_iam.go#L30
+    ##    - kind: AwsIamForServiceAccount
+    ##      spec:
+    ##        awsIamRole: arn:aws:iam::000000000000:role/MY_ROLE_NAME
+    ##    ## GKE WorkloadIdentity plugin
+    ##    ##  https://github.com/kubeflow/kubeflow/blob/v1.6.1/components/profile-controller/controllers/plugin_workload_identity.go#L39
+    ##    - kind: WorkloadIdentity
+    ##      spec:
+    ##        gcpServiceAccount: SA_NAME@PROJECT_ID.iam.gserviceaccount.com
+    ##
+    plugins: []
+
+  ## an example profile called "user-person-1" with only "person-1"
+  ##
+  user-person-1:
+    usersWithAccess:
+      - person-1
+
+  ## an example profile called "user-person-2" with only "person-2"
+  ##
+  user-person-2:
+    usersWithAccess:
+      - person-2

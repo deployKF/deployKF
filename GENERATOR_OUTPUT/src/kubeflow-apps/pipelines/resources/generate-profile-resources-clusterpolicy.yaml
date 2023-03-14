@@ -1,0 +1,322 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: kubeflow-pipelines--generate-profile-resources
+spec:
+  generateExistingOnPolicyUpdate: true
+  rules:
+    ## TODO: create values to allow users to provide additional custom resources in each namespace
+    ##       (probably put these values in the profile controller app, rather than pipelines, as not all users will deploy pipelines)
+
+    ################################################################################
+    ## ConfigMap/metadata-grpc-configmap
+    ################################################################################
+    - name: ConfigMap--metadata-grpc-configmap
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: v1
+        kind: ConfigMap
+        name: metadata-grpc-configmap
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          data:
+            METADATA_GRPC_SERVICE_HOST: "metadata-grpc-service.kubeflow"
+            METADATA_GRPC_SERVICE_PORT: "8080"
+
+    ################################################################################
+    ## Deployment/ml-pipeline-visualizationserver
+    ################################################################################
+    - name: Deployment--ml-pipeline-visualizationserver
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: ml-pipeline-visualizationserver
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            labels:
+              app: ml-pipeline-visualizationserver
+          spec:
+            selector:
+              matchLabels:
+                app: ml-pipeline-visualizationserver
+            template:
+              metadata:
+                labels:
+                  app: ml-pipeline-visualizationserver
+              spec:
+                serviceAccountName: default-editor
+                containers:
+                  ## TODO: apply the gomplate image tag values
+                  - image: "gcr.io/ml-pipeline/visualization-server:2.0.0-alpha.5"
+                    imagePullPolicy: IfNotPresent
+                    name: ml-pipeline-visualizationserver
+                    ports:
+                      - containerPort: 8888
+                    resources:
+                      requests:
+                        cpu: 50m
+                        memory: 200Mi
+                      limits:
+                        cpu: 500m
+                        memory: 1Gi
+
+    ################################################################################
+    ## DestinationRule/ml-pipeline-visualizationserver
+    ################################################################################
+    - name: DestinationRule--ml-pipeline-visualizationserver
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: networking.istio.io/v1alpha3
+        kind: DestinationRule
+        name: ml-pipeline-visualizationserver
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          spec:
+            host: ml-pipeline-visualizationserver
+            trafficPolicy:
+              tls:
+                mode: ISTIO_MUTUAL
+
+    ################################################################################
+    ## AuthorizationPolicy/ml-pipeline-visualizationserver
+    ################################################################################
+    - name: AuthorizationPolicy--ml-pipeline-visualizationserver
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: security.istio.io/v1beta1
+        kind: AuthorizationPolicy
+        name: ml-pipeline-visualizationserver
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          spec:
+            selector:
+              matchLabels:
+                app: ml-pipeline-visualizationserver
+            rules:
+              - from:
+                  - source:
+                      principals:
+                        - cluster.local/ns/kubeflow/sa/ml-pipeline
+
+    ################################################################################
+    ## Service/ml-pipeline-visualizationserver
+    ################################################################################
+    - name: Service--ml-pipeline-visualizationserver
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: v1
+        kind: Service
+        name: ml-pipeline-visualizationserver
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          spec:
+            selector:
+              app: ml-pipeline-visualizationserver
+            ports:
+              - name: http
+                port: 8888
+                protocol: TCP
+                targetPort: 8888
+
+    ################################################################################
+    ## Deployment/ml-pipeline-ui-artifact
+    ################################################################################
+    - name: Deployment--ml-pipeline-ui-artifact
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: ml-pipeline-ui-artifact
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            labels:
+              app: ml-pipeline-ui-artifact
+          spec:
+            selector:
+              matchLabels:
+                app: ml-pipeline-ui-artifact
+            template:
+              metadata:
+                labels:
+                  app: ml-pipeline-ui-artifact
+              spec:
+                serviceAccountName: default-editor
+                containers:
+                  - name: ml-pipeline-ui-artifact
+                    ## TODO: apply the gomplate image tag values
+                    image: "gcr.io/ml-pipeline/frontend:2.0.0-alpha.5"
+                    imagePullPolicy: IfNotPresent
+                    ports:
+                      - containerPort: 3000
+                    resources:
+                      requests:
+                        cpu: 10m
+                        memory: 70Mi
+                      limits:
+                        cpu: 100m
+                        memory: 500Mi
+                    env:
+                      ## ================================
+                      ## Minio - Object Store Configs
+                      ## ================================
+                      - name: MINIO_NAMESPACE
+                        ## must be empty, or kubeflow pipelines will attempt to append the namespace to MINIO_HOST
+                        value: ""
+                      - name: MINIO_HOST
+                        value: "minio-api.kubeflow-minio.svc.cluster.local"
+                      - name: MINIO_PORT
+                        value: "9000"
+                      - name: MINIO_SSL
+                        value: "false"
+                      - name: MINIO_ACCESS_KEY
+                        valueFrom:
+                          secretKeyRef:
+                            name: "minio-root-user"
+                            key: "username"
+                      - name: MINIO_SECRET_KEY
+                        valueFrom:
+                          secretKeyRef:
+                            name: "minio-root-user"
+                            key: "password"
+
+                      ## ================================
+                      ## S3 - Object Store Configs
+                      ## ================================
+                      - name: AWS_REGION
+                        value: ""
+                      - name: AWS_S3_ENDPOINT
+                        value: "minio-api.kubeflow-minio.svc.cluster.local:9000"
+                      - name: AWS_ACCESS_KEY_ID
+                        valueFrom:
+                          secretKeyRef:
+                            name: "minio-root-user"
+                            key: "username"
+                      - name: AWS_SECRET_ACCESS_KEY
+                        valueFrom:
+                          secretKeyRef:
+                            name: "minio-root-user"
+                            key: "password"
+
+    ################################################################################
+    ## Service/ml-pipeline-ui-artifact
+    ################################################################################
+    - name: Service--ml-pipeline-ui-artifact
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: v1
+        kind: Service
+        name: ml-pipeline-ui-artifact
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            labels:
+              app: ml-pipeline-ui-artifact
+          spec:
+            selector:
+              app: ml-pipeline-ui-artifact
+            ports:
+              - name: http
+                port: 80
+                protocol: TCP
+                targetPort: 3000
+
+    ################################################################################
+    ## PodDefault/access-ml-pipeline
+    ################################################################################
+    ## TODO: make this optional to include (and explain how it works)
+    ##       https://www.kubeflow.org/docs/components/pipelines/v1/sdk/connect-api/#full-kubeflow-subfrom-inside-clustersub
+    - name: PodDefault--access-ml-pipeline
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: kubeflow.org/v1alpha1
+        kind: PodDefault
+        name: access-ml-pipeline
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          spec:
+            desc: "Allow access to Kubeflow Pipelines"
+            env:
+              - name: KF_PIPELINES_SA_TOKEN_PATH
+                value: "/var/run/secrets/ml-pipeline/token"
+            selector:
+              matchLabels:
+                access-ml-pipeline: 'true'
+            volumeMounts:
+              - mountPath: "/var/run/secrets/ml-pipeline"
+                name: volume-ml-pipeline-token
+                readOnly: true
+            volumes:
+              - name: volume-ml-pipeline-token
+                projected:
+                  sources:
+                    - serviceAccountToken:
+                        audience: pipelines.kubeflow.org
+                        expirationSeconds: 7200
+                        path: token

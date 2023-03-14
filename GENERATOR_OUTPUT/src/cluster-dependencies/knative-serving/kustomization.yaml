@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: "knative-serving"
+
+resources:
+  ## TODO: this will not work unless there is an Istio gateway deployment called "cluster-local-gateway"
+  ##       https://github.com/kubeflow/manifests/issues/1966
+  ##       https://github.com/kubeflow/manifests/tree/v1.6.1/common/istio-1-14/cluster-local-gateway/base
+  - github.com/kubeflow/manifests/common/knative/knative-serving/overlays/gateways?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
+
+configMapGenerator:
+  - name: config-istio
+    ## WARNING: this must be "knative-serving", even if installing into a different namespace
+    namespace: knative-serving
+    behavior: merge
+    literals:
+      - gateway.kubeflow.kubeflow-gateway="kubeflow-gateway.kubeflow-istio-gateway.svc.cluster.local"
+
+## TODO: images are not scaffolded here
+images: []

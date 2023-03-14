@@ -1,0 +1,115 @@
+{{- if .Values.minio.policies }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-create-policies
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    helm.sh/chart: {{ include "kubeflow-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-minio.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: minio
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "kubeflow-minio.labels.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: minio
+    spec:
+      restartPolicy: OnFailure
+      {{- if .Values.minio.mcImage.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.minio.mcImage.pullSecret }}
+      {{- end }}
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      serviceAccountName: minio
+      securityContext: {}
+      ## TODO: replace the "wait" in the container start command with an init-container that actually checks resolvability
+      initContainers: []
+      containers:
+        - name: create-policies
+          image: {{ .Values.minio.mcImage.repository }}:{{ .Values.minio.mcImage.tag }}
+          imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.minio.mcImage.uid }}
+            runAsGroup: {{ .Values.minio.mcImage.gid }}
+          command:
+            - "/bin/bash"
+            - "-c"
+          args:
+            - |
+              ## fail fast on error
+              set -e;
+
+              ## add an alias for the local minio server
+              mc alias set "myminio" \
+                {{- if .Values.argoflow.gateway.tls.enabled }}
+                {{ printf "https://minio-api.%s" .Values.argoflow_helpers.kubeflow_gateway.https_endpoint | quote }} \
+                {{- else }}
+                {{ printf "http://minio-api.%s" .Values.argoflow_helpers.kubeflow_gateway.http_endpoint | quote }} \
+                {{- end }}
+                "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD";
+
+              ## create or update the defined access policies
+              {{- range $policy := .Values.minio.policies }}
+              mc admin policy add "myminio" {{ $policy.name | quote }} {{ printf "/minio-policies/%s.json" $policy.name | quote }};
+              {{- end }}
+
+              ## we were successful, send quit command to istio-proxy sidecar
+              curl -sf -XPOST "http://127.0.0.1:15020/quitquitquit";
+          env:
+            ## minio - root credentials
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.minio.rootUser.existingSecret }}
+                  name: {{ .Values.minio.rootUser.existingSecret | quote }}
+                  key: {{ .Values.minio.rootUser.existingSecretUsernameKey | quote }}
+                  {{- else }}
+                  name: minio-root-user
+                  key: username
+                  {{- end }}
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.minio.rootUser.existingSecret }}
+                  name: {{ .Values.minio.rootUser.existingSecret | quote }}
+                  key: {{ .Values.minio.rootUser.existingSecretPasswordKey | quote }}
+                  {{- else }}
+                  name: minio-root-user
+                  key: password
+                  {{- end }}
+          volumeMounts:
+            - name: mc-config
+              ## we must mount a writable volume at the `/.mc/` path so that the `mc` command can store its configs
+              mountPath: "/.mc/"
+            - name: minio-policies
+              mountPath: "/minio-policies/"
+            {{- if .Values.argoflow_helpers.kubeflow_gateway.is_self_signed_cert }}
+            - name: gateway-root-ca-cert
+              mountPath: "/.mc/certs/CAs/"
+              readOnly: true
+            {{- end }}
+      volumes:
+        - name: mc-config
+          emptyDir: {}
+        - name: minio-policies
+          configMap:
+            name: minio-policies
+        {{- if .Values.argoflow_helpers.kubeflow_gateway.is_self_signed_cert }}
+        - name: gateway-root-ca-cert
+          configMap:
+            name: {{ .Values.argoflow.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}
+            items:
+              - key: root-cert.pem
+                path: root-cert.pem
+        {{- end }}
+{{- end }}

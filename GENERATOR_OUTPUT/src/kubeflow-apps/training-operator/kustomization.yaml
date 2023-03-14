@@ -1,0 +1,19 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: kubeflow
+
+resources:
+  - github.com/kubeflow/manifests/apps/training-operator/upstream/overlays/kubeflow?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
+
+patchesStrategicMerge:
+  ## NOTE: the upstream v1.6.1 manifests will crashloop due to OOM
+  ##       (fixed in https://github.com/kubeflow/training-operator/pull/1668)
+  - patches/patch-training-operator-deployment.yaml
+
+images:
+  - name: kubeflow/training-operator
+    newName: kubeflow/training-operator
+    newTag: v1-e1434f6
