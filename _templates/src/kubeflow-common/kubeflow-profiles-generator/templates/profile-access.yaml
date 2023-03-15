@@ -1,7 +1,7 @@
 {{- range $profile_name, $profile := .Values.profiles }}
 {{- range $user_name := $profile.usersWithAccess }}
 {{- $user := get $.Values.users $user_name }}
-{{- if not $user}}
+{{- if not $user }}
 {{- fail (printf "failed to generate profile '%s', there is no key in `users` called '%s'" $profile_name $user_name) }}
 {{- end }}
 {{- /*

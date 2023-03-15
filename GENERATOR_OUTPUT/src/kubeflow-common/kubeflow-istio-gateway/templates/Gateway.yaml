@@ -11,9 +11,6 @@ spec:
   selector:
     {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 4 }}
   servers:
-    ################
-    ## HTTP
-    ################
     - hosts:
         ## "*" namespace is needed because VirtualServices for Notebooks live in the user's namespace
         - "*/{{ .Values.deployKF.gateway.hostname }}"
@@ -22,38 +19,13 @@ spec:
         ## manually select each namespace that contains a VirtualServices with a subdomain
         ## (see issue: https://github.com/istio/istio/issues/35826)
         {{- if .Values.deployKF.argoWorkflows.enabled }}
-        - "{{ .Values.deployKF.argoWorkflows.namespace }}/*.{{ .Values.deployKF.gateway.hostname }}"
+        - "{{ .Values.deployKF.argoWorkflows.namespace }}/argo-server.{{ .Values.deployKF.gateway.hostname }}"
         {{- end }}
         {{- if .Values.deployKF.minio.enabled }}
-        - "{{ .Values.deployKF.minio.namespace }}/*.{{ .Values.deployKF.gateway.hostname }}"
+        - "{{ .Values.deployKF.minio.namespace }}/minio-api.{{ .Values.deployKF.gateway.hostname }}"
+        - "{{ .Values.deployKF.minio.namespace }}/minio-console.{{ .Values.deployKF.gateway.hostname }}"
         {{- end }}
-      port:
-        name: http
-        number: {{ .Values.deployKF.gateway.ports.http | int }}
-        protocol: HTTP
-      tls:
-        ## NOTE: our `VirtualService/https-redirect` handles HTTP to HTTPS redirects,
-        ##       as this is more robust than `httpsRedirect` because it can redirect to non-standard HTTPS ports,
-        ##       additionally, we can disable the ExtAuthz filter, to ensure we redirect to HTTPS before authorizing
-        httpsRedirect: false
-
-    {{- if .Values.deployKF.gateway.tls.enabled }}
-    ################
-    ## HTTPS
-    ################
-    - hosts:
-        ## "*" namespace is needed because VirtualServices for Notebooks live in the user's namespace
-        - "*/{{ .Values.deployKF.gateway.hostname }}"
-        ## due to a bug in istio, and because the notebook-controller creates VirtualServices with "*" hosts,
-        ## our namespace selector for VirtualServices with subdomains can't be "*", instead we must
-        ## manually select each namespace that contains a VirtualServices with a subdomain
-        ## (see issue: https://github.com/istio/istio/issues/35826)
-        {{- if .Values.deployKF.argoWorkflows.enabled }}
-        - "{{ .Values.deployKF.argoWorkflows.namespace }}/*.{{ .Values.deployKF.gateway.hostname }}"
-        {{- end }}
-        {{- if .Values.deployKF.minio.enabled }}
-        - "{{ .Values.deployKF.minio.namespace }}/*.{{ .Values.deployKF.gateway.hostname }}"
-        {{- end }}
+      {{- if .Values.deployKF.gateway.tls.enabled }}
       port:
         name: https
         number: {{ .Values.deployKF.gateway.ports.https | int }}
@@ -61,4 +33,9 @@ spec:
       tls:
         mode: SIMPLE
         credentialName: kubeflow-istio-gateway-cert
-    {{- end }}
+      {{- else }}
+      port:
+        name: http
+        number: {{ .Values.deployKF.gateway.ports.http | int }}
+        protocol: HTTP
+      {{- end }}

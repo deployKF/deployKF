@@ -60,7 +60,7 @@ spec:
             - "--configmap"
             - "argo-config"
             - "--executor-image"
-            - {{ .Values.controller.executorImage.repository }}:{{.Values.controller.executorImage.tag }}
+            - {{ .Values.controller.executorImage.repository }}:{{ .Values.controller.executorImage.tag }}
             - "--executor-image-pull-policy"
             - {{ .Values.controller.executorImage.pullPolicy | quote }}
           env:
