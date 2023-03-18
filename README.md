@@ -1,9 +1,13 @@
-<h1 align="center">deployKF - Deploy Kubeflow with ArgoCD</h1>
+<h1 align="center">deployKF</h1>
+<div align="center">
+  <b>Compose your open ML platform</b>
+</div>
 
 <br>
 
 <p align="center">
-  deployKF is a reference distribution of <a href="https://www.kubeflow.org/">Kubeflow</a> that uses <a href="https://argoproj.github.io/cd/">ArgoCD</a> to deploy the <a href="https://github.com/kubeflow/manifests"><code>kubeflow/manifests</code></a> in a maintainable way.
+  <b>deployKF</b> is your open-source helper for deploying MLOps tools on <a href="https://kubernetes.io/" target="_blank" rel="noopener">Kubernetes</a>,
+  with support for <a href="https://www.kubeflow.org/docs/components/" target="_blank" rel="noopener">Kubeflow Components</a> and more
 </p>
 
 <p align="center">
