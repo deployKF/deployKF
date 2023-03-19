@@ -1,0 +1,145 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kubeflow-mysql
+  labels:
+    helm.sh/chart: {{ include "kubeflow-mysql.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-mysql.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: mysql
+spec:
+  serviceName: kubeflow-mysql
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "kubeflow-mysql.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: mysql
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/mysql/ConfigMap-config.yaml") . | sha256sum }}
+        checksum/scripts: {{ include (print $.Template.BasePath "/mysql/ConfigMap-scripts.yaml") . | sha256sum }}
+        {{- if not .Values.mysql.rootUser.existingSecret }}
+        checksum/root-password: {{ include (print $.Template.BasePath "/mysql/Secret-root-password.yaml") . | sha256sum }}
+        {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "kubeflow-mysql.labels.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: mysql
+    spec:
+      {{- if .Values.mysql.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.mysql.image.pullSecret }}
+      {{- end }}
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      serviceAccountName: kubeflow-mysql
+      {{- if .Values.mysql.podSecurityContext }}
+      securityContext:
+        {{- .Values.mysql.podSecurityContext | toYaml | nindent 8 }}
+      {{- else }}
+      securityContext: {}
+      {{- end }}
+      containers:
+        - name: mysql
+          image: {{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}
+          imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.mysql.image.uid }}
+            runAsGroup: {{ .Values.mysql.image.gid }}
+          {{- if .Values.mysql.resources }}
+          resources:
+            {{- toYaml .Values.mysql.resources | toYaml | nindent 12 }}
+          {{- end }}
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.mysql.rootUser.existingSecret }}
+                  name: {{ .Values.mysql.rootUser.existingSecret | quote }}
+                  key: {{ .Values.mysql.rootUser.existingSecretPasswordKey | quote }}
+                  {{- else }}
+                  name: kubeflow-mysql-root-password
+                  key: password
+                  {{- end }}
+          command:
+            - /bin/bash
+            - -c
+          args:
+            ## we generate an init_file which ensures the root password is correct
+            - |-
+              /etc/mysql/scripts/generate_init_file.sh && \
+              exec /entrypoint.sh mysqld --init-file=/var/run/mysqld/init.sql
+          ports:
+            - name: mysql
+              containerPort: 3306
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - mysqladmin status -uroot -p"${MYSQL_ROOT_PASSWORD}"
+          startupProbe:
+            failureThreshold: 10
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - mysqladmin status -uroot -p"${MYSQL_ROOT_PASSWORD}"
+          volumeMounts:
+            - name: mysql-configs
+              mountPath: "/etc/mysql/conf.d"
+              readOnly: true
+            - name: mysql-scripts
+              mountPath: "/etc/mysql/scripts"
+              readOnly: true
+            {{- if .Values.mysql.persistence.enabled }}
+            - name: mysql-data
+              mountPath: "/var/lib/mysql"
+              {{- if .Values.mysql.persistence.subPath }}
+              subPath: {{ .Values.mysql.persistence.subPath | quote }}
+              {{- end }}
+            {{- else }}
+            - name: mysql-data
+              mountPath: "/var/lib/mysql"
+            {{- end }}
+      volumes:
+        - name: mysql-configs
+          configMap:
+            name: kubeflow-mysql-config
+        - name: mysql-scripts
+          configMap:
+            name: kubeflow-mysql-scripts
+            items:
+              - key: generate_init_file.sh
+                path: generate_init_file.sh
+                mode: 0755
+        {{- if .Values.mysql.persistence.enabled }}
+        - name: mysql-data
+          persistentVolumeClaim:
+            {{- if .Values.mysql.persistence.existingClaim }}
+            claimName: {{ .Values.mysql.persistence.existingClaim | quote }}
+            {{- else }}
+            claimName: kubeflow-mysql-data
+            {{- end }}
+        {{- else }}
+        - name: mysql-data
+          emptyDir: {}
+        {{- end }}

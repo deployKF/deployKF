@@ -172,9 +172,11 @@ kubeflow_common:
     enabled: true
     namespace: kubeflow-mysql
 
-    ## TODO: add variables for auth, but warn users that passwords are only set on FIRST START
-    ##       (or use custom init-scripts to set the required passwords on each db restart)
-    #auth: {}
+    ## configs for the "root" mysql user
+    rootUser:
+      password: password
+      existingSecret: ""
+      existingSecretPasswordKey: "password"
 
   #########################################
   ## kubeflow-profiles-generator

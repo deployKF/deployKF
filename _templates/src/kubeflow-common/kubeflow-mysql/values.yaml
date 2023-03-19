@@ -1,170 +1,68 @@
-## as we reference the "mysql" chart (https://charts.bitnami.com/bitnami) in `dependencies` of Chart.yaml,
-## we must indent our values under `mysql:` in this file
+########################################
+## COMPONENT | mysql
+########################################
 mysql:
-  fullnameOverride: kubeflow-mysql
-
-  clusterDomain: cluster.local
-
   image:
-    registry: docker.io
-    repository: bitnami/mysql
-    #tag: latest
+    repository: mysql
+    tag: 8.0.32
+    pullPolicy: IfNotPresent
+    pullSecret: ""
+    uid: 999
+    gid: 999
 
-  auth:
-    createDatabase: false
+  ## the securityContext configs for mysql Pods
+  ## - spec for PodSecurityContext:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podsecuritycontext-v1-core
+  ##
+  podSecurityContext:
+    ## sets filesystem owner group of in mounted volumes, ensuring pod has permissions to read DB data
+    fsGroup: 999
 
-    ## @param auth.rootPassword Password for the `root` user. Ignored if existing secret is provided
-    ## ref: https://github.com/bitnami/containers/tree/main/bitnami/mysql#setting-the-root-password-on-first-run
+  ## resource requests/limits for mysql Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## persistence configs for mysql
+  ##
+  persistence:
+    enabled: true
+
+    ## the name of an existing PersistentVolumeClaim to use
+    ## - if non-emtpy, you must manually create a PVC with this name
     ##
-    rootPassword: "password"
+    existingClaim: ""
 
-    ## WARNING: this is set to prevent random secret generation, which causes argo-cd to show out of sync,
-    ##          but this password is NOT actually used or available on the database
-    password: "password"
-
-    ## TODO: give user's the option of setting the root password from a secret
+    ## the sub-path within the PersistentVolume to mount, instead of the root
     ##
-    ## @param auth.existingSecret Use existing secret for password details.
-    ## The secret has to contain the keys `mysql-root-password`, `mysql-replication-password` and `mysql-password`
-    ## NOTE: When it's set the auth.rootPassword, auth.password, auth.replicationPassword are ignored.
+    subPath: ""
+
+    ## the name of the StorageClass requested by the PersistentVolumeClaim
+    ## - if set to "", then `PersistentVolumeClaim/spec.storageClassName` is omitted
+    ## - if set to "-", then `PersistentVolumeClaim/spec.storageClassName` is set to ""
     ##
-    #existingSecret: ""
-    ## @param auth.usePasswordFiles Mount credentials as files instead of using an environment variable
+    storageClass: ""
+
+    ## the access mode of the PersistentVolumeClaim
     ##
-    #usePasswordFiles: false
-    ## @param auth.customPasswordFiles Use custom password files when `auth.usePasswordFiles` is set to `true`.
-    ##        Define path for keys `root` and `user`, also define `replicator` if `architecture` is set to `replication`
-    ## Example:
-    ## customPasswordFiles:
-    ##   root: /vault/secrets/mysql-root
-    ##   user: /vault/secrets/mysql-user
-    ##   replicator: /vault/secrets/mysql-replicator
+    accessMode: ReadWriteOnce
+
+    ## the initial size for the PersistentVolumeClaim to request
+    ## - kubernetes allows the PVC to grow in size as needed, starting from this value
+    ##   (if your StorageClass has `allowVolumeExpansion=true`)
     ##
-    #customPasswordFiles: {}
+    size: 5Gi
 
-  primary:
-    ## @param primary.configuration [string] Configure MySQL Primary with a custom my.cnf file
-    ## ref: https://mysql.com/kb/en/mysql/configuring-mysql-with-mycnf/#example-of-configuration-file
-    ##
-    configuration: |-
-      [mysqld]
-      default_authentication_plugin=mysql_native_password
-      skip-name-resolve
-      explicit_defaults_for_timestamp
-      basedir=/opt/bitnami/mysql
-      plugin_dir=/opt/bitnami/mysql/lib/plugin
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      datadir=/bitnami/mysql/data
-      tmpdir=/opt/bitnami/mysql/tmp
-      max_allowed_packet=16M
-      bind-address=*
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-      log-error=/opt/bitnami/mysql/logs/mysqld.log
-      character-set-server=UTF8
-      collation-server=utf8_general_ci
-      slow_query_log=0
-      slow_query_log_file=/opt/bitnami/mysql/logs/mysqld.log
-      long_query_time=10.0
+  ## root user configs for mysql
+  ##
+  rootUser:
+    password: {{< .Values.kubeflow_common.kubeflow_mysql.rootUser.password | quote >}}
+    existingSecret: {{< .Values.kubeflow_common.kubeflow_mysql.rootUser.existingSecret | quote >}}
+    existingSecretPasswordKey: {{< .Values.kubeflow_common.kubeflow_mysql.rootUser.existingSecretPasswordKey | quote >}}
 
-      [client]
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      default-character-set=UTF8
-      plugin_dir=/opt/bitnami/mysql/lib/plugin
-
-      [manager]
-      port=3306
-      socket=/opt/bitnami/mysql/tmp/mysql.sock
-      pid-file=/opt/bitnami/mysql/tmp/mysqld.pid
-
-    ## @param primary.podAnnotations Additional pod annotations for MySQL primary pods
-    ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-    ##
-    podAnnotations: {}
-
-    ## @param primary.affinity Affinity for MySQL primary pods assignment
-    ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
-    ##
-    affinity: {}
-
-    ## @param primary.nodeSelector Node labels for MySQL primary pods assignment
-    ## ref: https://kubernetes.io/docs/user-guide/node-selection/
-    ##
-    nodeSelector: {}
-
-    ## @param primary.tolerations Tolerations for MySQL primary pods assignment
-    ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
-    ##
-    tolerations: []
-
-    ## @param primary.priorityClassName MySQL primary pods' priorityClassName
-    ##
-    priorityClassName: ""
-
-    ## @param primary.runtimeClassName MySQL primary pods' runtimeClassName
-    ##
-    runtimeClassName: ""
-
-    ## MySQL primary container's resource requests and limits
-    ## ref: https://kubernetes.io/docs/user-guide/compute-resources/
-    ##
-    resources:
-      #requests:
-      #   cpu: 250m
-      #   memory: 256Mi
-
-    ## @param primary.extraFlags MySQL primary additional command line flags
-    ## Can be used to specify command line flags, for example:
-    ## E.g.
-    ## extraFlags: "--max-connect-errors=1000 --max_connections=155"
-    ##
-    extraFlags: ""
-
-    ## @param primary.extraEnvVars Extra environment variables to be set on MySQL primary containers
-    ## E.g.
-    ## extraEnvVars:
-    ##  - name: TZ
-    ##    value: "Europe/Paris"
-    ##
-    extraEnvVars: []
-
-    ## Enable persistence using Persistent Volume Claims
-    ## ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
-    ##
-    persistence:
-      enabled: true
-
-      ## @param primary.persistence.storageClass MySQL primary persistent volume storage Class
-      ## If defined, storageClassName: <storageClass>
-      ## If set to "-", storageClassName: "", which disables dynamic provisioning
-      ## If undefined (the default) or set to null, no storageClassName spec is
-      ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-      ##   GKE, AWS & OpenStack)
-      ##
-      storageClass: ""
-
-      ## @param primary.persistence.annotations MySQL primary persistent volume claim annotations
-      ##
-      annotations: {}
-
-      ## @param primary.persistence.accessModes MySQL primary persistent volume access Modes
-      ##
-      accessModes:
-        - ReadWriteOnce
-
-      ## @param primary.persistence.size MySQL primary persistent volume size
-      ##
-      size: 8Gi
-
-    ## MySQL Primary Service parameters
-    ##
-    service:
-      ## @param primary.service.type MySQL Primary K8s service type
-      ##
-      type: ClusterIP
-
-      ## @param primary.service.ports.mysql MySQL Primary K8s service port
-      ##
-      ports:
-        mysql: 3306
+  ## the string content of a config file mounted at `/etc/mysql/conf.d/custom.cnf`
+  ##
+  configuration: |
+    [mysqld]
+    default_authentication_plugin=mysql_native_password

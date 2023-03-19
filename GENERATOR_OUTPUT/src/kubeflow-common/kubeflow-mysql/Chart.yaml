@@ -1,7 +1,3 @@
 apiVersion: v2
 name: kubeflow-mysql
 version: 1.0.0
-dependencies:
-  - name: mysql
-    version: 9.4.9
-    repository: https://charts.bitnami.com/bitnami
