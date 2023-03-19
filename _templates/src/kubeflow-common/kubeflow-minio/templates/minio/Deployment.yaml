@@ -23,6 +23,10 @@ spec:
       app.kubernetes.io/component: minio
   template:
     metadata:
+      {{- if not .Values.minio.rootUser.existingSecret }}
+      annotations:
+        checksum/root-user: {{ include (print $.Template.BasePath "/minio/Secret-root-user.yaml") . | sha256sum }}
+      {{- end }}
       labels:
         app.kubernetes.io/name: {{ include "kubeflow-minio.labels.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
