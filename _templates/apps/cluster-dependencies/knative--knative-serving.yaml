@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: knative-serving
     app.kubernetes.io/component: cluster-dependencies
-    app.kubernetes.io/part-of: kubeflow
+    app.kubernetes.io/part-of: deploykf
 spec:
   project: {{< .Values.argocd.project | quote >}}
   source:

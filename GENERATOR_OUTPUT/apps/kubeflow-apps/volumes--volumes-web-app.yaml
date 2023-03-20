@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: volumes-web-app
     app.kubernetes.io/component: kubeflow-apps
-    app.kubernetes.io/part-of: kubeflow
+    app.kubernetes.io/part-of: deploykf
 spec:
   project: "default"
   source:

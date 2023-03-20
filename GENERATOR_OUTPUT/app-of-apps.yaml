@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kubeflow-app-of-apps
+  name: deploykf-app-of-apps
   namespace: "argocd"
 spec:
   project: "default"

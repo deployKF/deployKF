@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: tensorboards-web-app
     app.kubernetes.io/component: kubeflow-apps
-    app.kubernetes.io/part-of: kubeflow
+    app.kubernetes.io/part-of: deploykf
 spec:
   project: {{< .Values.argocd.project | quote >}}
   source:

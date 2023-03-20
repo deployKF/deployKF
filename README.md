@@ -51,7 +51,7 @@ You can get started with deployKF by following these steps:
 5. manually apply the generated ArgoCD ["app of apps"](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/#app-of-apps-pattern) to your Kubernetes cluster:
     - `kubectl apply --filename GENERATOR_OUTPUT/app-of-apps.yaml`
 6. sync the ArgoCD applications __IN THE FOLLOWING ORDER__:
-    1. `kubeflow-app-of-apps`
+    1. `deploykf-app-of-apps`
     2. __cluster-dependencies__ _(label: `app.kubernetes.io/component: cluster-dependencies`)_
         1. `kf-dep--kyverno`
         2. `kf-dep--cert-manager`

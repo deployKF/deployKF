@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: kubeflow-minio
     app.kubernetes.io/component: kubeflow-common
-    app.kubernetes.io/part-of: kubeflow
+    app.kubernetes.io/part-of: deploykf
 spec:
   project: {{< .Values.argocd.project | quote >}}
   source:
