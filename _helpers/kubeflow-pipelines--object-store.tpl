@@ -70,7 +70,7 @@ true
 {{<- end ->}}
 
 ##
-## The name of the Kubernetes Secret that contains the object store access/secret keys.
+## The NAME of the Kubernetes Secret that contains the object store access/secret keys.
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.secret_name" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
@@ -89,7 +89,7 @@ pipelines-bucket-secret
 {{<- end ->}}
 
 ##
-## The namespace with the Kubernetes Secret which contains the object store access/secret keys.
+## The NAMESPACE with the Kubernetes Secret which contains the object store access/secret keys.
 ##  - NOTE: when the embedded minio is disabled, the secret will be in the kubeflow pipelines namespace
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.secret_namespace" ->}}
@@ -101,7 +101,7 @@ kubeflow
 {{<- end ->}}
 
 ##
-## The key containing the object store ACCESS_KEY in the Kubernetes Secret.
+## The KEY containing the object store ACCESS_KEY in the Kubernetes Secret.
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.access_key_key" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
@@ -120,7 +120,7 @@ ACCESS_KEY
 {{<- end ->}}
 
 ##
-## The key containing the object store SECRET_KEY in the Kubernetes Secret.
+## The KEY containing the object store SECRET_KEY in the Kubernetes Secret.
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.secret_key_key" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}

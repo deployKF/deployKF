@@ -30,13 +30,13 @@ spec:
             - name: DBCONFIG_USER
               valueFrom:
                 secretKeyRef:
-                  name: pipelines-mysql-secret
-                  key: username
+                  name: "kubeflow-mysql-root-user"
+                  key: "username"
             - name: DBCONFIG_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: pipelines-mysql-secret
-                  key: password
+                  name: "kubeflow-mysql-root-user"
+                  key: "password"
 
             ## ================================
             ## Bucket Configs

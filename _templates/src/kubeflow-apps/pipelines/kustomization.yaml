@@ -12,15 +12,20 @@ resources:
   - resources/create-pipeline-database-job.yaml
   - resources/generate-profile-resources-clusterpolicy.yaml
   - resources/clone-bucket-secret-clusterpolicy.yaml
+  {{<- if ne (tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_namespace" .) "kubeflow" >}}
+  - resources/clone-mysql-secret-clusterpolicy.yaml
+  {{<- end >}}
 
   {{<- if not (tmpl.Exec "kubeflow_pipelines.use_embedded_minio" .) >}}
   {{<- if not .Values.kubeflow_apps.pipelines.objectStore.auth.existingSecret >}}
   - resources/pipelines-bucket-secret.yaml
   {{<- end >}}
   {{<- end >}}
-  
+
+  {{<- if not (tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" .) >}}
   {{<- if not .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret >}}
   - resources/pipelines-mysql-secret.yaml
+  {{<- end >}}
   {{<- end >}}
 
 patchesStrategicMerge:
@@ -82,14 +87,14 @@ configMapGenerator:
       - bucketEndpoint="{{< tmpl.Exec "kubeflow_pipelines.object_store.endpoint" . >}}"
 
       ## ================================
-      ## UserID Configs
+      ## MySQL Configs
       ## ================================
       - ConMaxLifeTime="120s"
-      - dbHost="{{< .Values.kubeflow_apps.pipelines.mysql.host >}}"
-      - dbPort="{{< .Values.kubeflow_apps.pipelines.mysql.port >}}"
-      - cacheDb="{{< .Values.kubeflow_apps.pipelines.mysql.cacheDatabase >}}"
-      - mlmdDb="{{< .Values.kubeflow_apps.pipelines.mysql.metadataDatabase >}}"
-      - pipelineDb="{{< .Values.kubeflow_apps.pipelines.mysql.pipelinesDatabase >}}"
+      - dbHost="{{< tmpl.Exec "kubeflow_pipelines.mysql.hostname" . >}}"
+      - dbPort="{{< tmpl.Exec "kubeflow_pipelines.mysql.port" . >}}"
+      - cacheDb="{{< .Values.kubeflow_apps.pipelines.mysqlDatabases.cacheDatabase >}}"
+      - mlmdDb="{{< .Values.kubeflow_apps.pipelines.mysqlDatabases.metadataDatabase >}}"
+      - pipelineDb="{{< .Values.kubeflow_apps.pipelines.mysqlDatabases.pipelinesDatabase >}}"
 
   - name: ml-pipeline-ui-configmap
     behavior: merge
@@ -127,14 +132,6 @@ images:
   - name: gcr.io/ml-pipeline/visualization-server
     newName: gcr.io/ml-pipeline/visualization-server
     newTag: 2.0.0-alpha.5
-
-  ## NOTE: these image tags are separate to Kubeflow Pipelines itself
-  - name: gcr.io/ml-pipeline/argoexec
-    newName: gcr.io/ml-pipeline/argoexec
-    newTag: v3.3.8-license-compliance
-  - name: gcr.io/ml-pipeline/workflow-controller
-    newName: gcr.io/ml-pipeline/workflow-controller
-    newTag: v3.3.8-license-compliance
 
   ## NOTE: this image tag is separate to Kubeflow Pipelines itself
   - name: gcr.io/tfx-oss-public/ml_metadata_store_server

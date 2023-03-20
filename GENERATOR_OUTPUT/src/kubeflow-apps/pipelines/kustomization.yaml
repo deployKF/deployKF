@@ -12,7 +12,7 @@ resources:
   - resources/create-pipeline-database-job.yaml
   - resources/generate-profile-resources-clusterpolicy.yaml
   - resources/clone-bucket-secret-clusterpolicy.yaml
-  - resources/pipelines-mysql-secret.yaml
+  - resources/clone-mysql-secret-clusterpolicy.yaml
 
 patchesStrategicMerge:
   - patches/patch-cache-server-deployment.yaml
@@ -73,7 +73,7 @@ configMapGenerator:
       - bucketEndpoint="minio-api.kubeflow-minio.svc.cluster.local:9000"
 
       ## ================================
-      ## UserID Configs
+      ## MySQL Configs
       ## ================================
       - ConMaxLifeTime="120s"
       - dbHost="kubeflow-mysql.kubeflow-mysql.svc.cluster.local"
@@ -118,14 +118,6 @@ images:
   - name: gcr.io/ml-pipeline/visualization-server
     newName: gcr.io/ml-pipeline/visualization-server
     newTag: 2.0.0-alpha.5
-
-  ## NOTE: these image tags are separate to Kubeflow Pipelines itself
-  - name: gcr.io/ml-pipeline/argoexec
-    newName: gcr.io/ml-pipeline/argoexec
-    newTag: v3.3.8-license-compliance
-  - name: gcr.io/ml-pipeline/workflow-controller
-    newName: gcr.io/ml-pipeline/workflow-controller
-    newTag: v3.3.8-license-compliance
 
   ## NOTE: this image tag is separate to Kubeflow Pipelines itself
   - name: gcr.io/tfx-oss-public/ml_metadata_store_server

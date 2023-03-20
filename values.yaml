@@ -231,13 +231,11 @@ kubeflow_apps:
         existingSecretAccessKeyKey: "AWS_ACCESS_KEY_ID"
         existingSecretSecretKeyKey: "AWS_SECRET_ACCESS_KEY"
 
-    ## TODO: override these values when `kubeflow_common.kubeflow_mysql.enabled` is 'true'
+    ## NOTE: these values are ignored when `kubeflow_common.kubeflow_mysql.enabled` is 'true',
+    ##       as we automatically populate the required settings to use the embedded mysql
     mysql:
-      host: "kubeflow-mysql.kubeflow-mysql.svc.cluster.local"
+      host: "mysql.example.com"
       port: 3306
-      cacheDatabase: kfp_cache
-      metadataDatabase: kfp_metadata
-      pipelinesDatabase: kfp_pipelines
       auth:
         username: root
         password: password
@@ -245,6 +243,10 @@ kubeflow_apps:
         existingSecretUsernameKey: "username"
         existingSecretPasswordKey: "password"
 
+    mysqlDatabases:
+      cacheDatabase: kfp_cache
+      metadataDatabase: kfp_metadata
+      pipelinesDatabase: kfp_pipelines
 
   #########################################
   ## poddefaults-webhook

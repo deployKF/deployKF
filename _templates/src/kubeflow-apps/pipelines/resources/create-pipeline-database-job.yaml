@@ -39,22 +39,12 @@ spec:
             - name: USERNAME
               valueFrom:
                 secretKeyRef:
-                  {{<- if .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret >}}
-                  name: {{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret | quote >}}
-                  key: {{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecretUsernameKey | quote >}}
-                  {{<- else >}}
-                  name: pipelines-mysql-secret
-                  key: username
-                  {{<- end >}}
+                  name: {{< tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_name" . | quote >}}
+                  key: {{< tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_username_key" . | quote >}}
             - name: PASSWORD
               valueFrom:
                 secretKeyRef:
-                  {{<- if .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret >}}
-                  name: {{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret | quote >}}
-                  key: {{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecretPasswordKey | quote >}}
-                  {{<- else >}}
-                  name: pipelines-mysql-secret
-                  key: password
-                  {{<- end >}}
+                  name: {{< tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_name" . | quote >}}
+                  key: {{< tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_password_key" . | quote >}}
       restartPolicy: Never
   backoffLimit: 5
