@@ -172,10 +172,20 @@ kubeflow_common:
     enabled: true
     namespace: kubeflow-mysql
 
-    ## configs for the "root" mysql user
+    ## configs for the "root@localhost" mysql user
+    ## (used for liveness probes)
     rootUser:
       password: password
       existingSecret: ""
+      existingSecretPasswordKey: "password"
+
+    ## configs for the "kubeflow" mysql user
+    ## (used by kubeflow apps)
+    kubeflowUser:
+      username: kubeflow
+      password: password
+      existingSecret: ""
+      existingSecretUsernameKey: "username"
       existingSecretPasswordKey: "password"
 
   #########################################
@@ -200,7 +210,8 @@ kubeflow_apps:
     mysql:
       host: MY_KATIB_MYSQL_HOST
       port: 3306
-      database: katib
+
+    mysqlDatabase: katib
 
   #########################################
   ## notebooks

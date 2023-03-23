@@ -59,6 +59,9 @@ spec:
             {{- toYaml .Values.mysql.resources | toYaml | nindent 12 }}
           {{- end }}
           env:
+            - name: MYSQL_ROOT_HOST
+              ## only allow the root user to connect from localhost (for liveness probes)
+              value: "localhost"
             - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -69,14 +72,30 @@ spec:
                   name: kubeflow-mysql-root-user
                   key: password
                   {{- end }}
+            - name: MYSQL_KUBEFLOW_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.mysql.kubeflowUser.existingSecret }}
+                  name: {{ .Values.mysql.kubeflowUser.existingSecret | quote }}
+                  key: {{ .Values.mysql.kubeflowUser.existingSecretUsernameKey | quote }}
+                  {{- else }}
+                  name: kubeflow-mysql-kubeflow-user
+                  key: username
+                  {{- end }}
+            - name: MYSQL_KUBEFLOW_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.mysql.kubeflowUser.existingSecret }}
+                  name: {{ .Values.mysql.kubeflowUser.existingSecret | quote }}
+                  key: {{ .Values.mysql.kubeflowUser.existingSecretPasswordKey | quote }}
+                  {{- else }}
+                  name: kubeflow-mysql-kubeflow-user
+                  key: password
+                  {{- end }}
           command:
-            - /bin/bash
-            - -c
-          args:
-            ## we generate an init_file which ensures the root password is correct
-            - |-
-              /etc/mysql/scripts/generate_init_file.sh && \
-              exec /entrypoint.sh mysqld --init-file=/var/run/mysqld/init.sql
+            ## our custom entrypoint generates an init_file that configures the database on each startup
+            - /etc/mysql/scripts/custom_entrypoint.sh
+          args: []
           ports:
             - name: mysql
               containerPort: 3306
@@ -104,6 +123,10 @@ spec:
                 - -ec
                 - mysqladmin status -uroot -p"${MYSQL_ROOT_PASSWORD}"
           volumeMounts:
+            ## this mount ensures that /docker-entrypoint-initdb.d/ is writable by non-root,
+            ## as our custom entrypoint needs to generate the init_file here
+            - name: docker-entrypoint-initdb
+              mountPath: "/docker-entrypoint-initdb.d/"
             - name: mysql-configs
               mountPath: "/etc/mysql/conf.d"
               readOnly: true
@@ -121,6 +144,8 @@ spec:
               mountPath: "/var/lib/mysql"
             {{- end }}
       volumes:
+        - name: docker-entrypoint-initdb
+          emptyDir: {}
         - name: mysql-configs
           configMap:
             name: kubeflow-mysql-config
@@ -128,8 +153,8 @@ spec:
           configMap:
             name: kubeflow-mysql-scripts
             items:
-              - key: generate_init_file.sh
-                path: generate_init_file.sh
+              - key: custom_entrypoint.sh
+                path: custom_entrypoint.sh
                 mode: 0755
         {{- if .Values.mysql.persistence.enabled }}
         - name: mysql-data

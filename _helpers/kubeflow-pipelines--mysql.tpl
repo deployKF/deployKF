@@ -35,10 +35,10 @@ kubeflow-mysql.{{< .Values.kubeflow_common.kubeflow_mysql.namespace >}}.svc.clus
 ##
 {{<- define "kubeflow_pipelines.mysql.auth.secret_name" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" . ->}}
-{{<- if .Values.kubeflow_common.kubeflow_mysql.rootUser.existingSecret ->}}
-{{< .Values.kubeflow_common.kubeflow_mysql.rootUser.existingSecret >}}
+{{<- if .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecret ->}}
+{{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecret >}}
 {{<- else ->}}
-kubeflow-mysql-root-user
+kubeflow-mysql-kubeflow-user
 {{<- end ->}}
 {{<- else ->}}
 {{<- if .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret ->}}
@@ -66,7 +66,11 @@ kubeflow
 ##
 {{<- define "kubeflow_pipelines.mysql.auth.secret_username_key" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" . ->}}
+{{<- if .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecret ->}}
+{{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecretUsernameKey >}}
+{{<- else ->}}
 username
+{{<- end ->}}
 {{<- else ->}}
 {{<- if .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret ->}}
 {{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecretUsernameKey >}}
@@ -81,8 +85,8 @@ username
 ##
 {{<- define "kubeflow_pipelines.mysql.auth.secret_password_key" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" . ->}}
-{{<- if .Values.kubeflow_common.kubeflow_mysql.rootUser.existingSecretPasswordKey ->}}
-{{< .Values.kubeflow_common.kubeflow_mysql.rootUser.existingSecretPasswordKey >}}
+{{<- if .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecret ->}}
+{{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecretPasswordKey >}}
 {{<- else ->}}
 password
 {{<- end ->}}

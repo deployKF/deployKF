@@ -54,11 +54,20 @@ mysql:
     ##
     size: 5Gi
 
-  ## root user configs for mysql
+  ## configs for the "root@localhost" mysql user
   ##
   rootUser:
     password: "password"
     existingSecret: ""
+    existingSecretPasswordKey: "password"
+
+  ## configs for the "kubeflow" mysql user
+  ##
+  kubeflowUser:
+    username: "kubeflow"
+    password: "password"
+    existingSecret: ""
+    existingSecretUsernameKey: "username"
     existingSecretPasswordKey: "password"
 
   ## the string content of a config file mounted at `/etc/mysql/conf.d/custom.cnf`
@@ -66,3 +75,11 @@ mysql:
   configuration: |
     [mysqld]
     default_authentication_plugin=mysql_native_password
+
+  ## mysql databases to create with the init_file
+  ##
+  databases:
+    - name: "katib"
+    - name: "kfp_cache"
+    - name: "kfp_metadata"
+    - name: "kfp_pipelines"

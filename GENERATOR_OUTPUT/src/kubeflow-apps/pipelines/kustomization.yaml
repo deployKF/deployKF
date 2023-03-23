@@ -7,9 +7,6 @@ namespace: kubeflow
 
 resources:
   - github.com/kubeflow/manifests/apps/pipeline/upstream/env/platform-agnostic-multi-user?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
-  - resources/create-cache-database-job.yaml
-  - resources/create-metadata-database-job.yaml
-  - resources/create-pipeline-database-job.yaml
   - resources/generate-profile-resources-clusterpolicy.yaml
   - resources/clone-bucket-secret-clusterpolicy.yaml
   - resources/clone-mysql-secret-clusterpolicy.yaml
@@ -123,8 +120,3 @@ images:
   - name: gcr.io/tfx-oss-public/ml_metadata_store_server
     newName: gcr.io/tfx-oss-public/ml_metadata_store_server
     newTag: 1.5.0
-
-  ## NOTE: this image tag is separate to Kubeflow Pipelines itself
-  - name: public.ecr.aws/atcommons/utils/mysql-db-creator
-    newName: public.ecr.aws/atcommons/utils/mysql-db-creator
-    newTag: latest

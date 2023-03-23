@@ -54,15 +54,36 @@ mysql:
     ##
     size: 5Gi
 
-  ## root user configs for mysql
+  ## configs for the "root@localhost" mysql user
   ##
   rootUser:
     password: {{< .Values.kubeflow_common.kubeflow_mysql.rootUser.password | quote >}}
     existingSecret: {{< .Values.kubeflow_common.kubeflow_mysql.rootUser.existingSecret | quote >}}
     existingSecretPasswordKey: {{< .Values.kubeflow_common.kubeflow_mysql.rootUser.existingSecretPasswordKey | quote >}}
 
+  ## configs for the "kubeflow" mysql user
+  ##
+  kubeflowUser:
+    username: {{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.username | quote >}}
+    password: {{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.password | quote >}}
+    existingSecret: {{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecret | quote >}}
+    existingSecretUsernameKey: {{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecretUsernameKey | quote >}}
+    existingSecretPasswordKey: {{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecretPasswordKey | quote >}}
+
   ## the string content of a config file mounted at `/etc/mysql/conf.d/custom.cnf`
   ##
   configuration: |
     [mysqld]
     default_authentication_plugin=mysql_native_password
+
+  ## mysql databases to create with the init_file
+  ##
+  databases:
+    {{<- if .Values.kubeflow_apps.katib.enabled >}}
+    - name: {{< .Values.kubeflow_apps.katib.mysqlDatabase | quote >}}
+    {{<- end >}}
+    {{<- if .Values.kubeflow_apps.pipelines.enabled >}}
+    - name: {{< .Values.kubeflow_apps.pipelines.mysqlDatabases.cacheDatabase | quote >}}
+    - name: {{< .Values.kubeflow_apps.pipelines.mysqlDatabases.metadataDatabase | quote >}}
+    - name: {{< .Values.kubeflow_apps.pipelines.mysqlDatabases.pipelinesDatabase | quote >}}
+    {{<- end >}}

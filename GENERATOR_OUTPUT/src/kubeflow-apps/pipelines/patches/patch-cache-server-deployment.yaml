@@ -14,10 +14,10 @@ spec:
             - name: DBCONFIG_USER
               valueFrom:
                 secretKeyRef:
-                  name: "kubeflow-mysql-root-user"
+                  name: "kubeflow-mysql-kubeflow-user"
                   key: "username"
             - name: DBCONFIG_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "kubeflow-mysql-root-user"
+                  name: "kubeflow-mysql-kubeflow-user"
                   key: "password"
