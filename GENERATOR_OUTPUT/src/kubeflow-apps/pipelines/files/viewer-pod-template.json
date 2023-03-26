@@ -16,7 +16,7 @@
             "name": "AWS_ACCESS_KEY_ID",
             "valueFrom": {
               "secretKeyRef": {
-                "name": "minio-root-user",
+                "name": "cloned--pipelines-bucket-secret",
                 "key": "username"
               }
             }
@@ -25,7 +25,7 @@
             "name": "AWS_SECRET_ACCESS_KEY",
             "valueFrom": {
               "secretKeyRef": {
-                "name": "minio-root-user",
+                "name": "cloned--pipelines-bucket-secret",
                 "key": "password"
               }
             }

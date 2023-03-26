@@ -12,8 +12,9 @@ deployKF_helpers:
       endpoint: {{< (tmpl.Exec "kubeflow_pipelines.object_store.endpoint" .) | quote >}}
       not_use_ssl: {{< (tmpl.Exec "kubeflow_pipelines.object_store.not_use_ssl" .) | quote >}}
       auth:
+        source_secret_name: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.source_secret_name" .) | quote >}}
+        source_secret_namespace: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.source_secret_namespace" .) | quote >}}
         secret_name: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_name" .) | quote >}}
-        secret_namespace: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_namespace" .) | quote >}}
         access_key_key: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.access_key_key" .) | quote >}}
         secret_key_key: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_key_key" .) | quote >}}
 

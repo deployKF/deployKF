@@ -71,8 +71,10 @@ true
 
 ##
 ## The NAME of the Kubernetes Secret that contains the object store access/secret keys.
+##  - NOTE: this is the SOURCE secret, the manifests actually use "kubeflow_pipelines.object_store.auth.secret_name"
+##    as we clone the secret (with Kyverno) into the kubeflow and profile namespaces
 ##
-{{<- define "kubeflow_pipelines.object_store.auth.secret_name" ->}}
+{{<- define "kubeflow_pipelines.object_store.auth.source_secret_name" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
 {{<- if .Values.kubeflow_common.kubeflow_minio.rootUser.existingSecret ->}}
 {{< .Values.kubeflow_common.kubeflow_minio.rootUser.existingSecret >}}
@@ -90,14 +92,21 @@ pipelines-bucket-secret
 
 ##
 ## The NAMESPACE with the Kubernetes Secret which contains the object store access/secret keys.
-##  - NOTE: when the embedded minio is disabled, the secret will be in the kubeflow pipelines namespace
+##  - NOTE: when the embedded minio is disabled, the SOURCE secret will be in the kubeflow namespace
 ##
-{{<- define "kubeflow_pipelines.object_store.auth.secret_namespace" ->}}
+{{<- define "kubeflow_pipelines.object_store.auth.source_secret_namespace" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
 {{< .Values.kubeflow_common.kubeflow_minio.namespace >}}
 {{<- else ->}}
 kubeflow
 {{<- end ->}}
+{{<- end ->}}
+
+##
+## The NAME of the Kubernetes Secret that contains object store access/secret keys (in kubeflow and profile namespaces).
+##
+{{<- define "kubeflow_pipelines.object_store.auth.secret_name" ->}}
+cloned--pipelines-bucket-secret
 {{<- end ->}}
 
 ##
