@@ -10,7 +10,7 @@ resources:
   - resources/generate-profile-resources-clusterpolicy.yaml
   - resources/clone-bucket-secret-clusterpolicy.yaml
 
-  {{<- if ne (tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_namespace" .) "kubeflow" >}}
+  {{<- if tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_is_cloned" . >}}
   - resources/clone-mysql-secret-clusterpolicy.yaml
   {{<- end >}}
 

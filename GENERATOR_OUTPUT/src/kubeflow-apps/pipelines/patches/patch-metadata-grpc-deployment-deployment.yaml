@@ -14,10 +14,10 @@ spec:
             - name: DBCONFIG_USER
               valueFrom:
                 secretKeyRef:
-                  name: "kubeflow-mysql-kubeflow-user"
+                  name: "cloned--pipelines-mysql-secret"
                   key: "username"
             - name: DBCONFIG_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: "kubeflow-mysql-kubeflow-user"
+                  name: "cloned--pipelines-mysql-secret"
                   key: "password"
