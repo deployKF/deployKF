@@ -32,8 +32,10 @@ kubeflow-mysql.{{< .Values.kubeflow_common.kubeflow_mysql.namespace >}}.svc.clus
 
 ##
 ## The NAME of the Kubernetes Secret that contains the mysql user.
+##  - NOTE: this is the SOURCE secret, the manifests actually use "kubeflow_katib.mysql.auth.secret_name"
+##    which accounts for cases when this secret is replicated (by Kyverno) into the kubeflow namespace
 ##
-{{<- define "kubeflow_katib.mysql.auth.secret_name" ->}}
+{{<- define "kubeflow_katib.mysql.auth.source_secret_name" ->}}
 {{<- if tmpl.Exec "kubeflow_katib.use_embedded_mysql" . ->}}
 {{<- if .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecret ->}}
 {{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecret >}}
@@ -51,13 +53,34 @@ katib-mysql-secret
 
 ##
 ## The NAMESPACE with the Kubernetes Secret which contains the mysql user.
-##  - NOTE: when the embedded mysql is disabled, the secret will be in the kubeflow katib namespace
+##  - NOTE: when the embedded mysql is disabled, the SOURCE secret will be in the kubeflow namespace
 ##
-{{<- define "kubeflow_katib.mysql.auth.secret_namespace" ->}}
+{{<- define "kubeflow_katib.mysql.auth.source_secret_namespace" ->}}
 {{<- if tmpl.Exec "kubeflow_katib.use_embedded_mysql" . ->}}
 {{< .Values.kubeflow_common.kubeflow_mysql.namespace >}}
 {{<- else ->}}
 kubeflow
+{{<- end ->}}
+{{<- end ->}}
+
+##
+## If Kubeflow Katib will use a secret cloned by Kyverno.
+## - NOTE: empty means false, non-empty means true
+##
+{{<- define "kubeflow_katib.mysql.auth.secret_is_cloned" ->}}
+{{<- if ne (tmpl.Exec "kubeflow_katib.mysql.auth.source_secret_namespace" .) "kubeflow" >}}
+true
+{{<- end ->}}
+{{<- end ->}}
+
+##
+## The NAME of the Kubernetes Secret that contains the mysql user (in the kubeflow namespace).
+##
+{{<- define "kubeflow_katib.mysql.auth.secret_name" ->}}
+{{<- if tmpl.Exec "kubeflow_katib.mysql.auth.secret_is_cloned" . ->}}
+cloned--katib-mysql-secret
+{{<- else ->}}
+{{<- tmpl.Exec "kubeflow_katib.mysql.auth.source_secret_name" . ->}}
 {{<- end ->}}
 {{<- end ->}}
 

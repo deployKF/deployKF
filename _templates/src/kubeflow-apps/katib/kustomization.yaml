@@ -8,7 +8,7 @@ namespace: kubeflow
 resources:
   - github.com/kubeflow/manifests/apps/katib/upstream/installs/katib-with-kubeflow?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
 
-  {{<- if ne (tmpl.Exec "kubeflow_katib.mysql.auth.secret_namespace" .) "kubeflow" >}}
+  {{<- if tmpl.Exec "kubeflow_katib.mysql.auth.secret_is_cloned" . >}}
   - resources/clone-mysql-secret-clusterpolicy.yaml
   {{<- end >}}
   
