@@ -37,10 +37,10 @@ spec:
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: katib-mysql-secret
-                  key: username
+                  name: "kubeflow-mysql-kubeflow-user"
+                  key: "username"
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: katib-mysql-secret
-                  key: password
+                  name: "kubeflow-mysql-kubeflow-user"
+                  key: "password"

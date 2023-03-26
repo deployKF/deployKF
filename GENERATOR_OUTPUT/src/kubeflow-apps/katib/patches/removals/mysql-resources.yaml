@@ -1,4 +1,4 @@
-## NOTE: this will remove all resources related to the on-cluster MySQL (we use RDS)
+## NOTE: this will remove all resources related to the baked-in MySQL deployment
 ---
 $patch: delete
 apiVersion: v1

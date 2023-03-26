@@ -8,6 +8,16 @@ namespace: kubeflow
 resources:
   - github.com/kubeflow/manifests/apps/katib/upstream/installs/katib-with-kubeflow?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
 
+  {{<- if ne (tmpl.Exec "kubeflow_katib.mysql.auth.secret_namespace" .) "kubeflow" >}}
+  - resources/clone-mysql-secret-clusterpolicy.yaml
+  {{<- end >}}
+  
+  {{<- if not (tmpl.Exec "kubeflow_katib.use_embedded_mysql" .) >}}
+  {{<- if not .Values.kubeflow_apps.katib.mysql.auth.existingSecret >}}
+  - resources/pipelines-mysql-secret.yaml
+  {{<- end >}}
+  {{<- end >}}
+
 patchesStrategicMerge:
   - patches/patch-katib-db-manager-deployment.yaml
   - patches/patch-katib-ui-virtualservice.yaml
@@ -18,8 +28,8 @@ patchesStrategicMerge:
 configMapGenerator:
   - name: katib-mysql-config
     literals:
-      - dbHost="{{< .Values.kubeflow_apps.katib.mysql.host >}}"
-      - dbPort="{{< .Values.kubeflow_apps.katib.mysql.port >}}"
+      - dbHost="{{< tmpl.Exec "kubeflow_katib.mysql.hostname" . >}}"
+      - dbPort="{{< tmpl.Exec "kubeflow_katib.mysql.port" . >}}"
       - dbName="{{< .Values.kubeflow_apps.katib.mysqlDatabase >}}"
 
 images:

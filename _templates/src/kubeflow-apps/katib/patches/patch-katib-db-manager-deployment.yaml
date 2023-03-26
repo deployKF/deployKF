@@ -37,10 +37,10 @@ spec:
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
-                  name: katib-mysql-secret
-                  key: username
+                  name: {{< tmpl.Exec "kubeflow_katib.mysql.auth.secret_name" . | quote >}}
+                  key: {{< tmpl.Exec "kubeflow_katib.mysql.auth.secret_username_key" . | quote >}}
             - name: DB_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: katib-mysql-secret
-                  key: password
+                  name: {{< tmpl.Exec "kubeflow_katib.mysql.auth.secret_name" . | quote >}}
+                  key: {{< tmpl.Exec "kubeflow_katib.mysql.auth.secret_password_key" . | quote >}}

@@ -9,6 +9,7 @@ resources:
   - github.com/kubeflow/manifests/apps/pipeline/upstream/env/platform-agnostic-multi-user?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
   - resources/generate-profile-resources-clusterpolicy.yaml
   - resources/clone-bucket-secret-clusterpolicy.yaml
+
   {{<- if ne (tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_namespace" .) "kubeflow" >}}
   - resources/clone-mysql-secret-clusterpolicy.yaml
   {{<- end >}}
