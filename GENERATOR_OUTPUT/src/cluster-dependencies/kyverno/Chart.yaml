@@ -3,5 +3,8 @@ name: cluster-dependencies--kyverno
 version: 1.0.0
 dependencies:
   - name: kyverno
+    ## NOTE: the current chart version 2.7.0 corresponds to Kyverno 1.9.0
+    ##       check corresponding versions at the following URL:
+    ##       https://artifacthub.io/packages/helm/kyverno/kyverno/{{ CHART_VERSION }}
     version: 2.7.0
     repository: https://kyverno.github.io/kyverno
