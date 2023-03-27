@@ -115,6 +115,10 @@ spec:
               {{- else }}
               value: "http://minio-console.{{ .Values.deployKF_helpers.kubeflow_gateway.http_endpoint }}/oauth_callback"
               {{- end }}
+            - name: MINIO_IDENTITY_OPENID_SCOPES
+              ## TODO: minio-console does not currently support refresh tokens
+              ##       https://github.com/minio/console/issues/2643
+              value: "openid,email,groups,profile,offline_access"
           command:
             - "/bin/bash"
             - "-c"

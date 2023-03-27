@@ -96,7 +96,9 @@ data:
     insecureSkipVerify: false
     {{- end }}
 
-    ## This defines how long each session is valid for
+    ## how long each session (JWT issued by argo) is valid for
+    ## TODO: argo-server currently does not support refresh tokens
+    ##       https://github.com/argoproj/argo-workflows/issues/5053
     sessionExpiry: 12h
 
     ## The Secret that contains the OIDC client id
@@ -131,7 +133,8 @@ data:
       enabled: false
 
     ## Impersonate Config
-    ## TODO: enable when impersonate PR is merged (https://github.com/argoproj/argo-workflows/pull/7193)
+    ## TODO: enable when impersonate PR is merged
+    ##       https://github.com/argoproj/argo-workflows/pull/7193
     #impersonate:
     #  enabled: true
     #  usernameClaim: "email"

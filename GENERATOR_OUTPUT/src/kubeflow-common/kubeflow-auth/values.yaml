@@ -150,7 +150,6 @@ oauth2Proxy:
 
     ## sets oauth2-proxy config: `cookie_refresh`
     ##
-    ## TODO: ensure `cookie_refresh` is actually working by setting to a very short value and checkin that the cookie is updated on refresh
     refresh: 1h
 
     ## sets oauth2-proxy config: `cookie_secret`
