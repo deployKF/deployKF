@@ -255,7 +255,7 @@ kubeflow_apps:
       host: "mysql.example.com"
       port: 3306
       auth:
-        username: root
+        username: kubeflow
         password: password
         existingSecret: ""
         existingSecretUsernameKey: "username"
