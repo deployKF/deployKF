@@ -13,9 +13,9 @@ export GOMPLATE_SUPPRESS_EMPTY=true
 
 # populate generator output directory
 gomplate \
-  --input-dir=_templates \
+  --input-dir=generator/templates \
   --output-dir=GENERATOR_OUTPUT \
   --left-delim "{{<" \
   --right-delim ">}}" \
   --context Values=values.yaml \
-  --template _helpers/
+  --template generator/helpers/
