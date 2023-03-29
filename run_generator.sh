@@ -13,9 +13,11 @@ export GOMPLATE_SUPPRESS_EMPTY=true
 
 # populate generator output directory
 gomplate \
-  --input-dir=generator/templates \
-  --output-dir=GENERATOR_OUTPUT \
-  --left-delim "{{<" \
-  --right-delim ">}}" \
-  --context Values=values.yaml \
-  --template generator/helpers/
+  --input-dir='./generator/templates' \
+  --output-dir='./GENERATOR_OUTPUT' \
+  --left-delim '{{<' \
+  --right-delim '>}}' \
+  --datasource 'Values_default=./generator/default_values.yaml' \
+  --datasource 'Values_custom=./values.yaml' \
+  --context 'Values=merge:Values_custom|Values_default' \
+  --template './generator/helpers/'

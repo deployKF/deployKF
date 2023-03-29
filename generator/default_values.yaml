@@ -1,0 +1,313 @@
+## TODO: replace all instances of cluster.local with this (might need a lot of patches)
+#clusterDomain: cluster.local
+
+repo:
+  url: ""
+  revision: ""
+  generatorOutputPath: ""
+
+
+argocd:
+  namespace: argocd
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+
+
+## TODO: use in templates
+#kubeflow:
+#  namespace: kubeflow
+#  useridHeader: kubeflow-userid
+
+
+## --------------------------------------------------------------------------------
+##
+##                              cluster-dependencies
+##
+## --------------------------------------------------------------------------------
+cluster_dependencies:
+
+  ## --------------------------------------
+  ##             cert-manager
+  ## --------------------------------------
+  cert_manager:
+    enabled: true
+    namespace: cert-manager
+
+    clusterIssuer:
+      enabled: true
+      issuerName: kubeflow-gateway-issuer
+
+      ## TODO: support other kinds of cluster issuers
+      type: SELF_SIGNED
+
+      selfSigned:
+        caIssuerName: selfsigned-ca-issuer
+        caSecretName: selfsigned-ca-issuer-root-cert
+
+        ## using trust-manager, each Namespace with the "deploykf.github.io/inject-root-ca-cert=enabled" label
+        ## is injected with a ConfigMap containing a "root-cert.pem" key that contains the self-signed root CA
+        ## applications can then trust the issued gateway certificates by trusting this CA
+        injectedConfigMapName: kubeflow-gateway-issuer-root-ca-cert
+
+  ## --------------------------------------
+  ##                 istio
+  ## --------------------------------------
+  istio:
+    enabled: true
+    namespace: istio-system
+
+  ## --------------------------------------
+  ##                knative
+  ## --------------------------------------
+  knative:
+    ## TODO: knative is disabled
+    enabled: false
+    namespace:
+      eventing: knative-eventing
+      serving: knative-serving
+
+  ## --------------------------------------
+  ##                kyverno
+  ## --------------------------------------
+  kyverno:
+    enabled: true
+    namespace: kyverno
+
+  ## --------------------------------------
+  ##            sealed-secrets
+  ## --------------------------------------
+  sealed_secrets:
+    enabled: false
+    namespace: sealed-secrets
+
+
+## --------------------------------------------------------------------------------
+##
+##                                 kubeflow-common
+##
+## --------------------------------------------------------------------------------
+kubeflow_common:
+
+  ## --------------------------------------
+  ##        kubeflow-argo-workflows
+  ## --------------------------------------
+  kubeflow_argo_workflows:
+    enabled: true
+    namespace: kubeflow-argo-workflows
+
+  ## --------------------------------------
+  ##             kubeflow-auth
+  ## --------------------------------------
+  kubeflow_auth:
+    enabled: true
+    namespace: kubeflow-auth
+
+  ## --------------------------------------
+  ##          kubeflow-dashboard
+  ## --------------------------------------
+  kubeflow_dashboard:
+    enabled: true
+
+  ## --------------------------------------
+  ##        kubeflow-istio-gateway
+  ## --------------------------------------
+  kubeflow_istio_gateway:
+    enabled: true
+    namespace: kubeflow-istio-gateway
+
+    gateway:
+      name: kubeflow-gateway
+
+      selectorLabels:
+        app: kubeflow-gateway
+        istio: kubeflow-gateway
+
+      hostname: kubeflow.example.com
+
+      ports:
+        http: 8080
+        https: 8443
+
+      tls:
+        enabled: true
+
+      ## if the "PROXY Protocol" is enabled on the gateway
+      ## - https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt
+      ## - https://istio.io/v1.11/docs/ops/configuration/traffic-management/network-topologies/#proxy-protocol
+      ##
+      enableProxyProtocol: false
+
+      ## the number of x-forwarded-for HTTP header hops to trust
+      ##  - important if using a LoadBalancer (like AWS NLB) as the Service type of kubeflow-istio-gateway
+      ##
+      ## TODO: this should probably be 0 by default
+      xffNumTrustedHops: 1
+
+    service:
+      name: kubeflow-gateway
+      annotations: {}
+
+    serviceAccount:
+      name: kubeflow-gateway
+      annotations: {}
+
+    deployment:
+      replicaCount: 1
+
+  ## --------------------------------------
+  ##            kubeflow-minio
+  ## --------------------------------------
+  kubeflow_minio:
+    enabled: true
+    namespace: kubeflow-minio
+
+    rootUser:
+      username: minioadmin
+      password: minioadmin
+      existingSecret: ""
+      existingSecretUsernameKey: "username"
+      existingSecretPasswordKey: "password"
+
+  ## --------------------------------------
+  ##            kubeflow-mysql
+  ## --------------------------------------
+  kubeflow_mysql:
+    enabled: true
+    namespace: kubeflow-mysql
+
+    ## configs for the "root@localhost" mysql user
+    ## (used for liveness probes)
+    rootUser:
+      password: password
+      existingSecret: ""
+      existingSecretPasswordKey: "password"
+
+    ## configs for the "kubeflow" mysql user
+    ## (used by kubeflow apps)
+    kubeflowUser:
+      username: kubeflow
+      password: password
+      existingSecret: ""
+      existingSecretUsernameKey: "username"
+      existingSecretPasswordKey: "password"
+
+  ## --------------------------------------
+  ##      kubeflow-profiles-generator
+  ## --------------------------------------
+  kubeflow_profiles_generator:
+    enabled: true
+
+
+## --------------------------------------------------------------------------------
+##
+##                                  kubeflow-apps
+##
+## --------------------------------------------------------------------------------
+kubeflow_apps:
+
+  ## --------------------------------------
+  ##                 katib
+  ## --------------------------------------
+  katib:
+    enabled: true
+
+    ## NOTE: these values are ignored when `kubeflow_common.kubeflow_mysql.enabled` is 'true',
+    ##       as we automatically populate the required settings to use the embedded mysql
+    mysql:
+      host: "mysql.example.com"
+      port: 3306
+      auth:
+        username: kubeflow
+        password: password
+        existingSecret: ""
+        existingSecretUsernameKey: "username"
+        existingSecretPasswordKey: "password"
+
+    mysqlDatabase: katib
+
+  ## --------------------------------------
+  ##               notebooks
+  ## --------------------------------------
+  notebooks:
+    enabled: true
+
+  ## --------------------------------------
+  ##               pipelines
+  ## --------------------------------------
+  pipelines:
+    enabled: true
+
+    bucket:
+      name: kubeflow-pipelines
+      region: ""
+
+    ## NOTE: these values are ignored when `kubeflow_common.kubeflow_minio.enabled` is 'true',
+    ##       as we automatically populate the required settings to use the embedded minio
+    objectStore:
+      host: s3.amazonaws.com
+      port: ""
+      useSSL: true
+      auth:
+        accessKey: minioadmin
+        secretKey: minioadmin
+        existingSecret: ""
+        existingSecretAccessKeyKey: "AWS_ACCESS_KEY_ID"
+        existingSecretSecretKeyKey: "AWS_SECRET_ACCESS_KEY"
+
+    ## NOTE: these values are ignored when `kubeflow_common.kubeflow_mysql.enabled` is 'true',
+    ##       as we automatically populate the required settings to use the embedded mysql
+    mysql:
+      host: "mysql.example.com"
+      port: 3306
+      auth:
+        username: kubeflow
+        password: password
+        existingSecret: ""
+        existingSecretUsernameKey: "username"
+        existingSecretPasswordKey: "password"
+
+    mysqlDatabases:
+      cacheDatabase: kfp_cache
+      metadataDatabase: kfp_metadata
+      pipelinesDatabase: kfp_pipelines
+
+  ## --------------------------------------
+  ##          poddefaults-webhook
+  ## --------------------------------------
+  poddefaults_webhook:
+    enabled: true
+
+  ## --------------------------------------
+  ##             tensorboards
+  ## --------------------------------------
+  tensorboards:
+    enabled: true
+
+  ## --------------------------------------
+  ##           training-operator
+  ## --------------------------------------
+  training_operator:
+    enabled: true
+
+  ## --------------------------------------
+  ##                volumes
+  ## --------------------------------------
+  volumes:
+    enabled: true
+
+
+## --------------------------------------------------------------------------------
+##
+##                                kubeflow-contrib
+##
+## --------------------------------------------------------------------------------
+kubeflow_contrib:
+
+  ## --------------------------------------
+  ##                kserve
+  ## --------------------------------------
+  kserve:
+    ## TODO: kserve is disabled
+    enabled: false
+
