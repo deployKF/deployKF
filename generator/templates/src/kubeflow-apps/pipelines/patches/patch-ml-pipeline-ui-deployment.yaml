@@ -7,6 +7,32 @@ spec:
     spec:
       containers:
         - name: ml-pipeline-ui
+          readinessProbe:
+            ## NOTE: we remove the readinessProbe because this Deployment has only 1 replica,
+            ##       so there is never a case when we don't want to at least try and send traffic to the Pod,
+            ##       also, the livenessProbe will restart the Pod if it becomes unhealthy,
+            ##       and the startupProbe protects the Pod during startup
+            $patch: delete
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 5
+          startupProbe:
+            failureThreshold: 10
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - wget
+                - -q
+                - -S
+                - -O
+                - '-'
+                - http://localhost:3000/apis/v1beta1/healthz
           env:
             ## TODO: consider supporting the argo "log archive" feature (disabled by default)
             ##       https://github.com/kubeflow/pipelines/blob/2.0.0-alpha.5/frontend/server/configs.ts#L83-L91
