@@ -38,3 +38,6 @@ Sessionx.vim
 .AppleDouble
 .LSOverride
 ._*
+
+## prevent rendered `.gomplateignore` files being commited
+.gomplateignore

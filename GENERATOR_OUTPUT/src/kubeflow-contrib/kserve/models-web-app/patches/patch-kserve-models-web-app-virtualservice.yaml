@@ -1,8 +1,0 @@
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
-metadata:
-  name: kserve-models-web-app
-  namespace: kubeflow
-spec:
-  gateways:
-    - kubeflow-istio-gateway/kubeflow-gateway

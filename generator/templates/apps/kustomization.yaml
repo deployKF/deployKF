@@ -19,6 +19,8 @@ resources:
   {{<- if .Values.cluster_dependencies.knative.enabled >}}
   - cluster-dependencies/knative--knative-eventing.yaml
   - cluster-dependencies/knative--knative-serving.yaml
+  - namespaces/knative-eventing.yaml
+  - namespaces/knative-serving.yaml
   {{<- end >}}
   
   {{<- if .Values.cluster_dependencies.kyverno.enabled >}}
