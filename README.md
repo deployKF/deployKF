@@ -43,14 +43,20 @@
 
 You can get started with deployKF by following these steps:
 
-1. fork the `deployKF/deployKF` repository
-    - TIP: start from a release branch rather than the current `main`
-2. update the `values.yaml` file to suite your environment
-3. generate the manifests by running `run_generator.sh` 
-4. add the generated files to your git repository using `git add GENERATOR_OUTPUT` 
-5. manually apply the generated ArgoCD ["app of apps"](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/#app-of-apps-pattern) to your Kubernetes cluster:
+1. install the `deploykf` cli tool ([found in the `deployKF/cli` repo](https://github.com/deployKF/cli))
+2. manually create a git repo that will store your Kubeflow manifests, and clone it locally:
+    1. ~~create your initial `custom-values.yaml` file with the interactive `deploykf init-values --source-version "v0.1.0-alpha.0"` command~~ _(not yet implemented)_
+        - _TIP: for now, use the [`values.yaml`](values.yaml) and [`generator/default_values.yaml`](generator/default_values.yaml) files in this repo as a starting point_
+        - _TIP: make sure you set `repo.url` and `repo.branch` to the correct values for your git repo_
+    2. make any further changes to your `custom-values.yaml` file
+    3. run `deploykf generate --source-version "v0.1.0-alpha.0" --values ./custom-values.yaml --output-dir ./GENERATOR_OUTPUT`
+    4. add the generated files to your git repository using `git add GENERATOR_OUTPUT`
+    5. create a git commit using `git commit -m "my commit message"`
+    6. push the commit to your git repository using `git push`
+3. manually apply the generated ArgoCD ["app of apps"](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/#app-of-apps-pattern) to your Kubernetes cluster:
     - `kubectl apply --filename GENERATOR_OUTPUT/app-of-apps.yaml`
-6. sync the ArgoCD applications __IN THE FOLLOWING ORDER__:
+4. go to your ArgoCD web interface, and sync the ArgoCD applications:
+    1. _WARNING: you __MUST SYNC THE APPLICATIONS IN THE ORDER LISTED BELOW__, as some applications depend on others_
     1. `deploykf-app-of-apps`
     2. __cluster-dependencies__ _(label: `app.kubernetes.io/component: cluster-dependencies`)_
         1. `kf-dep--kyverno`
@@ -83,7 +89,7 @@ You can get started with deployKF by following these steps:
     5. __kubeflow-contrib__ _(label: `app.kubernetes.io/component: kubeflow-contrib`)_
         1. `kf-contrib--kserve--kserve`
         2. `kf-contrib--kserve--models-web-app`
-7. access the Kubeflow UI through the Istio Gateway Service:
+5. access the Kubeflow UI through the Istio Gateway Service:
     1. add the following lines to your `/etc/hosts` file:
         - `127.0.0.1 kubeflow.example.com` 
         - `127.0.0.1 argo-server.kubeflow.example.com` 
