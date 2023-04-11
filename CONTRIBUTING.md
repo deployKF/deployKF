@@ -5,14 +5,23 @@ Contributions are welcome via GitHub pull requests.
 
 ## Use Semantic Commits
 
-Ensure PR names and commit messages use semantic naming conventions, for example:
-- `fix: fixed a bug`
-- `feat: added a cool feature`
-- `refactor: made some big changes`
-- `ci: changes to CI configs and scripts`
-- `chore: other commits`
-- [other conventional commit types](https://github.com/commitizen/conventional-commit-types/blob/master/index.json)
+We use [semantic commits](https://www.conventionalcommits.org/en/v1.0.0/) to help us automatically generate changelogs and release notes.
 
+__The name of your PR must be a semantic commit message__, with one of the following prefixes:
+
+- `fix:` (bug fixes)
+- `feat:` (new features)
+- `improve:` (improvements to existing features)
+- `refactor:` (code changes that neither fixes a bug nor adds a feature)
+- `revert:` (reverts a previous commit)
+- `test:` (adding missing tests, refactoring tests; no production code change)
+- `ci:` (changes to CI configuration or build scripts)
+- `docs:` (documentation only changes)
+- `chore:` (ignored in changelog)
+
+To indicate a breaking change, add `!` after the prefix, e.g. `feat!: my commit message`.
+
+Please do NOT include a scope, as we do not use them, for example `feat(deploy): my commit message`.
 
 ## Sign Your Work
 
