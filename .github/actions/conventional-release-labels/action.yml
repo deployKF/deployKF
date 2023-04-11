@@ -1,0 +1,29 @@
+name: "conventional-release-labels"
+description: "automatically adds labels to pull requests based on Conventional Commits. Works with GitHub automated releases"
+inputs:
+  token:
+    description: "GitHub token for applying labels, defaults to using secrets.GITHUB_TOKEN"
+    required: false
+    default: ${{ github.token }}
+  type_labels:
+    description: "What labels to apply to different conventional commit types"
+    required: false
+    default: |-
+      { "feat": "feature", "fix": "fix", "breaking": "breaking" }
+  ignored_types:
+    description: "Conventional Commit types that should have ignore_label applied"
+    required: false
+    default: |-
+      ["chore"]
+  ignore_label:
+    description: "label to apply for ignored commits"
+    required: false
+    default: "ignore-for-release"
+
+branding:
+  icon: "align-justify"
+  color: "yellow"
+
+runs:
+  using: "node16"
+  main: "dist/index.js"

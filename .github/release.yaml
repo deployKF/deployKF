@@ -1,0 +1,23 @@
+changelog:
+  exclude:
+    labels:
+      - changelog/ignore
+  categories:
+    - title: Significant Changes
+      labels:
+        - changelog/significant
+    - title: New Features
+      labels:
+        - changelog/feature
+    - title: Improvements
+      labels:
+        - changelog/improve
+    - title: Bug Fixes
+      labels:
+        - changelog/fix
+    - title: Documentation
+      labels:
+          - changelog/docs
+    - title: Miscellaneous
+      labels:
+        - "*"

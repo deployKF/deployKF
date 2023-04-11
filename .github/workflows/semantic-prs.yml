@@ -1,0 +1,59 @@
+name: Semantic PRs
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - edited
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate_title:
+    name: Validate Title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@c3cd5d1ea3580753008872425915e343e351ab54 # v5.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # allowed commit types
+          types: |
+            fix
+            feat
+            improve
+            refactor
+            revert
+            test
+            ci
+            docs
+            chore
+
+          # disallow all commit scopes
+          disallowScopes: ".*"
+
+  apply_labels:
+    name: Apply Labels
+    runs-on: ubuntu-latest
+    needs: validate_title
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: deployKF/deployKF/.github/actions/conventional-release-labels@main
+        with:
+          type_labels: |
+            {
+              "breaking": "changelog/significant",
+              "fix": "changelog/fix", 
+              "feat": "changelog/feature", 
+              "improve": "changelog/improve",
+              "docs": "changelog/docs"
+            }
+          ignored_types: |
+            [
+              "chore"
+            ]
+          ignore_label: "changelog/ignore"
