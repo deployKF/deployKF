@@ -1,0 +1,27 @@
+bases:
+- ../../base
+commonLabels:
+  app: poddefaults
+  app.kubernetes.io/component: poddefaults
+  app.kubernetes.io/name: poddefaults
+  kustomize.component: poddefaults
+configurations:
+- params.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+namePrefix: admission-webhook-
+namespace: kubeflow
+patchesStrategicMerge:
+- mutating-webhook-configuration.yaml
+- deployment.yaml
+resources:
+- certificate.yaml
+vars:
+- fieldref:
+    fieldPath: metadata.name
+  name: podDefaultsCertName
+  objref:
+    group: cert-manager.io
+    kind: Certificate
+    name: cert
+    version: v1
