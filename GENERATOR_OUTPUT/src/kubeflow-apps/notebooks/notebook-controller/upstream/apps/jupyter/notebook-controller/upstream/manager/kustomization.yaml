@@ -1,0 +1,9 @@
+configMapGenerator:
+- literals:
+  - USE_ISTIO=true
+  - ISTIO_GATEWAY=kubeflow/kubeflow-gateway
+  name: config
+resources:
+- manager.yaml
+- service-account.yaml
+- service.yaml

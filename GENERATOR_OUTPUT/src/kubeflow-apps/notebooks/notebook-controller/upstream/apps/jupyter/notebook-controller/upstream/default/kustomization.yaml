@@ -1,0 +1,9 @@
+bases:
+- ../rbac
+- ../manager
+- ../crd
+commonLabels:
+  app: notebook-controller
+  kustomize.component: notebook-controller
+namePrefix: notebook-controller-
+namespace: notebook-controller-system

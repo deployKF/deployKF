@@ -6,7 +6,8 @@ kind: Kustomization
 namespace: kubeflow
 
 resources:
-  - github.com/kubeflow/manifests/apps/jupyter/notebook-controller/upstream/overlays/kubeflow?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
+  ## upstream
+  - upstream/apps/jupyter/notebook-controller/upstream/overlays/kubeflow
 
 patchesStrategicMerge:
   ## NOTE: the upstream v1.6.1 manifests do not include parameters for notebook culling,
