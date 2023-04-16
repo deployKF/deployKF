@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+bases:
+- ../../upstream/manifests/base/crds
+- ../../upstream/manifests/cluster-install/workflow-controller-rbac
+- ../../base
+kind: Kustomization
+patchesJson6902:
+- path: workflow-controller-clusterrolebinding-patch.json
+  target:
+    group: rbac.authorization.k8s.io
+    kind: ClusterRoleBinding
+    name: argo-binding
+    version: v1

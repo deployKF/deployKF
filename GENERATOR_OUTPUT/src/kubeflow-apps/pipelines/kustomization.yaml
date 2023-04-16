@@ -6,7 +6,10 @@ kind: Kustomization
 namespace: kubeflow
 
 resources:
-  - github.com/kubeflow/manifests/apps/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
+  ## upstream
+  - upstream/apps/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user
+
+  ## local
   - resources/generate-profile-resources-clusterpolicy.yaml
   - resources/clone-bucket-secret-clusterpolicy.yaml
   - resources/clone-mysql-secret-clusterpolicy.yaml

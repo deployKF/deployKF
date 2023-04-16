@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+bases:
+- ../upstream/manifests/base/workflow-controller
+configurations:
+- params.yaml
+kind: Kustomization
+patchesStrategicMerge:
+- workflow-controller-deployment-patch.yaml
+- workflow-controller-configmap-patch.yaml

@@ -49,6 +49,9 @@ Chart.lock
 .gomplateignore
 .gomplateignore_template
 
+## deployKF - dev scripts
+sync_upstream.sh
+
 ## deployKF - cluster-dependencies
 {{<- if not .Values.cluster_dependencies.cert_manager.enabled >}}
 apps/cluster-dependencies/cert-manager.yaml
