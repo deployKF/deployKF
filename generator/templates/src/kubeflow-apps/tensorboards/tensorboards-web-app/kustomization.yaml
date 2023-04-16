@@ -6,7 +6,8 @@ kind: Kustomization
 namespace: kubeflow
 
 resources:
-  - github.com/kubeflow/manifests/apps/tensorboard/tensorboards-web-app/upstream/overlays/istio?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1
+  ## upstream
+  - upstream/apps/tensorboard/tensorboards-web-app/upstream/overlays/istio
 
 patchesStrategicMerge:
   - patches/patch-tensorboards-web-app-virtualservice.yaml

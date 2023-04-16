@@ -1,0 +1,4 @@
+configurations:
+- kustomizeconfig.yaml
+resources:
+- bases/tensorboard.kubeflow.org_tensorboards.yaml
