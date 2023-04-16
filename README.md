@@ -1,16 +1,15 @@
 <h1 align="center">deployKF</h1>
 <div align="center">
-  <b>Compose your open ML platform</b>
+  <b>Deploy the Machine Learning Toolkit for Kubernetes</b>
 </div>
 
 <br>
 
 <p align="center">
-  <b>deployKF</b> is your open-source helper for deploying MLOps tools on <a href="https://kubernetes.io/" target="_blank" rel="noopener">Kubernetes</a>,
-  with support for <a href="https://www.kubeflow.org/docs/components/" target="_blank" rel="noopener">Kubeflow Components</a> and more
+  <b>deployKF</b> effortlessly integrates <a href="https://www.kubeflow.org/" target="_blank" rel="noopener">Kubeflow</a> and leading MLOps tools on <a href="https://kubernetes.io/" target="_blank" rel="noopener">Kubernetes</a>, compose your open ML platform today!
 </p>
 
-<p align="center">
+<div align="center">
   <a href="https://github.com/deployKF/deployKF/fork">
     <img alt="Contributors" src="https://img.shields.io/github/forks/deployKF/deployKF?style=flat-square&color=28a745">
   </a>
@@ -27,4 +26,6 @@
   <a href="https://github.com/deployKF/deployKF/stargazers">
     <img alt="GitHub Stars" src="https://img.shields.io/github/stars/deployKF/deployKF?style=for-the-badge&color=ffcb2f&label=Support%20with%20%E2%AD%90%20on%20GitHub">
   </a>
-</p>
+  <br>
+  <sub><sub>Crafted with ❤️ by the developers of Kubeflow.</sub></sub>
+</div>
