@@ -83,33 +83,33 @@ manifests/deploykf-dependencies/sealed-secrets/
 {{<- end >}}
 
 ## deployKF - kubeflow-tools
-{{<- if not .Values.kubeflow_apps.katib.enabled >}}
+{{<- if not .Values.kubeflow_tools.katib.enabled >}}
 argocd/kubeflow-tools/katib.yaml
 manifests/kubeflow-tools/katib/
 {{<- end >}}
-{{<- if not .Values.kubeflow_apps.notebooks.enabled >}}
+{{<- if not .Values.kubeflow_tools.notebooks.enabled >}}
 argocd/kubeflow-tools/notebooks--jupyter-web-app.yaml
 argocd/kubeflow-tools/notebooks--notebook-controller.yaml
 manifests/kubeflow-tools/notebooks/
 {{<- end >}}
-{{<- if not .Values.kubeflow_apps.pipelines.enabled >}}
+{{<- if not .Values.kubeflow_tools.pipelines.enabled >}}
 argocd/kubeflow-tools/pipelines.yaml
 manifests/kubeflow-tools/pipelines/
 {{<- end >}}
-{{<- if not .Values.kubeflow_apps.poddefaults_webhook.enabled >}}
+{{<- if not .Values.kubeflow_tools.poddefaults_webhook.enabled >}}
 argocd/kubeflow-tools/poddefaults-webhook.yaml
 manifests/kubeflow-tools/poddefaults-webhook/
 {{<- end >}}
-{{<- if not .Values.kubeflow_apps.tensorboards.enabled >}}
+{{<- if not .Values.kubeflow_tools.tensorboards.enabled >}}
 argocd/kubeflow-tools/tensorboards--tensorboard-controller.yaml
 argocd/kubeflow-tools/tensorboards--tensorboards-web-app.yaml
 manifests/kubeflow-tools/tensorboards/
 {{<- end >}}
-{{<- if not .Values.kubeflow_apps.training_operator.enabled >}}
+{{<- if not .Values.kubeflow_tools.training_operator.enabled >}}
 argocd/kubeflow-tools/training-operator.yaml
 manifests/kubeflow-tools/training-operator/
 {{<- end >}}
-{{<- if not .Values.kubeflow_apps.volumes.enabled >}}
+{{<- if not .Values.kubeflow_tools.volumes.enabled >}}
 argocd/kubeflow-tools/volumes--volumes-web-app.yaml
 manifests/kubeflow-tools/volumes/
 {{<- end >}}

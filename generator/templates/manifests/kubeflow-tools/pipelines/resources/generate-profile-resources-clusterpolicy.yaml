@@ -234,7 +234,7 @@ spec:
                       ## S3 - Object Store Configs
                       ## ================================
                       - name: AWS_REGION
-                        value: {{< .Values.kubeflow_apps.pipelines.bucket.region | quote >}}
+                        value: {{< .Values.kubeflow_tools.pipelines.bucket.region | quote >}}
                       - name: AWS_S3_ENDPOINT
                         value: {{< tmpl.Exec "kubeflow_pipelines.object_store.endpoint" . | quote >}}
                       - name: AWS_ACCESS_KEY_ID

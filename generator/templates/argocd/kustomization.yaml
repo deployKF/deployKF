@@ -36,33 +36,33 @@ resources:
   ###################
   ## kubeflow-tools ##
   ###################
-  {{<- if .Values.kubeflow_apps.katib.enabled >}}
+  {{<- if .Values.kubeflow_tools.katib.enabled >}}
   - kubeflow-tools/katib.yaml
   {{<- end >}}
 
-  {{<- if .Values.kubeflow_apps.notebooks.enabled >}}
+  {{<- if .Values.kubeflow_tools.notebooks.enabled >}}
   - kubeflow-tools/notebooks--jupyter-web-app.yaml
   - kubeflow-tools/notebooks--notebook-controller.yaml
   {{<- end >}}
 
-  {{<- if .Values.kubeflow_apps.pipelines.enabled >}}
+  {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
   - kubeflow-tools/pipelines.yaml
   {{<- end >}}
 
-  {{<- if .Values.kubeflow_apps.poddefaults_webhook.enabled >}}
+  {{<- if .Values.kubeflow_tools.poddefaults_webhook.enabled >}}
   - kubeflow-tools/poddefaults-webhook.yaml
   {{<- end >}}
 
-  {{<- if .Values.kubeflow_apps.tensorboards.enabled >}}
+  {{<- if .Values.kubeflow_tools.tensorboards.enabled >}}
   - kubeflow-tools/tensorboards--tensorboard-controller.yaml
   - kubeflow-tools/tensorboards--tensorboards-web-app.yaml
   {{<- end >}}
 
-  {{<- if .Values.kubeflow_apps.training_operator.enabled >}}
+  {{<- if .Values.kubeflow_tools.training_operator.enabled >}}
   - kubeflow-tools/training-operator.yaml
   {{<- end >}}
 
-  {{<- if .Values.kubeflow_apps.volumes.enabled >}}
+  {{<- if .Values.kubeflow_tools.volumes.enabled >}}
   - kubeflow-tools/volumes--volumes-web-app.yaml
   {{<- end >}}
 

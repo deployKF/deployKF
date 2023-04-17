@@ -135,7 +135,7 @@ minio:
   ##
   buckets:
     ## TODO: should we be taking the bucket name from kubeflow-pipelines value, or forcing user to align them?
-    - name: {{< .Values.kubeflow_apps.pipelines.bucket.name | quote >}}
+    - name: {{< .Values.kubeflow_tools.pipelines.bucket.name | quote >}}
       versioning: false
 
   ## TODO: consider adding programmatic creation of access keys

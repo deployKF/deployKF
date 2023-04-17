@@ -79,11 +79,11 @@ mysql:
   ## mysql databases to create with the init_file
   ##
   databases:
-    {{<- if .Values.kubeflow_apps.katib.enabled >}}
-    - name: {{< .Values.kubeflow_apps.katib.mysqlDatabase | quote >}}
+    {{<- if .Values.kubeflow_tools.katib.enabled >}}
+    - name: {{< .Values.kubeflow_tools.katib.mysqlDatabase | quote >}}
     {{<- end >}}
-    {{<- if .Values.kubeflow_apps.pipelines.enabled >}}
-    - name: {{< .Values.kubeflow_apps.pipelines.mysqlDatabases.cacheDatabase | quote >}}
-    - name: {{< .Values.kubeflow_apps.pipelines.mysqlDatabases.metadataDatabase | quote >}}
-    - name: {{< .Values.kubeflow_apps.pipelines.mysqlDatabases.pipelinesDatabase | quote >}}
+    {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
+    - name: {{< .Values.kubeflow_tools.pipelines.mysqlDatabases.cacheDatabase | quote >}}
+    - name: {{< .Values.kubeflow_tools.pipelines.mysqlDatabases.metadataDatabase | quote >}}
+    - name: {{< .Values.kubeflow_tools.pipelines.mysqlDatabases.pipelinesDatabase | quote >}}
     {{<- end >}}

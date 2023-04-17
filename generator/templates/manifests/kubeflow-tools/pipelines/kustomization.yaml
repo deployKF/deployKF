@@ -18,13 +18,13 @@ resources:
   {{<- end >}}
 
   {{<- if not (tmpl.Exec "kubeflow_pipelines.use_embedded_minio" .) >}}
-  {{<- if not .Values.kubeflow_apps.pipelines.objectStore.auth.existingSecret >}}
+  {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecret >}}
   - resources/pipelines-bucket-secret.yaml
   {{<- end >}}
   {{<- end >}}
 
   {{<- if not (tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" .) >}}
-  {{<- if not .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret >}}
+  {{<- if not .Values.kubeflow_tools.pipelines.mysql.auth.existingSecret >}}
   - resources/pipelines-mysql-secret.yaml
   {{<- end >}}
   {{<- end >}}
@@ -73,8 +73,8 @@ configMapGenerator:
       ## ================================
       ## Bucket Configs
       ## ================================
-      - bucketName="{{< .Values.kubeflow_apps.pipelines.bucket.name >}}"
-      - bucketRegion="{{< .Values.kubeflow_apps.pipelines.bucket.region >}}"
+      - bucketName="{{< .Values.kubeflow_tools.pipelines.bucket.name >}}"
+      - bucketRegion="{{< .Values.kubeflow_tools.pipelines.bucket.region >}}"
 
       ## ================================
       ## Object Store Configs
@@ -93,9 +93,9 @@ configMapGenerator:
       - ConMaxLifeTime="120s"
       - dbHost="{{< tmpl.Exec "kubeflow_pipelines.mysql.hostname" . >}}"
       - dbPort="{{< tmpl.Exec "kubeflow_pipelines.mysql.port" . >}}"
-      - cacheDb="{{< .Values.kubeflow_apps.pipelines.mysqlDatabases.cacheDatabase >}}"
-      - mlmdDb="{{< .Values.kubeflow_apps.pipelines.mysqlDatabases.metadataDatabase >}}"
-      - pipelineDb="{{< .Values.kubeflow_apps.pipelines.mysqlDatabases.pipelinesDatabase >}}"
+      - cacheDb="{{< .Values.kubeflow_tools.pipelines.mysqlDatabases.cacheDatabase >}}"
+      - mlmdDb="{{< .Values.kubeflow_tools.pipelines.mysqlDatabases.metadataDatabase >}}"
+      - pipelineDb="{{< .Values.kubeflow_tools.pipelines.mysqlDatabases.pipelinesDatabase >}}"
 
   - name: ml-pipeline-ui-configmap
     behavior: merge

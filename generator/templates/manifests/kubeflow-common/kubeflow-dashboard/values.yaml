@@ -42,19 +42,19 @@ centralDashboard:
     ##
     ## TODO: add gomplates values to let users bring their own links
     menuLinks:
-      {{<- if .Values.kubeflow_apps.notebooks.enabled >}}
+      {{<- if .Values.kubeflow_tools.notebooks.enabled >}}
       - type: item
         text: Notebooks
         icon: book
         link: "/jupyter/"
       {{<- end >}}
-      {{<- if .Values.kubeflow_apps.volumes.enabled >}}
+      {{<- if .Values.kubeflow_tools.volumes.enabled >}}
       - type: item
         text: Volumes
         icon: device:storage
         link: "/volumes/"
       {{<- end >}}
-      {{<- if .Values.kubeflow_apps.tensorboards.enabled >}}
+      {{<- if .Values.kubeflow_tools.tensorboards.enabled >}}
       - type: item
         text: Tensorboards
         icon: assessment
@@ -66,13 +66,13 @@ centralDashboard:
         icon: kubeflow:models
         link: "/kserve-endpoints/"
       {{<- end >}}
-      {{<- if .Values.kubeflow_apps.katib.enabled >}}
+      {{<- if .Values.kubeflow_tools.katib.enabled >}}
       - type: item
         text: Katib
         icon: kubeflow:katib
         link: "/katib/"
       {{<- end >}}
-      {{<- if .Values.kubeflow_apps.pipelines.enabled >}}
+      {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
       - type: item
         text: KFP - Pipelines
         icon: kubeflow:pipeline-centered
@@ -128,12 +128,12 @@ centralDashboard:
     ## quick action links that appear in the home page
     ##
     quickLinks:
-      {{<- if .Values.kubeflow_apps.notebooks.enabled >}}
+      {{<- if .Values.kubeflow_tools.notebooks.enabled >}}
       - text: Create a new Notebook
         desc: Kubeflow Notebooks
         link: "/jupyter/new"
       {{<- end >}}
-      {{<- if .Values.kubeflow_apps.pipelines.enabled >}}
+      {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
       - text: Upload a Pipeline
         desc: Kubeflow Pipelines
         link: "/pipeline/#/pipelines"
@@ -148,22 +148,22 @@ centralDashboard:
       - text: deployKF Website
         desc: The tool that deployed your Kubeflow!
         link: https://github.com/deployKF/deployKF
-      {{<- if .Values.kubeflow_apps.pipelines.enabled >}}
+      {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
       - text: Kubeflow Pipelines Documentation
         desc: Documentation for Kubeflow Pipelines
         link: https://www.kubeflow.org/docs/components/pipelines/
       {{<- end >}}
-      {{<- if .Values.kubeflow_apps.notebooks.enabled >}}
+      {{<- if .Values.kubeflow_tools.notebooks.enabled >}}
       - text: Kubeflow Notebooks Documentation
         desc: Documentation for Kubeflow Notebooks
         link: https://www.kubeflow.org/docs/components/notebooks/
       {{<- end >}}
-      {{<- if .Values.kubeflow_apps.training_operator.enabled >}}
+      {{<- if .Values.kubeflow_tools.training_operator.enabled >}}
       - text: Kubeflow Training Operator Documentation
         desc: Documentation for Kubeflow Training Operator
         link: https://www.kubeflow.org/docs/components/training/
       {{<- end >}}
-      {{<- if .Values.kubeflow_apps.katib.enabled >}}
+      {{<- if .Values.kubeflow_tools.katib.enabled >}}
       - text: Katib Documentation
         desc: Documentation for Katib
         link: https://www.kubeflow.org/docs/components/katib/

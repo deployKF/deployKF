@@ -39,8 +39,8 @@ deployKF:
 
   pipelines:
     bucket:
-      name: {{< .Values.kubeflow_apps.pipelines.bucket.name | quote >}}
-      region: {{< .Values.kubeflow_apps.pipelines.bucket.region | quote >}}
+      name: {{< .Values.kubeflow_tools.pipelines.bucket.name | quote >}}
+      region: {{< .Values.kubeflow_tools.pipelines.bucket.region | quote >}}
 
 
 ########################################

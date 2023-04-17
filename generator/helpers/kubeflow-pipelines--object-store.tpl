@@ -15,7 +15,7 @@ true
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
 minio-api.{{< .Values.kubeflow_common.kubeflow_minio.namespace >}}.svc.cluster.local
 {{<- else ->}}
-{{< .Values.kubeflow_apps.pipelines.objectStore.host >}}
+{{< .Values.kubeflow_tools.pipelines.objectStore.host >}}
 {{<- end ->}}
 {{<- end ->}}
 
@@ -26,7 +26,7 @@ minio-api.{{< .Values.kubeflow_common.kubeflow_minio.namespace >}}.svc.cluster.l
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
 9000
 {{<- else ->}}
-{{< .Values.kubeflow_apps.pipelines.objectStore.port | default "" >}}
+{{< .Values.kubeflow_tools.pipelines.objectStore.port | default "" >}}
 {{<- end ->}}
 {{<- end ->}}
 
@@ -37,10 +37,10 @@ minio-api.{{< .Values.kubeflow_common.kubeflow_minio.namespace >}}.svc.cluster.l
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
 minio-api.{{< .Values.kubeflow_common.kubeflow_minio.namespace >}}.svc.cluster.local:9000
 {{<- else ->}}
-{{<- if .Values.kubeflow_apps.pipelines.objectStore.port ->}}
-{{< .Values.kubeflow_apps.pipelines.objectStore.host >}}:{{< .Values.kubeflow_apps.pipelines.objectStore.port >}}
+{{<- if .Values.kubeflow_tools.pipelines.objectStore.port ->}}
+{{< .Values.kubeflow_tools.pipelines.objectStore.host >}}:{{< .Values.kubeflow_tools.pipelines.objectStore.port >}}
 {{<- else ->}}
-{{< .Values.kubeflow_apps.pipelines.objectStore.host >}}
+{{< .Values.kubeflow_tools.pipelines.objectStore.host >}}
 {{<- end ->}}
 {{<- end ->}}
 {{<- end ->}}
@@ -52,7 +52,7 @@ minio-api.{{< .Values.kubeflow_common.kubeflow_minio.namespace >}}.svc.cluster.l
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
 false
 {{<- else ->}}
-{{< .Values.kubeflow_apps.pipelines.objectStore.useSSL >}}
+{{< .Values.kubeflow_tools.pipelines.objectStore.useSSL >}}
 {{<- end ->}}
 {{<- end ->}}
 
@@ -65,7 +65,7 @@ false
 {{<- else if eq (tmpl.Exec "kubeflow_pipelines.object_store.use_ssl" . | conv.ToString | toLower) "false" ->}}
 true
 {{<- else ->}}
-{{< test.Fail "invalid `kubeflow_apps.pipelines.objectStore.useSSL`, must be 'true' or 'false'" >}}
+{{< test.Fail "invalid `kubeflow_tools.pipelines.objectStore.useSSL`, must be 'true' or 'false'" >}}
 {{<- end >}}
 {{<- end ->}}
 
@@ -82,8 +82,8 @@ true
 minio-root-user
 {{<- end ->}}
 {{<- else ->}}
-{{<- if .Values.kubeflow_apps.pipelines.objectStore.auth.existingSecret ->}}
-{{< .Values.kubeflow_apps.pipelines.objectStore.auth.existingSecret >}}
+{{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecret ->}}
+{{< .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecret >}}
 {{<- else ->}}
 pipelines-bucket-secret
 {{<- end ->}}
@@ -120,8 +120,8 @@ cloned--pipelines-bucket-secret
 username
 {{<- end ->}}
 {{<- else ->}}
-{{<- if .Values.kubeflow_apps.pipelines.objectStore.auth.existingSecret ->}}
-{{< .Values.kubeflow_apps.pipelines.objectStore.auth.existingSecretAccessKeyKey >}}
+{{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecret ->}}
+{{< .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecretAccessKeyKey >}}
 {{<- else ->}}
 ACCESS_KEY
 {{<- end ->}}
@@ -139,8 +139,8 @@ ACCESS_KEY
 password
 {{<- end ->}}
 {{<- else ->}}
-{{<- if .Values.kubeflow_apps.pipelines.objectStore.auth.existingSecret ->}}
-{{< .Values.kubeflow_apps.pipelines.objectStore.auth.existingSecretSecretKeyKey >}}
+{{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecret ->}}
+{{< .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecretSecretKeyKey >}}
 {{<- else ->}}
 SECRET_KEY
 {{<- end ->}}

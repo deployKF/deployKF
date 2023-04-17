@@ -15,7 +15,7 @@ true
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" . ->}}
 kubeflow-mysql.{{< .Values.kubeflow_common.kubeflow_mysql.namespace >}}.svc.cluster.local
 {{<- else ->}}
-{{< .Values.kubeflow_apps.pipelines.mysql.host >}}
+{{< .Values.kubeflow_tools.pipelines.mysql.host >}}
 {{<- end ->}}
 {{<- end ->}}
 
@@ -26,7 +26,7 @@ kubeflow-mysql.{{< .Values.kubeflow_common.kubeflow_mysql.namespace >}}.svc.clus
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" . ->}}
 3306
 {{<- else ->}}
-{{< .Values.kubeflow_apps.pipelines.mysql.port >}}
+{{< .Values.kubeflow_tools.pipelines.mysql.port >}}
 {{<- end ->}}
 {{<- end ->}}
 
@@ -43,8 +43,8 @@ kubeflow-mysql.{{< .Values.kubeflow_common.kubeflow_mysql.namespace >}}.svc.clus
 kubeflow-mysql-kubeflow-user
 {{<- end ->}}
 {{<- else ->}}
-{{<- if .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret ->}}
-{{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret >}}
+{{<- if .Values.kubeflow_tools.pipelines.mysql.auth.existingSecret ->}}
+{{< .Values.kubeflow_tools.pipelines.mysql.auth.existingSecret >}}
 {{<- else ->}}
 pipelines-mysql-secret
 {{<- end ->}}
@@ -95,8 +95,8 @@ cloned--pipelines-mysql-secret
 username
 {{<- end ->}}
 {{<- else ->}}
-{{<- if .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret ->}}
-{{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecretUsernameKey >}}
+{{<- if .Values.kubeflow_tools.pipelines.mysql.auth.existingSecret ->}}
+{{< .Values.kubeflow_tools.pipelines.mysql.auth.existingSecretUsernameKey >}}
 {{<- else ->}}
 username
 {{<- end ->}}
@@ -114,8 +114,8 @@ username
 password
 {{<- end ->}}
 {{<- else ->}}
-{{<- if .Values.kubeflow_apps.pipelines.mysql.auth.existingSecret ->}}
-{{< .Values.kubeflow_apps.pipelines.mysql.auth.existingSecretPasswordKey >}}
+{{<- if .Values.kubeflow_tools.pipelines.mysql.auth.existingSecret ->}}
+{{< .Values.kubeflow_tools.pipelines.mysql.auth.existingSecretPasswordKey >}}
 {{<- else ->}}
 password
 {{<- end ->}}
