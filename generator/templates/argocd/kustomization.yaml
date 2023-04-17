@@ -42,7 +42,7 @@ resources:
   {{<- end >}}
   
   {{<- if .Values.deploykf_core.kubeflow_dashboard.enabled >}}
-  - deploykf-core/kubeflow-dashboard.yaml
+  - deploykf-core/deploykf-dashboard.yaml
   {{<- end >}}
 
   {{<- if .Values.deploykf_core.kubeflow_istio_gateway.enabled >}}

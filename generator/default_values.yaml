@@ -97,7 +97,7 @@ deploykf_core:
     namespace: deploykf-auth
 
   ## --------------------------------------
-  ##          kubeflow-dashboard
+  ##          deploykf-dashboard
   ## --------------------------------------
   kubeflow_dashboard:
     enabled: true

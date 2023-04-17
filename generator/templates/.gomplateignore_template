@@ -89,8 +89,8 @@ argocd/namespaces/deploykf-auth.yaml
 manifests/deploykf-core/deploykf-auth/
 {{<- end >}}
 {{<- if not .Values.deploykf_core.kubeflow_dashboard.enabled >}}
-argocd/deploykf-core/kubeflow-dashboard.yaml
-manifests/deploykf-core/kubeflow-dashboard/
+argocd/deploykf-core/deploykf-dashboard.yaml
+manifests/deploykf-core/deploykf-dashboard/
 {{<- end >}}
 {{<- if not .Values.deploykf_core.kubeflow_istio_gateway.enabled >}}
 argocd/deploykf-core/kubeflow-istio-gateway.yaml
