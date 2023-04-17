@@ -62,7 +62,7 @@ resources:
   - namespaces/deploykf-minio.yaml
   {{<- end >}}
 
-  {{<- if .Values.deploykf_opt.kubeflow_mysql.enabled >}}
+  {{<- if .Values.deploykf_opt.deploykf_mysql.enabled >}}
   - deploykf-opt/deploykf-mysql.yaml
   - namespaces/deploykf-mysql.yaml
   {{<- end >}}
