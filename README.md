@@ -102,14 +102,14 @@ Get started with deployKF by following these steps:
         9. `kf-tools--katib`
 4. access the Kubeflow UI through the Istio Gateway Service:
     1. add the following lines to your `/etc/hosts` file:
-        - `127.0.0.1 kubeflow.example.com` 
-        - `127.0.0.1 argo-server.kubeflow.example.com` 
-        - `127.0.0.1 minio-api.kubeflow.example.com` 
-        - `127.0.0.1 minio-console.kubeflow.example.com`
+        - `127.0.0.1 deploykf.example.com` 
+        - `127.0.0.1 argo-server.deploykf.example.com` 
+        - `127.0.0.1 minio-api.deploykf.example.com` 
+        - `127.0.0.1 minio-console.deploykf.example.com`
     2. port forward the service using `kubectl` (default: `Service/kubeflow-gateway` in `Namespace/deploykf-istio-gateway`):
         - `kubectl port-forward --namespace deploykf-istio-gateway Service/kubeflow-gateway 8080:8080 8443:8443`
     3. open the Kubeflow UI in your browser:
-        - https://kubeflow.example.com:8443/
+        - https://deploykf.example.com:8443/
     4. use the following default credentials (if you have not changed them):
         - username: `admin@example.com`
         - password: `admin`

@@ -116,7 +116,7 @@ deploykf_core:
         app: deploykf-gateway
         istio: deploykf-gateway
 
-      hostname: kubeflow.example.com
+      hostname: deploykf.example.com
 
       ports:
         http: 8080

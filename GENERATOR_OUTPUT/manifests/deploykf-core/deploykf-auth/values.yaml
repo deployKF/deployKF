@@ -1,7 +1,7 @@
 deployKF_helpers:
   deploykf_gateway:
-    http_endpoint: "kubeflow.example.com:8080"
-    https_endpoint: "kubeflow.example.com:8443"
+    http_endpoint: "deploykf.example.com:8080"
+    https_endpoint: "deploykf.example.com:8443"
     is_self_signed_cert: "true"
 
 deployKF:
@@ -23,7 +23,7 @@ deployKF:
     namespace: "deploykf-istio-gateway"
     serviceAccount: "deploykf-gateway"
     name: "deploykf-gateway"
-    hostname: "kubeflow.example.com"
+    hostname: "deploykf.example.com"
     tls:
       enabled: true
 
