@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: "https://github.com/deployKF/deployKF"
     targetRevision: "dev"
-    path: "GENERATOR_OUTPUT/manifests/deploykf-core/kubeflow-mysql"
+    path: "GENERATOR_OUTPUT/manifests/deploykf-opt/kubeflow-mysql"
   destination:
     server: "https://kubernetes.default.svc"
     namespace: "kubeflow-mysql"

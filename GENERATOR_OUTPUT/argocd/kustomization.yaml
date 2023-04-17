@@ -21,8 +21,6 @@ resources:
   - deploykf-core/kubeflow-dashboard.yaml
   - deploykf-core/kubeflow-istio-gateway.yaml
   - namespaces/kubeflow-istio-gateway.yaml
-  - deploykf-core/kubeflow-mysql.yaml
-  - namespaces/kubeflow-mysql.yaml
   - deploykf-core/kubeflow-profiles-generator.yaml
 
   ##################
@@ -30,6 +28,8 @@ resources:
   ##################
   - deploykf-opt/kubeflow-minio.yaml
   - namespaces/kubeflow-minio.yaml
+  - deploykf-opt/kubeflow-mysql.yaml
+  - namespaces/kubeflow-mysql.yaml
 
   ####################
   ## deploykf-tools ##

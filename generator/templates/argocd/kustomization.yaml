@@ -50,11 +50,6 @@ resources:
   - namespaces/kubeflow-istio-gateway.yaml
   {{<- end >}}
 
-  {{<- if .Values.deploykf_core.kubeflow_mysql.enabled >}}
-  - deploykf-core/kubeflow-mysql.yaml
-  - namespaces/kubeflow-mysql.yaml
-  {{<- end >}}
-
   {{<- if .Values.deploykf_core.kubeflow_profiles_generator.enabled >}}
   - deploykf-core/kubeflow-profiles-generator.yaml
   {{<- end >}}
@@ -65,6 +60,11 @@ resources:
   {{<- if .Values.deploykf_opt.kubeflow_minio.enabled >}}
   - deploykf-opt/kubeflow-minio.yaml
   - namespaces/kubeflow-minio.yaml
+  {{<- end >}}
+
+  {{<- if .Values.deploykf_core.kubeflow_mysql.enabled >}}
+  - deploykf-opt/kubeflow-mysql.yaml
+  - namespaces/kubeflow-mysql.yaml
   {{<- end >}}
 
   ####################
