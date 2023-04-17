@@ -116,9 +116,9 @@ manifests/kubeflow-tools/volumes/
 
 ## deployKF - deploykf-core
 {{<- if not .Values.deploykf_core.kubeflow_argo_workflows.enabled >}}
-argocd/deploykf-core/kubeflow-argo-workflows.yaml
+argocd/kubeflow-dependencies/kubeflow-argo-workflows.yaml
 argocd/namespaces/kubeflow-argo-workflows.yaml
-manifests/deploykf-core/kubeflow-argo-workflows/
+manifests/kubeflow-dependencies/kubeflow-argo-workflows/
 {{<- end >}}
 {{<- if not .Values.deploykf_core.kubeflow_auth.enabled >}}
 argocd/deploykf-core/kubeflow-auth.yaml

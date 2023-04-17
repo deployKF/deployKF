@@ -70,7 +70,7 @@ resources:
   ## deploykf-core ##
   #####################
   {{<- if .Values.deploykf_core.kubeflow_argo_workflows.enabled >}}
-  - deploykf-core/kubeflow-argo-workflows.yaml
+  - kubeflow-dependencies/kubeflow-argo-workflows.yaml
   - namespaces/kubeflow-argo-workflows.yaml
   {{<- end >}}
   

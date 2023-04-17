@@ -29,7 +29,7 @@ resources:
   #####################
   ## deploykf-core ##
   #####################
-  - deploykf-core/kubeflow-argo-workflows.yaml
+  - kubeflow-dependencies/kubeflow-argo-workflows.yaml
   - namespaces/kubeflow-argo-workflows.yaml
   - deploykf-core/kubeflow-auth.yaml
   - namespaces/kubeflow-auth.yaml
