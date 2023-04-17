@@ -97,7 +97,7 @@ argocd/deploykf-core/kubeflow-istio-gateway.yaml
 argocd/namespaces/kubeflow-istio-gateway.yaml
 manifests/deploykf-core/kubeflow-istio-gateway/
 {{<- end >}}
-{{<- if not .Values.deploykf_core.kubeflow_profiles_generator.enabled >}}
+{{<- if not .Values.deploykf_core.deploykf_profiles_generator.enabled >}}
 argocd/deploykf-core/deploykf-profiles-generator.yaml
 manifests/deploykf-core/deploykf-profiles-generator/
 {{<- end >}}
