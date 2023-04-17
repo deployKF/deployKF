@@ -113,7 +113,7 @@ manifests/deploykf-core/kubeflow-profiles-generator/
 {{<- end >}}
 
 ## deployKF - deploykf-tools
-{{<- if not .Values.kubeflow_contrib.kserve.enabled >}}
+{{<- if not .Values.deploykf_tools.kserve.enabled >}}
 argocd/deploykf-tools/kserve--kserve.yaml
 argocd/deploykf-tools/kserve--models-web-app.yaml
 manifests/deploykf-tools/kserve/
