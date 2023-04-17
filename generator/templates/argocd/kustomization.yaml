@@ -109,6 +109,6 @@ resources:
   ## kubeflow-contrib ##
   ######################
   {{<- if .Values.kubeflow_contrib.kserve.enabled >}}
-  - kubeflow-contrib/kserve--kserve.yaml
-  - kubeflow-contrib/kserve--models-web-app.yaml
+  - deploykf-tools/kserve--kserve.yaml
+  - deploykf-tools/kserve--models-web-app.yaml
   {{<- end >}}

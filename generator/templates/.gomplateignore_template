@@ -151,9 +151,9 @@ argocd/deploykf-core/kubeflow-profiles-generator.yaml
 manifests/deploykf-core/kubeflow-profiles-generator/
 {{<- end >}}
 
-## deployKF - kubeflow-contrib
+## deployKF - deploykf-tools
 {{<- if not .Values.kubeflow_contrib.kserve.enabled >}}
-argocd/kubeflow-contrib/kserve--kserve.yaml
-argocd/kubeflow-contrib/kserve--models-web-app.yaml
-manifests/kubeflow-contrib/kserve/
+argocd/deploykf-tools/kserve--kserve.yaml
+argocd/deploykf-tools/kserve--models-web-app.yaml
+manifests/deploykf-tools/kserve/
 {{<- end >}}

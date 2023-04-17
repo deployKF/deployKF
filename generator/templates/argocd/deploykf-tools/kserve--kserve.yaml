@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/kubeflow-contrib/kserve/kserve" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-tools/kserve/kserve" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: kubeflow
