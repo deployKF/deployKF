@@ -3,8 +3,8 @@ kind: StatefulSet
 metadata:
   name: deploykf-mysql
   labels:
-    helm.sh/chart: {{ include "kubeflow-mysql.labels.chart" . }}
-    app.kubernetes.io/name: {{ include "kubeflow-mysql.labels.name" . }}
+    helm.sh/chart: {{ include "deploykf-mysql.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-mysql.labels.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: mysql
@@ -15,7 +15,7 @@ spec:
     type: RollingUpdate
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "kubeflow-mysql.labels.name" . }}
+      app.kubernetes.io/name: {{ include "deploykf-mysql.labels.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
       app.kubernetes.io/managed-by: {{ .Release.Service }}
       app.kubernetes.io/component: mysql
@@ -28,7 +28,7 @@ spec:
         checksum/root-user: {{ include (print $.Template.BasePath "/mysql/Secret-root-user.yaml") . | sha256sum }}
         {{- end }}
       labels:
-        app.kubernetes.io/name: {{ include "kubeflow-mysql.labels.name" . }}
+        app.kubernetes.io/name: {{ include "deploykf-mysql.labels.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/component: mysql

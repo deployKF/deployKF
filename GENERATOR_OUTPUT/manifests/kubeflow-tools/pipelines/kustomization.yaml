@@ -76,7 +76,7 @@ configMapGenerator:
       ## MySQL Configs
       ## ================================
       - ConMaxLifeTime="120s"
-      - dbHost="kubeflow-mysql.deploykf-mysql.svc.cluster.local"
+      - dbHost="deploykf-mysql.deploykf-mysql.svc.cluster.local"
       - dbPort="3306"
       - cacheDb="kfp_cache"
       - mlmdDb="kfp_metadata"

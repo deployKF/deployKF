@@ -13,7 +13,7 @@ true
 ##
 {{<- define "kubeflow_katib.mysql.hostname" ->}}
 {{<- if tmpl.Exec "kubeflow_katib.use_embedded_mysql" . ->}}
-kubeflow-mysql.{{< .Values.deploykf_opt.kubeflow_mysql.namespace >}}.svc.cluster.local
+deploykf-mysql.{{< .Values.deploykf_opt.kubeflow_mysql.namespace >}}.svc.cluster.local
 {{<- else ->}}
 {{< .Values.kubeflow_tools.katib.mysql.host >}}
 {{<- end ->}}
@@ -40,7 +40,7 @@ kubeflow-mysql.{{< .Values.deploykf_opt.kubeflow_mysql.namespace >}}.svc.cluster
 {{<- if .Values.deploykf_opt.kubeflow_mysql.kubeflowUser.existingSecret ->}}
 {{< .Values.deploykf_opt.kubeflow_mysql.kubeflowUser.existingSecret >}}
 {{<- else ->}}
-kubeflow-mysql-kubeflow-user
+deploykf-mysql-kubeflow-user
 {{<- end ->}}
 {{<- else ->}}
 {{<- if .Values.kubeflow_tools.katib.mysql.auth.existingSecret ->}}
