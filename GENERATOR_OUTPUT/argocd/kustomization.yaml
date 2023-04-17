@@ -21,7 +21,7 @@ resources:
   - deploykf-core/deploykf-dashboard.yaml
   - deploykf-core/kubeflow-istio-gateway.yaml
   - namespaces/kubeflow-istio-gateway.yaml
-  - deploykf-core/kubeflow-profiles-generator.yaml
+  - deploykf-core/deploykf-profiles-generator.yaml
 
   ##################
   ## deploykf-opt ##

@@ -51,7 +51,7 @@ resources:
   {{<- end >}}
 
   {{<- if .Values.deploykf_core.kubeflow_profiles_generator.enabled >}}
-  - deploykf-core/kubeflow-profiles-generator.yaml
+  - deploykf-core/deploykf-profiles-generator.yaml
   {{<- end >}}
 
   ##################

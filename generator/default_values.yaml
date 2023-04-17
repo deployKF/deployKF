@@ -149,7 +149,7 @@ deploykf_core:
       replicaCount: 1
 
   ## --------------------------------------
-  ##      kubeflow-profiles-generator
+  ##      deploykf-profiles-generator
   ## --------------------------------------
   kubeflow_profiles_generator:
     enabled: true

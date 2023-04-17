@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: dkf-core--kubeflow-profiles-generator
+  name: dkf-core--deploykf-profiles-generator
   namespace: "argocd"
   labels:
-    app.kubernetes.io/name: kubeflow-profiles-generator
+    app.kubernetes.io/name: deploykf-profiles-generator
     app.kubernetes.io/component: deploykf-core
     app.kubernetes.io/part-of: deploykf
 spec:
@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: "https://github.com/deployKF/deployKF"
     targetRevision: "dev"
-    path: "GENERATOR_OUTPUT/manifests/deploykf-core/kubeflow-profiles-generator"
+    path: "GENERATOR_OUTPUT/manifests/deploykf-core/deploykf-profiles-generator"
   destination:
     server: "https://kubernetes.default.svc"
     namespace: kubeflow

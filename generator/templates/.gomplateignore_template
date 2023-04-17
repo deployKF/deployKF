@@ -98,8 +98,8 @@ argocd/namespaces/kubeflow-istio-gateway.yaml
 manifests/deploykf-core/kubeflow-istio-gateway/
 {{<- end >}}
 {{<- if not .Values.deploykf_core.kubeflow_profiles_generator.enabled >}}
-argocd/deploykf-core/kubeflow-profiles-generator.yaml
-manifests/deploykf-core/kubeflow-profiles-generator/
+argocd/deploykf-core/deploykf-profiles-generator.yaml
+manifests/deploykf-core/deploykf-profiles-generator/
 {{<- end >}}
 
 ## deployKF - deploykf-opt
