@@ -97,11 +97,6 @@ argocd/deploykf-core/kubeflow-istio-gateway.yaml
 argocd/namespaces/kubeflow-istio-gateway.yaml
 manifests/deploykf-core/kubeflow-istio-gateway/
 {{<- end >}}
-{{<- if not .Values.deploykf_core.kubeflow_minio.enabled >}}
-argocd/deploykf-core/kubeflow-minio.yaml
-argocd/namespaces/kubeflow-minio.yaml
-manifests/deploykf-core/kubeflow-minio/
-{{<- end >}}
 {{<- if not .Values.deploykf_core.kubeflow_mysql.enabled >}}
 argocd/deploykf-core/kubeflow-mysql.yaml
 argocd/namespaces/kubeflow-mysql.yaml
@@ -110,6 +105,13 @@ manifests/deploykf-core/kubeflow-mysql/
 {{<- if not .Values.deploykf_core.kubeflow_profiles_generator.enabled >}}
 argocd/deploykf-core/kubeflow-profiles-generator.yaml
 manifests/deploykf-core/kubeflow-profiles-generator/
+{{<- end >}}
+
+## deployKF - deploykf-opt
+{{<- if not .Values.deploykf_core.kubeflow_minio.enabled >}}
+argocd/deploykf-opt/kubeflow-minio.yaml
+argocd/namespaces/kubeflow-minio.yaml
+manifests/deploykf-opt/kubeflow-minio/
 {{<- end >}}
 
 ## deployKF - deploykf-tools

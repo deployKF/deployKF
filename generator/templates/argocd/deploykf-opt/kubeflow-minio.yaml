@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-core/kubeflow-minio" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-opt/kubeflow-minio" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: {{< .Values.deploykf_core.kubeflow_minio.namespace | quote >}}
