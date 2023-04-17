@@ -88,7 +88,7 @@ argocd/deploykf-core/deploykf-auth.yaml
 argocd/namespaces/deploykf-auth.yaml
 manifests/deploykf-core/deploykf-auth/
 {{<- end >}}
-{{<- if not .Values.deploykf_core.kubeflow_dashboard.enabled >}}
+{{<- if not .Values.deploykf_core.deploykf_dashboard.enabled >}}
 argocd/deploykf-core/deploykf-dashboard.yaml
 manifests/deploykf-core/deploykf-dashboard/
 {{<- end >}}

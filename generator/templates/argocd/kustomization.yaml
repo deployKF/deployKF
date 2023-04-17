@@ -41,7 +41,7 @@ resources:
   - namespaces/deploykf-auth.yaml
   {{<- end >}}
   
-  {{<- if .Values.deploykf_core.kubeflow_dashboard.enabled >}}
+  {{<- if .Values.deploykf_core.deploykf_dashboard.enabled >}}
   - deploykf-core/deploykf-dashboard.yaml
   {{<- end >}}
 

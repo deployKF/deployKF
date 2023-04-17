@@ -99,7 +99,7 @@ deploykf_core:
   ## --------------------------------------
   ##          deploykf-dashboard
   ## --------------------------------------
-  kubeflow_dashboard:
+  deploykf_dashboard:
     enabled: true
 
   ## --------------------------------------
