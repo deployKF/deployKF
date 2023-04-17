@@ -3,7 +3,7 @@ kind: Kustomization
 
 ## global namespace must be set due to:
 ## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
-namespace: {{< .Values.cluster_dependencies.knative.namespace.eventing | quote >}}
+namespace: {{< .Values.deploykf_dependencies.knative.namespace.eventing | quote >}}
 
 resources:
   - github.com/kubeflow/manifests/common/knative/knative-eventing/base?ref=f038f81df39f3606c14ad52e06f60f3d9c5bddfb # tag=v1.6.1

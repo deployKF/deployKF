@@ -3,7 +3,7 @@ kind: Kustomization
 
 ## global namespace must be set due to:
 ## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
-namespace: {{< .Values.cluster_dependencies.knative.namespace.serving | quote >}}
+namespace: {{< .Values.deploykf_dependencies.knative.namespace.serving | quote >}}
 
 resources:
   ## TODO: this will not work unless there is an Istio gateway deployment called "cluster-local-gateway"

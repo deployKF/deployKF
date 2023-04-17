@@ -53,17 +53,17 @@ Chart.lock
 sync_upstream.sh
 
 ## deployKF - deploykf-dependencies
-{{<- if not .Values.cluster_dependencies.cert_manager.enabled >}}
+{{<- if not .Values.deploykf_dependencies.cert_manager.enabled >}}
 argocd/deploykf-dependencies/cert-manager.yaml
 argocd/namespaces/cert-manager.yaml
 manifests/deploykf-dependencies/cert-manager/
 {{<- end >}}
-{{<- if not .Values.cluster_dependencies.istio.enabled >}}
+{{<- if not .Values.deploykf_dependencies.istio.enabled >}}
 argocd/deploykf-dependencies/istio.yaml
 argocd/namespaces/istio.yaml
 manifests/deploykf-dependencies/istio/
 {{<- end >}}
-{{<- if not .Values.cluster_dependencies.knative.enabled >}}
+{{<- if not .Values.deploykf_dependencies.knative.enabled >}}
 argocd/deploykf-dependencies/knative--knative-eventing.yaml
 argocd/deploykf-dependencies/knative--knative-serving.yaml
 argocd/namespaces/knative-eventing.yaml
@@ -71,12 +71,12 @@ argocd/namespaces/knative-serving.yaml
 manifests/deploykf-dependencies/knative-eventing/
 manifests/deploykf-dependencies/knative-serving/
 {{<- end >}}
-{{<- if not .Values.cluster_dependencies.kyverno.enabled >}}
+{{<- if not .Values.deploykf_dependencies.kyverno.enabled >}}
 argocd/deploykf-dependencies/kyverno.yaml
 argocd/namespaces/kyverno.yaml
 manifests/deploykf-dependencies/kyverno/
 {{<- end >}}
-{{<- if not .Values.cluster_dependencies.sealed_secrets.enabled >}}
+{{<- if not .Values.deploykf_dependencies.sealed_secrets.enabled >}}
 argocd/deploykf-dependencies/sealed-secrets.yaml
 argocd/namespaces/sealed-secrets.yaml
 manifests/deploykf-dependencies/sealed-secrets/

@@ -2,13 +2,13 @@ deployKF:
 
   certManager:
     clusterIssuer:
-      enabled: {{< .Values.cluster_dependencies.cert_manager.clusterIssuer.enabled >}}
-      issuerName: {{< .Values.cluster_dependencies.cert_manager.clusterIssuer.issuerName | quote >}}
-      type: {{< .Values.cluster_dependencies.cert_manager.clusterIssuer.type | quote >}}
+      enabled: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.enabled >}}
+      issuerName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.issuerName | quote >}}
+      type: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.type | quote >}}
       selfSigned:
-        caIssuerName: {{< .Values.cluster_dependencies.cert_manager.clusterIssuer.selfSigned.caIssuerName | quote >}}
-        caSecretName: {{< .Values.cluster_dependencies.cert_manager.clusterIssuer.selfSigned.caSecretName | quote >}}
-        injectedConfigMapName: {{< .Values.cluster_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
+        caIssuerName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.selfSigned.caIssuerName | quote >}}
+        caSecretName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.selfSigned.caSecretName | quote >}}
+        injectedConfigMapName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
 
 ## as we reference the "cert-manager" chart (https://charts.jetstack.io) in `dependencies` of Chart.yaml,
 ## we must indent our values under `cert-manager:` in this file
@@ -79,4 +79,4 @@ trust-manager:
 
   app:
     trust:
-      namespace: {{< .Values.cluster_dependencies.cert_manager.namespace | quote >}}
+      namespace: {{< .Values.deploykf_dependencies.cert_manager.namespace | quote >}}

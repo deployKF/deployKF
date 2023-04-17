@@ -1,5 +1,5 @@
 global:
-  istioNamespace: {{< .Values.cluster_dependencies.istio.namespace | quote >}}
+  istioNamespace: {{< .Values.deploykf_dependencies.istio.namespace | quote >}}
 
   #imagePullPolicy: IfNotPresent
   #imagePullSecrets: []

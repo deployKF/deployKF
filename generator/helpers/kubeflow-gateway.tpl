@@ -25,7 +25,7 @@
 ## - NOTE: empty means false, non-empty means true
 ##
 {{<- define "kubeflow_gateway.is_self_signed_cert" ->}}
-{{<- if and (.Values.kubeflow_common.kubeflow_istio_gateway.gateway.tls.enabled) (.Values.cluster_dependencies.cert_manager.clusterIssuer.enabled) (eq .Values.cluster_dependencies.cert_manager.clusterIssuer.type "SELF_SIGNED") ->}}
+{{<- if and (.Values.kubeflow_common.kubeflow_istio_gateway.gateway.tls.enabled) (.Values.deploykf_dependencies.cert_manager.clusterIssuer.enabled) (eq .Values.deploykf_dependencies.cert_manager.clusterIssuer.type "SELF_SIGNED") ->}}
 true
 {{<- end ->}}
 {{<- end ->}}

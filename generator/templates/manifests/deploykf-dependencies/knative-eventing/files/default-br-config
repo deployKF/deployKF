@@ -3,7 +3,7 @@ clusterDefault:
   apiVersion: v1
   kind: ConfigMap
   name: config-br-default-channel
-  namespace: {{< .Values.cluster_dependencies.knative.namespace.eventing | quote >}}
+  namespace: {{< .Values.deploykf_dependencies.knative.namespace.eventing | quote >}}
   delivery:
     retry: 10
     backoffPolicy: exponential

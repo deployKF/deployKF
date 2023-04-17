@@ -15,7 +15,7 @@ spec:
     path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-dependencies/kyverno" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
-    namespace: {{< .Values.cluster_dependencies.kyverno.namespace | quote >}}
+    namespace: {{< .Values.deploykf_dependencies.kyverno.namespace | quote >}}
   syncPolicy:
     syncOptions:
       ## kyverno will fail to sync if `Replace` or `ServerSideApply` is not true

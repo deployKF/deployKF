@@ -7,7 +7,7 @@ deployKF:
 
   certManager:
     clusterIssuer:
-      issuerName: {{< .Values.cluster_dependencies.cert_manager.clusterIssuer.issuerName | quote >}}
+      issuerName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.issuerName | quote >}}
 
   argoWorkflows:
     enabled: {{< .Values.kubeflow_common.kubeflow_argo_workflows.enabled >}}

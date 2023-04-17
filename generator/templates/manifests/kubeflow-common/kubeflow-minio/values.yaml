@@ -10,7 +10,7 @@ deployKF:
   certManager:
     clusterIssuer:
       selfSigned:
-        injectedConfigMapName: {{< .Values.cluster_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
+        injectedConfigMapName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
 
   auth:
     namespace: {{< .Values.kubeflow_common.kubeflow_auth.namespace | quote >}}

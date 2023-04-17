@@ -20,7 +20,7 @@ configMapGenerator:
       - istioGatewayNamespace="{{< .Values.kubeflow_common.kubeflow_istio_gateway.namespace >}}"
       - istioGatewayName="{{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.name >}}"
       - istioGatewayServiceName="{{< .Values.kubeflow_common.kubeflow_istio_gateway.service.name >}}"
-      - knativeGatewayNamespace="{{< .Values.cluster_dependencies.knative.namespace.serving >}}"
+      - knativeGatewayNamespace="{{< .Values.deploykf_dependencies.knative.namespace.serving >}}"
       - knativeGatewayName="knative-local-gateway"
 
 images:
