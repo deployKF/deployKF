@@ -94,7 +94,7 @@ manifests/deploykf-core/deploykf-dashboard/
 {{<- end >}}
 {{<- if not .Values.deploykf_core.kubeflow_istio_gateway.enabled >}}
 argocd/deploykf-core/deploykf-istio-gateway.yaml
-argocd/namespaces/kubeflow-istio-gateway.yaml
+argocd/namespaces/deploykf-istio-gateway.yaml
 manifests/deploykf-core/deploykf-istio-gateway/
 {{<- end >}}
 {{<- if not .Values.deploykf_core.deploykf_profiles_generator.enabled >}}

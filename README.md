@@ -77,7 +77,7 @@ Get started with deployKF by following these steps:
         5. `dkf-dep--knative--knative-eventing`
         6. `dkf-dep--knative--knative-serving`
     4. __deploykf-core__ _(label: `app.kubernetes.io/component: deploykf-core`)_
-        1. `dkf-core--kubeflow-istio-gateway`
+        1. `dkf-core--deploykf-istio-gateway`
         2. `dkf-core--deploykf-auth`
         3. `dkf-core--deploykf-dashboard`
         4. `dkf-core--deploykf-profiles-generator`
@@ -106,8 +106,8 @@ Get started with deployKF by following these steps:
         - `127.0.0.1 argo-server.kubeflow.example.com` 
         - `127.0.0.1 minio-api.kubeflow.example.com` 
         - `127.0.0.1 minio-console.kubeflow.example.com`
-    2. port forward the service using `kubectl` (default: `Service/kubeflow-gateway` in `Namespace/kubeflow-istio-gateway`):
-        - `kubectl port-forward --namespace kubeflow-istio-gateway Service/kubeflow-gateway 8080:8080 8443:8443`
+    2. port forward the service using `kubectl` (default: `Service/kubeflow-gateway` in `Namespace/deploykf-istio-gateway`):
+        - `kubectl port-forward --namespace deploykf-istio-gateway Service/kubeflow-gateway 8080:8080 8443:8443`
     3. open the Kubeflow UI in your browser:
         - https://kubeflow.example.com:8443/
     4. use the following default credentials (if you have not changed them):

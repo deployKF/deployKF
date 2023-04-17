@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: dkf-core--kubeflow-istio-gateway
+  name: dkf-core--deploykf-istio-gateway
   namespace: "argocd"
   labels:
     app.kubernetes.io/name: deploykf-istio-gateway

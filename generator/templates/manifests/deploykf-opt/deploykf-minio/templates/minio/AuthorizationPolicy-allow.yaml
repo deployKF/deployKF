@@ -17,7 +17,7 @@ spec:
       app.kubernetes.io/managed-by: {{ .Release.Service }}
       app.kubernetes.io/component: minio
   rules:
-    ## allow requests from `kubeflow-istio-gateway` Pods
+    ## allow requests from `deploykf-istio-gateway` Pods
     - from:
         - source:
             principals:

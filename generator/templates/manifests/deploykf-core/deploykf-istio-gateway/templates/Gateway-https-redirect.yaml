@@ -4,8 +4,8 @@ kind: Gateway
 metadata:
   name: deploykf-istio-gateway-https-redirect
   labels:
-    helm.sh/chart: {{ include "kubeflow-istio-gateway.labels.chart" . }}
-    app.kubernetes.io/name: {{ include "kubeflow-istio-gateway.labels.name" . }}
+    helm.sh/chart: {{ include "deploykf-istio-gateway.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-istio-gateway.labels.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
