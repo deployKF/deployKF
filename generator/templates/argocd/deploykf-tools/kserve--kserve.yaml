@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-contrib--kserve--kserve
+  name: dkf-tools--kserve--kserve
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
     app.kubernetes.io/name: kserve
-    app.kubernetes.io/component: kubeflow-contrib
+    app.kubernetes.io/component: deploykf-tools
     app.kubernetes.io/part-of: deploykf
 spec:
   project: {{< .Values.argocd.project | quote >}}

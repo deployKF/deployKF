@@ -13,6 +13,24 @@ resources:
   - deploykf-dependencies/kyverno.yaml
   - namespaces/kyverno.yaml
 
+  ###################
+  ## deploykf-core ##
+  ###################
+  - deploykf-core/kubeflow-auth.yaml
+  - namespaces/kubeflow-auth.yaml
+  - deploykf-core/kubeflow-dashboard.yaml
+  - deploykf-core/kubeflow-istio-gateway.yaml
+  - namespaces/kubeflow-istio-gateway.yaml
+  - deploykf-core/kubeflow-minio.yaml
+  - namespaces/kubeflow-minio.yaml
+  - deploykf-core/kubeflow-mysql.yaml
+  - namespaces/kubeflow-mysql.yaml
+  - deploykf-core/kubeflow-profiles-generator.yaml
+
+  ####################
+  ## deploykf-tools ##
+  ####################
+
   ###########################
   ## kubeflow-dependencies ##
   ###########################
@@ -31,21 +49,3 @@ resources:
   - kubeflow-tools/tensorboards--tensorboards-web-app.yaml
   - kubeflow-tools/training-operator.yaml
   - kubeflow-tools/volumes--volumes-web-app.yaml
-
-  ###################
-  ## deploykf-core ##
-  ###################
-  - deploykf-core/kubeflow-auth.yaml
-  - namespaces/kubeflow-auth.yaml
-  - deploykf-core/kubeflow-dashboard.yaml
-  - deploykf-core/kubeflow-istio-gateway.yaml
-  - namespaces/kubeflow-istio-gateway.yaml
-  - deploykf-core/kubeflow-minio.yaml
-  - namespaces/kubeflow-minio.yaml
-  - deploykf-core/kubeflow-mysql.yaml
-  - namespaces/kubeflow-mysql.yaml
-  - deploykf-core/kubeflow-profiles-generator.yaml
-
-  ######################
-  ## kubeflow-contrib ##
-  ######################

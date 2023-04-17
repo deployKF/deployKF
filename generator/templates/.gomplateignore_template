@@ -82,6 +82,43 @@ argocd/namespaces/sealed-secrets.yaml
 manifests/deploykf-dependencies/sealed-secrets/
 {{<- end >}}
 
+## deployKF - deploykf-core
+{{<- if not .Values.deploykf_core.kubeflow_auth.enabled >}}
+argocd/deploykf-core/kubeflow-auth.yaml
+argocd/namespaces/kubeflow-auth.yaml
+manifests/deploykf-core/kubeflow-auth/
+{{<- end >}}
+{{<- if not .Values.deploykf_core.kubeflow_dashboard.enabled >}}
+argocd/deploykf-core/kubeflow-dashboard.yaml
+manifests/deploykf-core/kubeflow-dashboard/
+{{<- end >}}
+{{<- if not .Values.deploykf_core.kubeflow_istio_gateway.enabled >}}
+argocd/deploykf-core/kubeflow-istio-gateway.yaml
+argocd/namespaces/kubeflow-istio-gateway.yaml
+manifests/deploykf-core/kubeflow-istio-gateway/
+{{<- end >}}
+{{<- if not .Values.deploykf_core.kubeflow_minio.enabled >}}
+argocd/deploykf-core/kubeflow-minio.yaml
+argocd/namespaces/kubeflow-minio.yaml
+manifests/deploykf-core/kubeflow-minio/
+{{<- end >}}
+{{<- if not .Values.deploykf_core.kubeflow_mysql.enabled >}}
+argocd/deploykf-core/kubeflow-mysql.yaml
+argocd/namespaces/kubeflow-mysql.yaml
+manifests/deploykf-core/kubeflow-mysql/
+{{<- end >}}
+{{<- if not .Values.deploykf_core.kubeflow_profiles_generator.enabled >}}
+argocd/deploykf-core/kubeflow-profiles-generator.yaml
+manifests/deploykf-core/kubeflow-profiles-generator/
+{{<- end >}}
+
+## deployKF - deploykf-tools
+{{<- if not .Values.kubeflow_contrib.kserve.enabled >}}
+argocd/deploykf-tools/kserve--kserve.yaml
+argocd/deploykf-tools/kserve--models-web-app.yaml
+manifests/deploykf-tools/kserve/
+{{<- end >}}
+
 ## deployKF - kubeflow-dependencies
 {{<- if not .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled >}}
 argocd/kubeflow-dependencies/kubeflow-argo-workflows.yaml
@@ -119,41 +156,4 @@ manifests/kubeflow-tools/training-operator/
 {{<- if not .Values.kubeflow_tools.volumes.enabled >}}
 argocd/kubeflow-tools/volumes--volumes-web-app.yaml
 manifests/kubeflow-tools/volumes/
-{{<- end >}}
-
-## deployKF - deploykf-core
-{{<- if not .Values.deploykf_core.kubeflow_auth.enabled >}}
-argocd/deploykf-core/kubeflow-auth.yaml
-argocd/namespaces/kubeflow-auth.yaml
-manifests/deploykf-core/kubeflow-auth/
-{{<- end >}}
-{{<- if not .Values.deploykf_core.kubeflow_dashboard.enabled >}}
-argocd/deploykf-core/kubeflow-dashboard.yaml
-manifests/deploykf-core/kubeflow-dashboard/
-{{<- end >}}
-{{<- if not .Values.deploykf_core.kubeflow_istio_gateway.enabled >}}
-argocd/deploykf-core/kubeflow-istio-gateway.yaml
-argocd/namespaces/kubeflow-istio-gateway.yaml
-manifests/deploykf-core/kubeflow-istio-gateway/
-{{<- end >}}
-{{<- if not .Values.deploykf_core.kubeflow_minio.enabled >}}
-argocd/deploykf-core/kubeflow-minio.yaml
-argocd/namespaces/kubeflow-minio.yaml
-manifests/deploykf-core/kubeflow-minio/
-{{<- end >}}
-{{<- if not .Values.deploykf_core.kubeflow_mysql.enabled >}}
-argocd/deploykf-core/kubeflow-mysql.yaml
-argocd/namespaces/kubeflow-mysql.yaml
-manifests/deploykf-core/kubeflow-mysql/
-{{<- end >}}
-{{<- if not .Values.deploykf_core.kubeflow_profiles_generator.enabled >}}
-argocd/deploykf-core/kubeflow-profiles-generator.yaml
-manifests/deploykf-core/kubeflow-profiles-generator/
-{{<- end >}}
-
-## deployKF - deploykf-tools
-{{<- if not .Values.kubeflow_contrib.kserve.enabled >}}
-argocd/deploykf-tools/kserve--kserve.yaml
-argocd/deploykf-tools/kserve--models-web-app.yaml
-manifests/deploykf-tools/kserve/
 {{<- end >}}

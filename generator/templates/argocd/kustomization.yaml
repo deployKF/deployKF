@@ -33,6 +33,45 @@ resources:
   - namespaces/sealed-secrets.yaml
   {{<- end >}}
 
+  ###################
+  ## deploykf-core ##
+  ###################
+  {{<- if .Values.deploykf_core.kubeflow_auth.enabled >}}
+  - deploykf-core/kubeflow-auth.yaml
+  - namespaces/kubeflow-auth.yaml
+  {{<- end >}}
+  
+  {{<- if .Values.deploykf_core.kubeflow_dashboard.enabled >}}
+  - deploykf-core/kubeflow-dashboard.yaml
+  {{<- end >}}
+
+  {{<- if .Values.deploykf_core.kubeflow_istio_gateway.enabled >}}
+  - deploykf-core/kubeflow-istio-gateway.yaml
+  - namespaces/kubeflow-istio-gateway.yaml
+  {{<- end >}}
+
+  {{<- if .Values.deploykf_core.kubeflow_minio.enabled >}}
+  - deploykf-core/kubeflow-minio.yaml
+  - namespaces/kubeflow-minio.yaml
+  {{<- end >}}
+
+  {{<- if .Values.deploykf_core.kubeflow_mysql.enabled >}}
+  - deploykf-core/kubeflow-mysql.yaml
+  - namespaces/kubeflow-mysql.yaml
+  {{<- end >}}
+
+  {{<- if .Values.deploykf_core.kubeflow_profiles_generator.enabled >}}
+  - deploykf-core/kubeflow-profiles-generator.yaml
+  {{<- end >}}
+
+  ####################
+  ## deploykf-tools ##
+  ####################
+  {{<- if .Values.kubeflow_contrib.kserve.enabled >}}
+  - deploykf-tools/kserve--kserve.yaml
+  - deploykf-tools/kserve--models-web-app.yaml
+  {{<- end >}}
+
   ###########################
   ## kubeflow-dependencies ##
   ###########################
@@ -72,43 +111,4 @@ resources:
 
   {{<- if .Values.kubeflow_tools.volumes.enabled >}}
   - kubeflow-tools/volumes--volumes-web-app.yaml
-  {{<- end >}}
-
-  ###################
-  ## deploykf-core ##
-  ###################
-  {{<- if .Values.deploykf_core.kubeflow_auth.enabled >}}
-  - deploykf-core/kubeflow-auth.yaml
-  - namespaces/kubeflow-auth.yaml
-  {{<- end >}}
-  
-  {{<- if .Values.deploykf_core.kubeflow_dashboard.enabled >}}
-  - deploykf-core/kubeflow-dashboard.yaml
-  {{<- end >}}
-
-  {{<- if .Values.deploykf_core.kubeflow_istio_gateway.enabled >}}
-  - deploykf-core/kubeflow-istio-gateway.yaml
-  - namespaces/kubeflow-istio-gateway.yaml
-  {{<- end >}}
-
-  {{<- if .Values.deploykf_core.kubeflow_minio.enabled >}}
-  - deploykf-core/kubeflow-minio.yaml
-  - namespaces/kubeflow-minio.yaml
-  {{<- end >}}
-
-  {{<- if .Values.deploykf_core.kubeflow_mysql.enabled >}}
-  - deploykf-core/kubeflow-mysql.yaml
-  - namespaces/kubeflow-mysql.yaml
-  {{<- end >}}
-
-  {{<- if .Values.deploykf_core.kubeflow_profiles_generator.enabled >}}
-  - deploykf-core/kubeflow-profiles-generator.yaml
-  {{<- end >}}
-
-  ######################
-  ## kubeflow-contrib ##
-  ######################
-  {{<- if .Values.kubeflow_contrib.kserve.enabled >}}
-  - deploykf-tools/kserve--kserve.yaml
-  - deploykf-tools/kserve--models-web-app.yaml
   {{<- end >}}
