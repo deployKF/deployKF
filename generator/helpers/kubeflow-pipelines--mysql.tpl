@@ -3,7 +3,7 @@
 ## - NOTE: empty means false, non-empty means true
 ##
 {{<- define "kubeflow_pipelines.use_embedded_mysql" ->}}
-{{<- if .Values.deploykf_core.kubeflow_mysql.enabled ->}}
+{{<- if .Values.deploykf_opt.kubeflow_mysql.enabled ->}}
 true
 {{<- end ->}}
 {{<- end ->}}
@@ -13,7 +13,7 @@ true
 ##
 {{<- define "kubeflow_pipelines.mysql.hostname" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" . ->}}
-kubeflow-mysql.{{< .Values.deploykf_core.kubeflow_mysql.namespace >}}.svc.cluster.local
+kubeflow-mysql.{{< .Values.deploykf_opt.kubeflow_mysql.namespace >}}.svc.cluster.local
 {{<- else ->}}
 {{< .Values.kubeflow_tools.pipelines.mysql.host >}}
 {{<- end ->}}
@@ -37,8 +37,8 @@ kubeflow-mysql.{{< .Values.deploykf_core.kubeflow_mysql.namespace >}}.svc.cluste
 ##
 {{<- define "kubeflow_pipelines.mysql.auth.source_secret_name" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" . ->}}
-{{<- if .Values.deploykf_core.kubeflow_mysql.kubeflowUser.existingSecret ->}}
-{{< .Values.deploykf_core.kubeflow_mysql.kubeflowUser.existingSecret >}}
+{{<- if .Values.deploykf_opt.kubeflow_mysql.kubeflowUser.existingSecret ->}}
+{{< .Values.deploykf_opt.kubeflow_mysql.kubeflowUser.existingSecret >}}
 {{<- else ->}}
 kubeflow-mysql-kubeflow-user
 {{<- end ->}}
@@ -57,7 +57,7 @@ pipelines-mysql-secret
 ##
 {{<- define "kubeflow_pipelines.mysql.auth.source_secret_namespace" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" . ->}}
-{{< .Values.deploykf_core.kubeflow_mysql.namespace >}}
+{{< .Values.deploykf_opt.kubeflow_mysql.namespace >}}
 {{<- else ->}}
 kubeflow
 {{<- end ->}}
@@ -89,8 +89,8 @@ cloned--pipelines-mysql-secret
 ##
 {{<- define "kubeflow_pipelines.mysql.auth.secret_username_key" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" . ->}}
-{{<- if .Values.deploykf_core.kubeflow_mysql.kubeflowUser.existingSecret ->}}
-{{< .Values.deploykf_core.kubeflow_mysql.kubeflowUser.existingSecretUsernameKey >}}
+{{<- if .Values.deploykf_opt.kubeflow_mysql.kubeflowUser.existingSecret ->}}
+{{< .Values.deploykf_opt.kubeflow_mysql.kubeflowUser.existingSecretUsernameKey >}}
 {{<- else ->}}
 username
 {{<- end ->}}
@@ -108,8 +108,8 @@ username
 ##
 {{<- define "kubeflow_pipelines.mysql.auth.secret_password_key" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" . ->}}
-{{<- if .Values.deploykf_core.kubeflow_mysql.kubeflowUser.existingSecret ->}}
-{{< .Values.deploykf_core.kubeflow_mysql.kubeflowUser.existingSecretPasswordKey >}}
+{{<- if .Values.deploykf_opt.kubeflow_mysql.kubeflowUser.existingSecret ->}}
+{{< .Values.deploykf_opt.kubeflow_mysql.kubeflowUser.existingSecretPasswordKey >}}
 {{<- else ->}}
 password
 {{<- end ->}}

@@ -108,7 +108,7 @@ argocd/deploykf-opt/kubeflow-minio.yaml
 argocd/namespaces/kubeflow-minio.yaml
 manifests/deploykf-opt/kubeflow-minio/
 {{<- end >}}
-{{<- if not .Values.deploykf_core.kubeflow_mysql.enabled >}}
+{{<- if not .Values.deploykf_opt.kubeflow_mysql.enabled >}}
 argocd/deploykf-opt/kubeflow-mysql.yaml
 argocd/namespaces/kubeflow-mysql.yaml
 manifests/deploykf-opt/kubeflow-mysql/

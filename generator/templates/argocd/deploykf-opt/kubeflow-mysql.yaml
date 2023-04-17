@@ -15,4 +15,4 @@ spec:
     path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-opt/kubeflow-mysql" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
-    namespace: {{< .Values.deploykf_core.kubeflow_mysql.namespace | quote >}}
+    namespace: {{< .Values.deploykf_opt.kubeflow_mysql.namespace | quote >}}

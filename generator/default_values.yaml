@@ -149,29 +149,6 @@ deploykf_core:
       replicaCount: 1
 
   ## --------------------------------------
-  ##            kubeflow-mysql
-  ## --------------------------------------
-  kubeflow_mysql:
-    enabled: true
-    namespace: kubeflow-mysql
-
-    ## configs for the "root@localhost" mysql user
-    ## (used for liveness probes)
-    rootUser:
-      password: password
-      existingSecret: ""
-      existingSecretPasswordKey: "password"
-
-    ## configs for the "kubeflow" mysql user
-    ## (used by kubeflow apps)
-    kubeflowUser:
-      username: kubeflow
-      password: password
-      existingSecret: ""
-      existingSecretUsernameKey: "username"
-      existingSecretPasswordKey: "password"
-
-  ## --------------------------------------
   ##      kubeflow-profiles-generator
   ## --------------------------------------
   kubeflow_profiles_generator:
@@ -195,6 +172,29 @@ deploykf_opt:
     rootUser:
       username: minioadmin
       password: minioadmin
+      existingSecret: ""
+      existingSecretUsernameKey: "username"
+      existingSecretPasswordKey: "password"
+
+  ## --------------------------------------
+  ##            kubeflow-mysql
+  ## --------------------------------------
+  kubeflow_mysql:
+    enabled: true
+    namespace: kubeflow-mysql
+
+    ## configs for the "root@localhost" mysql user
+    ## (used for liveness probes)
+    rootUser:
+      password: password
+      existingSecret: ""
+      existingSecretPasswordKey: "password"
+
+    ## configs for the "kubeflow" mysql user
+    ## (used by kubeflow apps)
+    kubeflowUser:
+      username: kubeflow
+      password: password
       existingSecret: ""
       existingSecretUsernameKey: "username"
       existingSecretPasswordKey: "password"
@@ -243,7 +243,7 @@ kubeflow_tools:
   katib:
     enabled: true
 
-    ## NOTE: these values are ignored when `deploykf_core.kubeflow_mysql.enabled` is 'true',
+    ## NOTE: these values are ignored when `deploykf_opt.kubeflow_mysql.enabled` is 'true',
     ##       as we automatically populate the required settings to use the embedded mysql
     mysql:
       host: "mysql.example.com"
@@ -286,7 +286,7 @@ kubeflow_tools:
         existingSecretAccessKeyKey: "AWS_ACCESS_KEY_ID"
         existingSecretSecretKeyKey: "AWS_SECRET_ACCESS_KEY"
 
-    ## NOTE: these values are ignored when `deploykf_core.kubeflow_mysql.enabled` is 'true',
+    ## NOTE: these values are ignored when `deploykf_opt.kubeflow_mysql.enabled` is 'true',
     ##       as we automatically populate the required settings to use the embedded mysql
     mysql:
       host: "mysql.example.com"
