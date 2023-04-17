@@ -27,7 +27,7 @@ resources:
   - kubeflow-tools/volumes--volumes-web-app.yaml
 
   #####################
-  ## kubeflow-common ##
+  ## deploykf-core ##
   #####################
   - deploykf-core/kubeflow-argo-workflows.yaml
   - namespaces/kubeflow-argo-workflows.yaml

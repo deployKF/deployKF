@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-common--kubeflow-profiles-generator
+  name: dkf-core--kubeflow-profiles-generator
   namespace: "argocd"
   labels:
     app.kubernetes.io/name: kubeflow-profiles-generator
-    app.kubernetes.io/component: kubeflow-common
+    app.kubernetes.io/component: deploykf-core
     app.kubernetes.io/part-of: deploykf
 spec:
   project: "default"

@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-common--kubeflow-auth
+  name: dkf-core--kubeflow-auth
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
     app.kubernetes.io/name: kubeflow-auth
-    app.kubernetes.io/component: kubeflow-common
+    app.kubernetes.io/component: deploykf-core
     app.kubernetes.io/part-of: deploykf
 spec:
   project: {{< .Values.argocd.project | quote >}}

@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-common--minio
+  name: dkf-core--minio
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
     app.kubernetes.io/name: kubeflow-minio
-    app.kubernetes.io/component: kubeflow-common
+    app.kubernetes.io/component: deploykf-core
     app.kubernetes.io/part-of: deploykf
 spec:
   project: {{< .Values.argocd.project | quote >}}

@@ -76,14 +76,14 @@ Get started with deployKF by following these steps:
             - _WARNING: first sync may fail, so wait and sync again_
         5. `dkf-dep--knative--knative-eventing`
         6. `dkf-dep--knative--knative-serving`
-    4. __kubeflow-common__ _(label: `app.kubernetes.io/component: kubeflow-common`)_
-        1. `kf-common--kubeflow-istio-gateway`
-        2. `kf-common--kubeflow-auth`
-        3. `kf-common--kubeflow-dashboard`
-        4. `kf-common--minio`
-        5. `kf-common--mysql`
-        6. `kf-common--argo-workflows`
-        7. `kf-common--kubeflow-profiles-generator`
+    4. __deploykf-core__ _(label: `app.kubernetes.io/component: deploykf-core`)_
+        1. `dkf-core--kubeflow-istio-gateway`
+        2. `dkf-core--kubeflow-auth`
+        3. `dkf-core--kubeflow-dashboard`
+        4. `dkf-core--minio`
+        5. `dkf-core--mysql`
+        6. `dkf-core--argo-workflows`
+        7. `dkf-core--kubeflow-profiles-generator`
             - _WARNING: first sync may fail as profile namespaces will not immediately be created, so wait for those namespace to be created, and sync again_
     5. __kubeflow-tools__ _(label: `app.kubernetes.io/component: kubeflow-tools`)_
         1. `kf-tools--pipelines`

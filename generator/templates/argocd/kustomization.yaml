@@ -67,7 +67,7 @@ resources:
   {{<- end >}}
 
   #####################
-  ## kubeflow-common ##
+  ## deploykf-core ##
   #####################
   {{<- if .Values.kubeflow_common.kubeflow_argo_workflows.enabled >}}
   - deploykf-core/kubeflow-argo-workflows.yaml

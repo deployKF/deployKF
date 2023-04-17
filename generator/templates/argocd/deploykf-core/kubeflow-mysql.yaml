@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-common--mysql
+  name: dkf-core--mysql
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
     app.kubernetes.io/name: kubeflow-mysql
-    app.kubernetes.io/component: kubeflow-common
+    app.kubernetes.io/component: deploykf-core
     app.kubernetes.io/part-of: deploykf
 spec:
   project: {{< .Values.argocd.project | quote >}}
