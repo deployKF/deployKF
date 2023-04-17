@@ -5,8 +5,8 @@ metadata:
   name: minio-create-buckets
   namespace: {{ .Release.Namespace | quote }}
   labels:
-    helm.sh/chart: {{ include "kubeflow-minio.labels.chart" . }}
-    app.kubernetes.io/name: {{ include "kubeflow-minio.labels.name" . }}
+    helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: minio
@@ -17,7 +17,7 @@ spec:
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: {{ include "kubeflow-minio.labels.name" . }}
+        app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/component: minio

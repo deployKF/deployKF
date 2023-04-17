@@ -1,3 +1,3 @@
 apiVersion: v2
-name: kubeflow-minio
+name: deploykf-minio
 version: 1.0.0

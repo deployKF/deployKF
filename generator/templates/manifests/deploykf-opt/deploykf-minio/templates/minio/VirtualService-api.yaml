@@ -3,8 +3,8 @@ kind: VirtualService
 metadata:
   name: minio-api
   labels:
-    helm.sh/chart: {{ include "kubeflow-minio.labels.chart" . }}
-    app.kubernetes.io/name: {{ include "kubeflow-minio.labels.name" . }}
+    helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: minio
