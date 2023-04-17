@@ -15,4 +15,4 @@ spec:
     path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-core/deploykf-auth" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
-    namespace: {{< .Values.deploykf_core.kubeflow_auth.namespace | quote >}}
+    namespace: {{< .Values.deploykf_core.deploykf_auth.namespace | quote >}}

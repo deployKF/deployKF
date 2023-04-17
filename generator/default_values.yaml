@@ -92,7 +92,7 @@ deploykf_core:
   ## --------------------------------------
   ##             deploykf-auth
   ## --------------------------------------
-  kubeflow_auth:
+  deploykf_auth:
     enabled: true
     namespace: deploykf-auth
 

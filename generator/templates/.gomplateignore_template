@@ -83,7 +83,7 @@ manifests/deploykf-dependencies/sealed-secrets/
 {{<- end >}}
 
 ## deployKF - deploykf-core
-{{<- if not .Values.deploykf_core.kubeflow_auth.enabled >}}
+{{<- if not .Values.deploykf_core.deploykf_auth.enabled >}}
 argocd/deploykf-core/deploykf-auth.yaml
 argocd/namespaces/deploykf-auth.yaml
 manifests/deploykf-core/deploykf-auth/

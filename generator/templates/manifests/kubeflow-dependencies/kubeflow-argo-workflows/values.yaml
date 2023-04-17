@@ -27,7 +27,7 @@ deployKF:
         injectedConfigMapName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
 
   auth:
-    namespace: {{< .Values.deploykf_core.kubeflow_auth.namespace | quote >}}
+    namespace: {{< .Values.deploykf_core.deploykf_auth.namespace | quote >}}
 
   gateway:
     namespace: {{< .Values.deploykf_core.kubeflow_istio_gateway.namespace | quote >}}
