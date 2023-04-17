@@ -80,16 +80,17 @@ Get started with deployKF by following these steps:
         1. `dkf-core--kubeflow-istio-gateway`
         2. `dkf-core--kubeflow-auth`
         3. `dkf-core--kubeflow-dashboard`
-        4. `dkf-core--minio`
-        5. `dkf-core--mysql`
-        6. `dkf-core--kubeflow-profiles-generator`
+        4. `dkf-core--mysql`
+        5. `dkf-core--kubeflow-profiles-generator`
             - _WARNING: first sync may fail as profile namespaces will not immediately be created, so wait for those namespace to be created, and sync again_
-    5. __deploykf-tools__ _(label: `app.kubernetes.io/component: deploykf-tools`)_
+    5. __deploykf-opt__ _(label: `app.kubernetes.io/component: deploykf-opt`)_
+        1. `dkf-opt--minio`
+    6. __deploykf-tools__ _(label: `app.kubernetes.io/component: deploykf-tools`)_
         1. `dkf-tools--kserve--kserve`
         2. `dkf-tools--kserve--models-web-app`
-    6. __kubeflow-dependencies__ _(label: `app.kubernetes.io/component: kubeflow-dependencies`)_
+    7. __kubeflow-dependencies__ _(label: `app.kubernetes.io/component: kubeflow-dependencies`)_
         1. `kf-dep--argo-workflows`
-    7. __kubeflow-tools__ _(label: `app.kubernetes.io/component: kubeflow-tools`)_
+    8. __kubeflow-tools__ _(label: `app.kubernetes.io/component: kubeflow-tools`)_
         1. `kf-tools--pipelines`
         2. `kf-tools--poddefaults-webhook`
         3. `kf-tools--notebooks--notebook-controller` 
