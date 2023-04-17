@@ -29,18 +29,18 @@ resources:
   #####################
   ## kubeflow-common ##
   #####################
-  - kubeflow-common/kubeflow-argo-workflows.yaml
+  - deploykf-core/kubeflow-argo-workflows.yaml
   - namespaces/kubeflow-argo-workflows.yaml
-  - kubeflow-common/kubeflow-auth.yaml
+  - deploykf-core/kubeflow-auth.yaml
   - namespaces/kubeflow-auth.yaml
-  - kubeflow-common/kubeflow-dashboard.yaml
-  - kubeflow-common/kubeflow-istio-gateway.yaml
+  - deploykf-core/kubeflow-dashboard.yaml
+  - deploykf-core/kubeflow-istio-gateway.yaml
   - namespaces/kubeflow-istio-gateway.yaml
-  - kubeflow-common/kubeflow-minio.yaml
+  - deploykf-core/kubeflow-minio.yaml
   - namespaces/kubeflow-minio.yaml
-  - kubeflow-common/kubeflow-mysql.yaml
+  - deploykf-core/kubeflow-mysql.yaml
   - namespaces/kubeflow-mysql.yaml
-  - kubeflow-common/kubeflow-profiles-generator.yaml
+  - deploykf-core/kubeflow-profiles-generator.yaml
 
   ######################
   ## kubeflow-contrib ##

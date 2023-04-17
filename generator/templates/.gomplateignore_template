@@ -114,39 +114,39 @@ argocd/kubeflow-tools/volumes--volumes-web-app.yaml
 manifests/kubeflow-tools/volumes/
 {{<- end >}}
 
-## deployKF - kubeflow-common
+## deployKF - deploykf-core
 {{<- if not .Values.kubeflow_common.kubeflow_argo_workflows.enabled >}}
-argocd/kubeflow-common/kubeflow-argo-workflows.yaml
+argocd/deploykf-core/kubeflow-argo-workflows.yaml
 argocd/namespaces/kubeflow-argo-workflows.yaml
-manifests/kubeflow-common/kubeflow-argo-workflows/
+manifests/deploykf-core/kubeflow-argo-workflows/
 {{<- end >}}
 {{<- if not .Values.kubeflow_common.kubeflow_auth.enabled >}}
-argocd/kubeflow-common/kubeflow-auth.yaml
+argocd/deploykf-core/kubeflow-auth.yaml
 argocd/namespaces/kubeflow-auth.yaml
-manifests/kubeflow-common/kubeflow-auth/
+manifests/deploykf-core/kubeflow-auth/
 {{<- end >}}
 {{<- if not .Values.kubeflow_common.kubeflow_dashboard.enabled >}}
-argocd/kubeflow-common/kubeflow-dashboard.yaml
-manifests/kubeflow-common/kubeflow-dashboard/
+argocd/deploykf-core/kubeflow-dashboard.yaml
+manifests/deploykf-core/kubeflow-dashboard/
 {{<- end >}}
 {{<- if not .Values.kubeflow_common.kubeflow_istio_gateway.enabled >}}
-argocd/kubeflow-common/kubeflow-istio-gateway.yaml
+argocd/deploykf-core/kubeflow-istio-gateway.yaml
 argocd/namespaces/kubeflow-istio-gateway.yaml
-manifests/kubeflow-common/kubeflow-istio-gateway/
+manifests/deploykf-core/kubeflow-istio-gateway/
 {{<- end >}}
 {{<- if not .Values.kubeflow_common.kubeflow_minio.enabled >}}
-argocd/kubeflow-common/kubeflow-minio.yaml
+argocd/deploykf-core/kubeflow-minio.yaml
 argocd/namespaces/kubeflow-minio.yaml
-manifests/kubeflow-common/kubeflow-minio/
+manifests/deploykf-core/kubeflow-minio/
 {{<- end >}}
 {{<- if not .Values.kubeflow_common.kubeflow_mysql.enabled >}}
-argocd/kubeflow-common/kubeflow-mysql.yaml
+argocd/deploykf-core/kubeflow-mysql.yaml
 argocd/namespaces/kubeflow-mysql.yaml
-manifests/kubeflow-common/kubeflow-mysql/
+manifests/deploykf-core/kubeflow-mysql/
 {{<- end >}}
 {{<- if not .Values.kubeflow_common.kubeflow_profiles_generator.enabled >}}
-argocd/kubeflow-common/kubeflow-profiles-generator.yaml
-manifests/kubeflow-common/kubeflow-profiles-generator/
+argocd/deploykf-core/kubeflow-profiles-generator.yaml
+manifests/deploykf-core/kubeflow-profiles-generator/
 {{<- end >}}
 
 ## deployKF - kubeflow-contrib

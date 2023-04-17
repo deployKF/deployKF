@@ -70,36 +70,36 @@ resources:
   ## kubeflow-common ##
   #####################
   {{<- if .Values.kubeflow_common.kubeflow_argo_workflows.enabled >}}
-  - kubeflow-common/kubeflow-argo-workflows.yaml
+  - deploykf-core/kubeflow-argo-workflows.yaml
   - namespaces/kubeflow-argo-workflows.yaml
   {{<- end >}}
   
   {{<- if .Values.kubeflow_common.kubeflow_auth.enabled >}}
-  - kubeflow-common/kubeflow-auth.yaml
+  - deploykf-core/kubeflow-auth.yaml
   - namespaces/kubeflow-auth.yaml
   {{<- end >}}
   
   {{<- if .Values.kubeflow_common.kubeflow_dashboard.enabled >}}
-  - kubeflow-common/kubeflow-dashboard.yaml
+  - deploykf-core/kubeflow-dashboard.yaml
   {{<- end >}}
 
   {{<- if .Values.kubeflow_common.kubeflow_istio_gateway.enabled >}}
-  - kubeflow-common/kubeflow-istio-gateway.yaml
+  - deploykf-core/kubeflow-istio-gateway.yaml
   - namespaces/kubeflow-istio-gateway.yaml
   {{<- end >}}
 
   {{<- if .Values.kubeflow_common.kubeflow_minio.enabled >}}
-  - kubeflow-common/kubeflow-minio.yaml
+  - deploykf-core/kubeflow-minio.yaml
   - namespaces/kubeflow-minio.yaml
   {{<- end >}}
 
   {{<- if .Values.kubeflow_common.kubeflow_mysql.enabled >}}
-  - kubeflow-common/kubeflow-mysql.yaml
+  - deploykf-core/kubeflow-mysql.yaml
   - namespaces/kubeflow-mysql.yaml
   {{<- end >}}
 
   {{<- if .Values.kubeflow_common.kubeflow_profiles_generator.enabled >}}
-  - kubeflow-common/kubeflow-profiles-generator.yaml
+  - deploykf-core/kubeflow-profiles-generator.yaml
   {{<- end >}}
 
   ######################

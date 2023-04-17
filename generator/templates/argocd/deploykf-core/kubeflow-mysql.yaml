@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-common--minio
+  name: kf-common--mysql
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
-    app.kubernetes.io/name: kubeflow-minio
+    app.kubernetes.io/name: kubeflow-mysql
     app.kubernetes.io/component: kubeflow-common
     app.kubernetes.io/part-of: deploykf
 spec:
@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/kubeflow-common/kubeflow-minio" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-core/kubeflow-mysql" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
-    namespace: {{< .Values.kubeflow_common.kubeflow_minio.namespace | quote >}}
+    namespace: {{< .Values.kubeflow_common.kubeflow_mysql.namespace | quote >}}

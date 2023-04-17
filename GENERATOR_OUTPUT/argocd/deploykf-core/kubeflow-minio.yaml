@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-common--kubeflow-istio-gateway
+  name: kf-common--minio
   namespace: "argocd"
   labels:
-    app.kubernetes.io/name: kubeflow-istio-gateway
+    app.kubernetes.io/name: kubeflow-minio
     app.kubernetes.io/component: kubeflow-common
     app.kubernetes.io/part-of: deploykf
 spec:
@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: "https://github.com/deployKF/deployKF"
     targetRevision: "dev"
-    path: "GENERATOR_OUTPUT/manifests/kubeflow-common/kubeflow-istio-gateway"
+    path: "GENERATOR_OUTPUT/manifests/deploykf-core/kubeflow-minio"
   destination:
     server: "https://kubernetes.default.svc"
-    namespace: "kubeflow-istio-gateway"
+    namespace: "kubeflow-minio"

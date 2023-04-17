@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-common--kubeflow-dashboard
+  name: kf-common--kubeflow-auth
   namespace: "argocd"
   labels:
-    app.kubernetes.io/name: kubeflow-dashboard
+    app.kubernetes.io/name: kubeflow-auth
     app.kubernetes.io/component: kubeflow-common
     app.kubernetes.io/part-of: deploykf
 spec:
@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: "https://github.com/deployKF/deployKF"
     targetRevision: "dev"
-    path: "GENERATOR_OUTPUT/manifests/kubeflow-common/kubeflow-dashboard"
+    path: "GENERATOR_OUTPUT/manifests/deploykf-core/kubeflow-auth"
   destination:
     server: "https://kubernetes.default.svc"
-    namespace: kubeflow
+    namespace: "kubeflow-auth"

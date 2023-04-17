@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-common--mysql
+  name: kf-common--kubeflow-profiles-generator
   namespace: "argocd"
   labels:
-    app.kubernetes.io/name: kubeflow-mysql
+    app.kubernetes.io/name: kubeflow-profiles-generator
     app.kubernetes.io/component: kubeflow-common
     app.kubernetes.io/part-of: deploykf
 spec:
@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: "https://github.com/deployKF/deployKF"
     targetRevision: "dev"
-    path: "GENERATOR_OUTPUT/manifests/kubeflow-common/kubeflow-mysql"
+    path: "GENERATOR_OUTPUT/manifests/deploykf-core/kubeflow-profiles-generator"
   destination:
     server: "https://kubernetes.default.svc"
-    namespace: "kubeflow-mysql"
+    namespace: kubeflow
