@@ -19,8 +19,8 @@ metadata:
     role: edit
     user: {{ $user.email | quote }}
   labels:
-    helm.sh/chart: {{ include "kubeflow-profiles-generator.labels.chart" $ }}
-    app.kubernetes.io/name: {{ include "kubeflow-profiles-generator.labels.name" $ }}
+    helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
+    app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
     app.kubernetes.io/instance: {{ $.Release.Name }}
     app.kubernetes.io/managed-by: {{ $.Release.Service }}
 spec:
@@ -39,8 +39,8 @@ metadata:
     role: edit
     user: {{ $user.email | quote }}
   labels:
-    helm.sh/chart: {{ include "kubeflow-profiles-generator.labels.chart" $ }}
-    app.kubernetes.io/name: {{ include "kubeflow-profiles-generator.labels.name" $ }}
+    helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
+    app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
     app.kubernetes.io/instance: {{ $.Release.Name }}
     app.kubernetes.io/managed-by: {{ $.Release.Service }}
 roleRef:
