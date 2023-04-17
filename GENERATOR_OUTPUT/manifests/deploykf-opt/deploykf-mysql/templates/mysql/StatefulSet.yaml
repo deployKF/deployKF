@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: kubeflow-mysql
+  name: deploykf-mysql
   labels:
     helm.sh/chart: {{ include "kubeflow-mysql.labels.chart" . }}
     app.kubernetes.io/name: {{ include "kubeflow-mysql.labels.name" . }}
@@ -9,7 +9,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: mysql
 spec:
-  serviceName: kubeflow-mysql
+  serviceName: deploykf-mysql
   replicas: 1
   updateStrategy:
     type: RollingUpdate
@@ -40,7 +40,7 @@ spec:
       nodeSelector: {}
       affinity: {}
       tolerations: []
-      serviceAccountName: kubeflow-mysql
+      serviceAccountName: deploykf-mysql
       {{- if .Values.mysql.podSecurityContext }}
       securityContext:
         {{- .Values.mysql.podSecurityContext | toYaml | nindent 8 }}
@@ -69,7 +69,7 @@ spec:
                   name: {{ .Values.mysql.rootUser.existingSecret | quote }}
                   key: {{ .Values.mysql.rootUser.existingSecretPasswordKey | quote }}
                   {{- else }}
-                  name: kubeflow-mysql-root-user
+                  name: deploykf-mysql-root-user
                   key: password
                   {{- end }}
             - name: MYSQL_KUBEFLOW_USERNAME
@@ -79,7 +79,7 @@ spec:
                   name: {{ .Values.mysql.kubeflowUser.existingSecret | quote }}
                   key: {{ .Values.mysql.kubeflowUser.existingSecretUsernameKey | quote }}
                   {{- else }}
-                  name: kubeflow-mysql-kubeflow-user
+                  name: deploykf-mysql-kubeflow-user
                   key: username
                   {{- end }}
             - name: MYSQL_KUBEFLOW_PASSWORD
@@ -89,7 +89,7 @@ spec:
                   name: {{ .Values.mysql.kubeflowUser.existingSecret | quote }}
                   key: {{ .Values.mysql.kubeflowUser.existingSecretPasswordKey | quote }}
                   {{- else }}
-                  name: kubeflow-mysql-kubeflow-user
+                  name: deploykf-mysql-kubeflow-user
                   key: password
                   {{- end }}
           command:
@@ -148,10 +148,10 @@ spec:
           emptyDir: {}
         - name: mysql-configs
           configMap:
-            name: kubeflow-mysql-config
+            name: deploykf-mysql-config
         - name: mysql-scripts
           configMap:
-            name: kubeflow-mysql-scripts
+            name: deploykf-mysql-scripts
             items:
               - key: custom_entrypoint.sh
                 path: custom_entrypoint.sh
@@ -162,7 +162,7 @@ spec:
             {{- if .Values.mysql.persistence.existingClaim }}
             claimName: {{ .Values.mysql.persistence.existingClaim | quote }}
             {{- else }}
-            claimName: kubeflow-mysql-data
+            claimName: deploykf-mysql-data
             {{- end }}
         {{- else }}
         - name: mysql-data

@@ -28,8 +28,8 @@ resources:
   ##################
   - deploykf-opt/deploykf-minio.yaml
   - namespaces/deploykf-minio.yaml
-  - deploykf-opt/kubeflow-mysql.yaml
-  - namespaces/kubeflow-mysql.yaml
+  - deploykf-opt/deploykf-mysql.yaml
+  - namespaces/deploykf-mysql.yaml
 
   ####################
   ## deploykf-tools ##

@@ -177,11 +177,11 @@ deploykf_opt:
       existingSecretPasswordKey: "password"
 
   ## --------------------------------------
-  ##            kubeflow-mysql
+  ##            deploykf-mysql
   ## --------------------------------------
   kubeflow_mysql:
     enabled: true
-    namespace: kubeflow-mysql
+    namespace: deploykf-mysql
 
     ## configs for the "root@localhost" mysql user
     ## (used for liveness probes)

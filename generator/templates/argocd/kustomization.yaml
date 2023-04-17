@@ -63,8 +63,8 @@ resources:
   {{<- end >}}
 
   {{<- if .Values.deploykf_opt.kubeflow_mysql.enabled >}}
-  - deploykf-opt/kubeflow-mysql.yaml
-  - namespaces/kubeflow-mysql.yaml
+  - deploykf-opt/deploykf-mysql.yaml
+  - namespaces/deploykf-mysql.yaml
   {{<- end >}}
 
   ####################

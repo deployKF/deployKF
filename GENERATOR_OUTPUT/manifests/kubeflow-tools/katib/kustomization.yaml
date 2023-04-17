@@ -22,7 +22,7 @@ patchesStrategicMerge:
 configMapGenerator:
   - name: katib-mysql-config
     literals:
-      - dbHost="kubeflow-mysql.kubeflow-mysql.svc.cluster.local"
+      - dbHost="kubeflow-mysql.deploykf-mysql.svc.cluster.local"
       - dbPort="3306"
       - dbName="katib"
 

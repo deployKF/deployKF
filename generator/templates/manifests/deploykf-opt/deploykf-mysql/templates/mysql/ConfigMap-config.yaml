@@ -1,8 +1,7 @@
-{{- if not .Values.mysql.kubeflowUser.existingSecret }}
 apiVersion: v1
-kind: Secret
+kind: ConfigMap
 metadata:
-  name: kubeflow-mysql-kubeflow-user
+  name: deploykf-mysql-config
   labels:
     helm.sh/chart: {{ include "kubeflow-mysql.labels.chart" . }}
     app.kubernetes.io/name: {{ include "kubeflow-mysql.labels.name" . }}
@@ -10,6 +9,4 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: mysql
 data:
-  username: {{ .Values.mysql.kubeflowUser.username | b64enc | quote }}
-  password: {{ .Values.mysql.kubeflowUser.password | b64enc | quote }}
-{{- end }}
+  custom.cnf: {{ .Values.mysql.configuration | quote }}

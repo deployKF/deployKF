@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: kubeflow-mysql
+  name: deploykf-mysql
   labels:
     helm.sh/chart: {{ include "kubeflow-mysql.labels.chart" . }}
     app.kubernetes.io/name: {{ include "kubeflow-mysql.labels.name" . }}
