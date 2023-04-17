@@ -4,7 +4,7 @@ metadata:
   name: dkf-opt--minio
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
-    app.kubernetes.io/name: kubeflow-minio
+    app.kubernetes.io/name: deploykf-minio
     app.kubernetes.io/component: deploykf-opt
     app.kubernetes.io/part-of: deploykf
 spec:
@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-opt/kubeflow-minio" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-opt/deploykf-minio" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: {{< .Values.deploykf_opt.kubeflow_minio.namespace | quote >}}

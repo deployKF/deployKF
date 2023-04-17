@@ -30,7 +30,7 @@ deployKF:
 
   minio:
     enabled: true
-    namespace: "kubeflow-minio"
+    namespace: "deploykf-minio"
 
 ## we reference the "gateway" chart (https://istio-release.storage.googleapis.com/charts) in `dependencies` of Chart.yaml
 ## we must indent our values under `gateway:` in this file

@@ -68,9 +68,9 @@ configMapGenerator:
       ##       (it seems to be related to launcher_v2.go)
       - defaultPipelineRoot=""
       - bucketSecure="false"
-      - bucketHost="minio-api.kubeflow-minio.svc.cluster.local"
+      - bucketHost="minio-api.deploykf-minio.svc.cluster.local"
       - bucketPort="9000"
-      - bucketEndpoint="minio-api.kubeflow-minio.svc.cluster.local:9000"
+      - bucketEndpoint="minio-api.deploykf-minio.svc.cluster.local:9000"
 
       ## ================================
       ## MySQL Configs

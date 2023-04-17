@@ -163,11 +163,11 @@ deploykf_core:
 deploykf_opt:
 
   ## --------------------------------------
-  ##            kubeflow-minio
+  ##            deploykf-minio
   ## --------------------------------------
   kubeflow_minio:
     enabled: true
-    namespace: kubeflow-minio
+    namespace: deploykf-minio
 
     rootUser:
       username: minioadmin

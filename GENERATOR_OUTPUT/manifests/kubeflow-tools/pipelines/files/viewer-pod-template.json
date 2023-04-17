@@ -10,7 +10,7 @@
           },
           {
             "name": "AWS_S3_ENDPOINT",
-            "value": "minio-api.kubeflow-minio.svc.cluster.local:9000"
+            "value": "minio-api.deploykf-minio.svc.cluster.local:9000"
           },
           {
             "name": "AWS_ACCESS_KEY_ID",
