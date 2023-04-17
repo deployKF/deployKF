@@ -84,7 +84,7 @@ Get started with deployKF by following these steps:
             - _WARNING: first sync may fail as profile namespaces will not immediately be created, so wait for those namespace to be created, and sync again_
     5. __deploykf-opt__ _(label: `app.kubernetes.io/component: deploykf-opt`)_
         1. `dkf-opt--mysql`
-        2. `dkf-opt--minio`
+        2. `dkf-opt--deploykf-minio`
     6. __deploykf-tools__ _(label: `app.kubernetes.io/component: deploykf-tools`)_
         1. `dkf-tools--kserve--kserve`
         2. `dkf-tools--kserve--models-web-app`

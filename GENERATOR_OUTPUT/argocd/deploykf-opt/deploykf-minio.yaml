@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: dkf-opt--minio
+  name: dkf-opt--deploykf-minio
   namespace: "argocd"
   labels:
     app.kubernetes.io/name: deploykf-minio
