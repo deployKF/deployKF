@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-dep--istio
+  name: kf-dep--kyverno
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
-    app.kubernetes.io/name: istio
+    app.kubernetes.io/name: kyverno
     app.kubernetes.io/component: cluster-dependencies
     app.kubernetes.io/part-of: deploykf
 spec:
@@ -12,7 +12,12 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/cluster-dependencies/istio" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-dependencies/kyverno" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
-    namespace: {{< .Values.cluster_dependencies.istio.namespace | quote >}}
+    namespace: {{< .Values.cluster_dependencies.kyverno.namespace | quote >}}
+  syncPolicy:
+    syncOptions:
+      ## kyverno will fail to sync if `Replace` or `ServerSideApply` is not true
+      ## https://kyverno.io/docs/installation/#notes-for-argocd-users
+      - ServerSideApply=true

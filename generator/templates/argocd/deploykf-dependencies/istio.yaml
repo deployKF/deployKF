@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kf-dep--istio
+  namespace: {{< .Values.argocd.namespace | quote >}}
+  labels:
+    app.kubernetes.io/name: istio
+    app.kubernetes.io/component: cluster-dependencies
+    app.kubernetes.io/part-of: deploykf
+spec:
+  project: {{< .Values.argocd.project | quote >}}
+  source:
+    repoURL: {{< .Values.repo.url | quote >}}
+    targetRevision: {{< .Values.repo.revision | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-dependencies/istio" | quote >}}
+  destination:
+    server: {{< .Values.argocd.destination.server | quote >}}
+    namespace: {{< .Values.cluster_dependencies.istio.namespace | quote >}}

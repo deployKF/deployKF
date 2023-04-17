@@ -4,32 +4,32 @@ resources:
   - namespaces/kubeflow.yaml
 
   ##########################
-  ## cluster-dependencies ##
+  ## deploykf-dependencies ##
   ##########################
   {{<- if .Values.cluster_dependencies.cert_manager.enabled >}}
-  - cluster-dependencies/cert-manager.yaml
+  - deploykf-dependencies/cert-manager.yaml
   - namespaces/cert-manager.yaml
   {{<- end >}}
 
   {{<- if .Values.cluster_dependencies.istio.enabled >}}
-  - cluster-dependencies/istio.yaml
+  - deploykf-dependencies/istio.yaml
   - namespaces/istio.yaml
   {{<- end >}}
 
   {{<- if .Values.cluster_dependencies.knative.enabled >}}
-  - cluster-dependencies/knative--knative-eventing.yaml
-  - cluster-dependencies/knative--knative-serving.yaml
+  - deploykf-dependencies/knative--knative-eventing.yaml
+  - deploykf-dependencies/knative--knative-serving.yaml
   - namespaces/knative-eventing.yaml
   - namespaces/knative-serving.yaml
   {{<- end >}}
   
   {{<- if .Values.cluster_dependencies.kyverno.enabled >}}
-  - cluster-dependencies/kyverno.yaml
+  - deploykf-dependencies/kyverno.yaml
   - namespaces/kyverno.yaml
   {{<- end >}}
   
   {{<- if .Values.cluster_dependencies.sealed_secrets.enabled >}}
-  - cluster-dependencies/sealed-secrets.yaml
+  - deploykf-dependencies/sealed-secrets.yaml
   - namespaces/sealed-secrets.yaml
   {{<- end >}}
 

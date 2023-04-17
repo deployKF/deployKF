@@ -4,13 +4,13 @@ resources:
   - namespaces/kubeflow.yaml
 
   ##########################
-  ## cluster-dependencies ##
+  ## deploykf-dependencies ##
   ##########################
-  - cluster-dependencies/cert-manager.yaml
+  - deploykf-dependencies/cert-manager.yaml
   - namespaces/cert-manager.yaml
-  - cluster-dependencies/istio.yaml
+  - deploykf-dependencies/istio.yaml
   - namespaces/istio.yaml
-  - cluster-dependencies/kyverno.yaml
+  - deploykf-dependencies/kyverno.yaml
   - namespaces/kyverno.yaml
 
   ###################

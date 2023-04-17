@@ -2,20 +2,20 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: kf-dep--kyverno
-  namespace: {{< .Values.argocd.namespace | quote >}}
+  namespace: "argocd"
   labels:
     app.kubernetes.io/name: kyverno
     app.kubernetes.io/component: cluster-dependencies
     app.kubernetes.io/part-of: deploykf
 spec:
-  project: {{< .Values.argocd.project | quote >}}
+  project: "default"
   source:
-    repoURL: {{< .Values.repo.url | quote >}}
-    targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/cluster-dependencies/kyverno" | quote >}}
+    repoURL: "https://github.com/deployKF/deployKF"
+    targetRevision: "dev"
+    path: "GENERATOR_OUTPUT/manifests/deploykf-dependencies/kyverno"
   destination:
-    server: {{< .Values.argocd.destination.server | quote >}}
-    namespace: {{< .Values.cluster_dependencies.kyverno.namespace | quote >}}
+    server: "https://kubernetes.default.svc"
+    namespace: "kyverno"
   syncPolicy:
     syncOptions:
       ## kyverno will fail to sync if `Replace` or `ServerSideApply` is not true

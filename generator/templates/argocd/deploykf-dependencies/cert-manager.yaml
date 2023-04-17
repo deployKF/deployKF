@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-dep--sealed-secrets
+  name: kf-dep--cert-manager
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
-    app.kubernetes.io/name: sealed-secrets
+    app.kubernetes.io/name: cert-manager
     app.kubernetes.io/component: cluster-dependencies
     app.kubernetes.io/part-of: deploykf
 spec:
@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/cluster-dependencies/sealed-secrets" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-dependencies/cert-manager" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
-    namespace: {{< .Values.cluster_dependencies.sealed_secrets.namespace | quote >}}
+    namespace: {{< .Values.cluster_dependencies.cert_manager.namespace | quote >}}

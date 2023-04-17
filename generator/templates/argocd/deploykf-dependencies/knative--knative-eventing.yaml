@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-dep--knative--knative-serving
+  name: kf-dep--knative--knative-eventing
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
-    app.kubernetes.io/name: knative-serving
+    app.kubernetes.io/name: knative-eventing
     app.kubernetes.io/component: cluster-dependencies
     app.kubernetes.io/part-of: deploykf
 spec:
@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/cluster-dependencies/knative-serving" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-dependencies/knative-eventing" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
-    namespace: {{< .Values.cluster_dependencies.knative.namespace.serving | quote >}}
+    namespace: {{< .Values.cluster_dependencies.knative.namespace.eventing | quote >}}

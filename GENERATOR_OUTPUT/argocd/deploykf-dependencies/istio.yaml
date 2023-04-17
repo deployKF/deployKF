@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: "https://github.com/deployKF/deployKF"
     targetRevision: "dev"
-    path: "GENERATOR_OUTPUT/manifests/cluster-dependencies/istio"
+    path: "GENERATOR_OUTPUT/manifests/deploykf-dependencies/istio"
   destination:
     server: "https://kubernetes.default.svc"
     namespace: "istio-system"
