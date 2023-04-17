@@ -67,15 +67,15 @@ Get started with deployKF by following these steps:
 3. go to your ArgoCD web interface, and sync the ArgoCD applications:
     1. _WARNING: you __MUST SYNC THE APPLICATIONS IN THE ORDER LISTED BELOW__, as some applications depend on others_
     2. `deploykf-app-of-apps`
-    3. __cluster-dependencies__ _(label: `app.kubernetes.io/component: cluster-dependencies`)_
-        1. `kf-dep--kyverno`
-        2. `kf-dep--cert-manager`
+    3. __deploykf-dependencies__ _(label: `app.kubernetes.io/component: deploykf-dependencies`)_
+        1. `dkf-dep--kyverno`
+        2. `dkf-dep--cert-manager`
             - _WARNING: first sync may fail as trust-manager depends on cert-manager, so once cert-manager pods are up, terminate the first hung sync (under "SYNC STATUS"), and sync again_
-        3. `kf-dep--sealed-secrets`
-        4. `kf-dep--istio`
+        3. `dkf-dep--sealed-secrets`
+        4. `dkf-dep--istio`
             - _WARNING: first sync may fail, so wait and sync again_
-        5. `kf-dep--knative--knative-eventing`
-        6. `kf-dep--knative--knative-serving`
+        5. `dkf-dep--knative--knative-eventing`
+        6. `dkf-dep--knative--knative-serving`
     4. __kubeflow-common__ _(label: `app.kubernetes.io/component: kubeflow-common`)_
         1. `kf-common--kubeflow-istio-gateway`
         2. `kf-common--kubeflow-auth`

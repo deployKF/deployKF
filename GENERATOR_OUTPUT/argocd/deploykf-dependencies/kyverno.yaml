@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-dep--kyverno
+  name: dkf-dep--kyverno
   namespace: "argocd"
   labels:
     app.kubernetes.io/name: kyverno
-    app.kubernetes.io/component: cluster-dependencies
+    app.kubernetes.io/component: deploykf-dependencies
     app.kubernetes.io/part-of: deploykf
 spec:
   project: "default"

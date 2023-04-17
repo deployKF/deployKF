@@ -1,5 +1,5 @@
 apiVersion: v2
-name: cluster-dependencies--sealed-secrets
+name: deploykf-dependencies--sealed-secrets
 version: 1.0.0
 dependencies:
   - name: sealed-secrets

@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-dep--cert-manager
+  name: dkf-dep--cert-manager
   namespace: "argocd"
   labels:
     app.kubernetes.io/name: cert-manager
-    app.kubernetes.io/component: cluster-dependencies
+    app.kubernetes.io/component: deploykf-dependencies
     app.kubernetes.io/part-of: deploykf
 spec:
   project: "default"

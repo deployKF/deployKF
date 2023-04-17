@@ -1,5 +1,5 @@
 apiVersion: v2
-name: cluster-dependencies--cert-manager
+name: deploykf-dependencies--cert-manager
 version: 1.0.0
 dependencies:
   - name: cert-manager

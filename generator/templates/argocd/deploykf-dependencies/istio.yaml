@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-dep--istio
+  name: dkf-dep--istio
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
     app.kubernetes.io/name: istio
-    app.kubernetes.io/component: cluster-dependencies
+    app.kubernetes.io/component: deploykf-dependencies
     app.kubernetes.io/part-of: deploykf
 spec:
   project: {{< .Values.argocd.project | quote >}}
