@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: dkf-core--argo-workflows
+  name: kf-dep--argo-workflows
   namespace: "argocd"
   labels:
     app.kubernetes.io/name: kubeflow-argo-workflows
-    app.kubernetes.io/component: deploykf-core
+    app.kubernetes.io/component: kubeflow-dependencies
     app.kubernetes.io/part-of: deploykf
 spec:
   project: "default"

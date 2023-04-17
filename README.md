@@ -82,10 +82,11 @@ Get started with deployKF by following these steps:
         3. `dkf-core--kubeflow-dashboard`
         4. `dkf-core--minio`
         5. `dkf-core--mysql`
-        6. `dkf-core--argo-workflows`
-        7. `dkf-core--kubeflow-profiles-generator`
+        6. `dkf-core--kubeflow-profiles-generator`
             - _WARNING: first sync may fail as profile namespaces will not immediately be created, so wait for those namespace to be created, and sync again_
-    5. __kubeflow-tools__ _(label: `app.kubernetes.io/component: kubeflow-tools`)_
+    5. __kubeflow-dependencies__ _(label: `app.kubernetes.io/component: kubeflow-dependencies`)_
+        1. `kf-dep--argo-workflows`
+    6. __kubeflow-tools__ _(label: `app.kubernetes.io/component: kubeflow-tools`)_
         1. `kf-tools--pipelines`
         2. `kf-tools--poddefaults-webhook`
         3. `kf-tools--notebooks--notebook-controller` 
@@ -95,7 +96,7 @@ Get started with deployKF by following these steps:
         7. `kf-tools--volumes--volumes-web-app`
         8. `kf-tools--training-operator`
         9. `kf-tools--katib`
-    6. __kubeflow-contrib__ _(label: `app.kubernetes.io/component: kubeflow-contrib`)_
+    7. __kubeflow-contrib__ _(label: `app.kubernetes.io/component: kubeflow-contrib`)_
         1. `kf-contrib--kserve--kserve`
         2. `kf-contrib--kserve--models-web-app`
 4. access the Kubeflow UI through the Istio Gateway Service:
