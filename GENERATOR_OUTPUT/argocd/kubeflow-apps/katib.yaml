@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: "https://github.com/deployKF/deployKF"
     targetRevision: "dev"
-    path: "GENERATOR_OUTPUT/src/kubeflow-apps/katib"
+    path: "GENERATOR_OUTPUT/manifests/kubeflow-apps/katib"
   destination:
     server: "https://kubernetes.default.svc"
     namespace: kubeflow

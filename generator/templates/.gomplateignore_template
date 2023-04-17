@@ -56,102 +56,102 @@ sync_upstream.sh
 {{<- if not .Values.cluster_dependencies.cert_manager.enabled >}}
 argocd/cluster-dependencies/cert-manager.yaml
 argocd/namespaces/cert-manager.yaml
-src/cluster-dependencies/cert-manager/
+manifests/cluster-dependencies/cert-manager/
 {{<- end >}}
 {{<- if not .Values.cluster_dependencies.istio.enabled >}}
 argocd/cluster-dependencies/istio.yaml
 argocd/namespaces/istio.yaml
-src/cluster-dependencies/istio/
+manifests/cluster-dependencies/istio/
 {{<- end >}}
 {{<- if not .Values.cluster_dependencies.knative.enabled >}}
 argocd/cluster-dependencies/knative--knative-eventing.yaml
 argocd/cluster-dependencies/knative--knative-serving.yaml
 argocd/namespaces/knative-eventing.yaml
 argocd/namespaces/knative-serving.yaml
-src/cluster-dependencies/knative-eventing/
-src/cluster-dependencies/knative-serving/
+manifests/cluster-dependencies/knative-eventing/
+manifests/cluster-dependencies/knative-serving/
 {{<- end >}}
 {{<- if not .Values.cluster_dependencies.kyverno.enabled >}}
 argocd/cluster-dependencies/kyverno.yaml
 argocd/namespaces/kyverno.yaml
-src/cluster-dependencies/kyverno/
+manifests/cluster-dependencies/kyverno/
 {{<- end >}}
 {{<- if not .Values.cluster_dependencies.sealed_secrets.enabled >}}
 argocd/cluster-dependencies/sealed-secrets.yaml
 argocd/namespaces/sealed-secrets.yaml
-src/cluster-dependencies/sealed-secrets/
+manifests/cluster-dependencies/sealed-secrets/
 {{<- end >}}
 
 ## deployKF - kubeflow-apps
 {{<- if not .Values.kubeflow_apps.katib.enabled >}}
 argocd/kubeflow-apps/katib.yaml
-src/kubeflow-apps/katib/
+manifests/kubeflow-apps/katib/
 {{<- end >}}
 {{<- if not .Values.kubeflow_apps.notebooks.enabled >}}
 argocd/kubeflow-apps/notebooks--jupyter-web-app.yaml
 argocd/kubeflow-apps/notebooks--notebook-controller.yaml
-src/kubeflow-apps/notebooks/
+manifests/kubeflow-apps/notebooks/
 {{<- end >}}
 {{<- if not .Values.kubeflow_apps.pipelines.enabled >}}
 argocd/kubeflow-apps/pipelines.yaml
-src/kubeflow-apps/pipelines/
+manifests/kubeflow-apps/pipelines/
 {{<- end >}}
 {{<- if not .Values.kubeflow_apps.poddefaults_webhook.enabled >}}
 argocd/kubeflow-apps/poddefaults-webhook.yaml
-src/kubeflow-apps/poddefaults-webhook/
+manifests/kubeflow-apps/poddefaults-webhook/
 {{<- end >}}
 {{<- if not .Values.kubeflow_apps.tensorboards.enabled >}}
 argocd/kubeflow-apps/tensorboards--tensorboard-controller.yaml
 argocd/kubeflow-apps/tensorboards--tensorboards-web-app.yaml
-src/kubeflow-apps/tensorboards/
+manifests/kubeflow-apps/tensorboards/
 {{<- end >}}
 {{<- if not .Values.kubeflow_apps.training_operator.enabled >}}
 argocd/kubeflow-apps/training-operator.yaml
-src/kubeflow-apps/training-operator/
+manifests/kubeflow-apps/training-operator/
 {{<- end >}}
 {{<- if not .Values.kubeflow_apps.volumes.enabled >}}
 argocd/kubeflow-apps/volumes--volumes-web-app.yaml
-src/kubeflow-apps/volumes/
+manifests/kubeflow-apps/volumes/
 {{<- end >}}
 
 ## deployKF - kubeflow-common
 {{<- if not .Values.kubeflow_common.kubeflow_argo_workflows.enabled >}}
 argocd/kubeflow-common/kubeflow-argo-workflows.yaml
 argocd/namespaces/kubeflow-argo-workflows.yaml
-src/kubeflow-common/kubeflow-argo-workflows/
+manifests/kubeflow-common/kubeflow-argo-workflows/
 {{<- end >}}
 {{<- if not .Values.kubeflow_common.kubeflow_auth.enabled >}}
 argocd/kubeflow-common/kubeflow-auth.yaml
 argocd/namespaces/kubeflow-auth.yaml
-src/kubeflow-common/kubeflow-auth/
+manifests/kubeflow-common/kubeflow-auth/
 {{<- end >}}
 {{<- if not .Values.kubeflow_common.kubeflow_dashboard.enabled >}}
 argocd/kubeflow-common/kubeflow-dashboard.yaml
-src/kubeflow-common/kubeflow-dashboard/
+manifests/kubeflow-common/kubeflow-dashboard/
 {{<- end >}}
 {{<- if not .Values.kubeflow_common.kubeflow_istio_gateway.enabled >}}
 argocd/kubeflow-common/kubeflow-istio-gateway.yaml
 argocd/namespaces/kubeflow-istio-gateway.yaml
-src/kubeflow-common/kubeflow-istio-gateway/
+manifests/kubeflow-common/kubeflow-istio-gateway/
 {{<- end >}}
 {{<- if not .Values.kubeflow_common.kubeflow_minio.enabled >}}
 argocd/kubeflow-common/kubeflow-minio.yaml
 argocd/namespaces/kubeflow-minio.yaml
-src/kubeflow-common/kubeflow-minio/
+manifests/kubeflow-common/kubeflow-minio/
 {{<- end >}}
 {{<- if not .Values.kubeflow_common.kubeflow_mysql.enabled >}}
 argocd/kubeflow-common/kubeflow-mysql.yaml
 argocd/namespaces/kubeflow-mysql.yaml
-src/kubeflow-common/kubeflow-mysql/
+manifests/kubeflow-common/kubeflow-mysql/
 {{<- end >}}
 {{<- if not .Values.kubeflow_common.kubeflow_profiles_generator.enabled >}}
 argocd/kubeflow-common/kubeflow-profiles-generator.yaml
-src/kubeflow-common/kubeflow-profiles-generator/
+manifests/kubeflow-common/kubeflow-profiles-generator/
 {{<- end >}}
 
 ## deployKF - kubeflow-contrib
 {{<- if not .Values.kubeflow_contrib.kserve.enabled >}}
 argocd/kubeflow-contrib/kserve--kserve.yaml
 argocd/kubeflow-contrib/kserve--models-web-app.yaml
-src/kubeflow-contrib/kserve/
+manifests/kubeflow-contrib/kserve/
 {{<- end >}}

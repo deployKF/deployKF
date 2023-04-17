@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "src/cluster-dependencies/cert-manager" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/cluster-dependencies/cert-manager" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: {{< .Values.cluster_dependencies.cert_manager.namespace | quote >}}

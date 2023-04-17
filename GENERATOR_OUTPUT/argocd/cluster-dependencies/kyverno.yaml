@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: "https://github.com/deployKF/deployKF"
     targetRevision: "dev"
-    path: "GENERATOR_OUTPUT/src/cluster-dependencies/kyverno"
+    path: "GENERATOR_OUTPUT/manifests/cluster-dependencies/kyverno"
   destination:
     server: "https://kubernetes.default.svc"
     namespace: "kyverno"

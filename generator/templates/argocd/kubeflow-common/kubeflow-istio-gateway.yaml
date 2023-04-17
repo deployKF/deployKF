@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "src/kubeflow-common/kubeflow-istio-gateway" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/kubeflow-common/kubeflow-istio-gateway" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: {{< .Values.kubeflow_common.kubeflow_istio_gateway.namespace | quote >}}

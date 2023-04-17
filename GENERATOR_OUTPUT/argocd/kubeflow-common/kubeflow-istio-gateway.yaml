@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: "https://github.com/deployKF/deployKF"
     targetRevision: "dev"
-    path: "GENERATOR_OUTPUT/src/kubeflow-common/kubeflow-istio-gateway"
+    path: "GENERATOR_OUTPUT/manifests/kubeflow-common/kubeflow-istio-gateway"
   destination:
     server: "https://kubernetes.default.svc"
     namespace: "kubeflow-istio-gateway"

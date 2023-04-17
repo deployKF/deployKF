@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: "https://github.com/deployKF/deployKF"
     targetRevision: "dev"
-    path: "GENERATOR_OUTPUT/src/kubeflow-common/kubeflow-profiles-generator"
+    path: "GENERATOR_OUTPUT/manifests/kubeflow-common/kubeflow-profiles-generator"
   destination:
     server: "https://kubernetes.default.svc"
     namespace: kubeflow
