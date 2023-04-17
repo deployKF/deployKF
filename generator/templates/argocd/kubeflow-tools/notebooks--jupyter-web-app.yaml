@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-app--notebooks--jupyter-web-app
+  name: kf-tools--notebooks--jupyter-web-app
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
     app.kubernetes.io/name: jupyter-web-app
-    app.kubernetes.io/component: kubeflow-apps
+    app.kubernetes.io/component: kubeflow-tools
     app.kubernetes.io/part-of: deploykf
 spec:
   project: {{< .Values.argocd.project | quote >}}

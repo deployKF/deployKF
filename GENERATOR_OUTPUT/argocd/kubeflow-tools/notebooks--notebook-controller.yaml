@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-app--notebooks--notebook-controller
+  name: kf-tools--notebooks--notebook-controller
   namespace: "argocd"
   labels:
     app.kubernetes.io/name: notebook-controller
-    app.kubernetes.io/component: kubeflow-apps
+    app.kubernetes.io/component: kubeflow-tools
     app.kubernetes.io/part-of: deploykf
 spec:
   project: "default"

@@ -1,11 +1,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-app--volumes--volumes-web-app
+  name: kf-tools--volumes--volumes-web-app
   namespace: "argocd"
   labels:
     app.kubernetes.io/name: volumes-web-app
-    app.kubernetes.io/component: kubeflow-apps
+    app.kubernetes.io/component: kubeflow-tools
     app.kubernetes.io/part-of: deploykf
 spec:
   project: "default"

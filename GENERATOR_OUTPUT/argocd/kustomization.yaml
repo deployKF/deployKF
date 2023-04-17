@@ -14,7 +14,7 @@ resources:
   - namespaces/kyverno.yaml
 
   ###################
-  ## kubeflow-apps ##
+  ## kubeflow-tools ##
   ###################
   - kubeflow-tools/katib.yaml
   - kubeflow-tools/notebooks--jupyter-web-app.yaml

@@ -85,16 +85,16 @@ Get started with deployKF by following these steps:
         6. `kf-common--argo-workflows`
         7. `kf-common--kubeflow-profiles-generator`
             - _WARNING: first sync may fail as profile namespaces will not immediately be created, so wait for those namespace to be created, and sync again_
-    5. __kubeflow-apps__ _(label: `app.kubernetes.io/component: kubeflow-apps`)_
-        1. `kf-app--pipelines`
-        2. `kf-app--poddefaults-webhook`
-        3. `kf-app--notebooks--notebook-controller` 
-        4. `kf-app--notebooks--jupyter-web-app`
-        5. `kf-app--tensorboards--tensorboard-controller`
-        6. `kf-app--tensorboards--tensorboards-web-app`
-        7. `kf-app--volumes--volumes-web-app`
-        8. `kf-app--training-operator`
-        9. `kf-app--katib`
+    5. __kubeflow-tools__ _(label: `app.kubernetes.io/component: kubeflow-tools`)_
+        1. `kf-tools--pipelines`
+        2. `kf-tools--poddefaults-webhook`
+        3. `kf-tools--notebooks--notebook-controller` 
+        4. `kf-tools--notebooks--jupyter-web-app`
+        5. `kf-tools--tensorboards--tensorboard-controller`
+        6. `kf-tools--tensorboards--tensorboards-web-app`
+        7. `kf-tools--volumes--volumes-web-app`
+        8. `kf-tools--training-operator`
+        9. `kf-tools--katib`
     6. __kubeflow-contrib__ _(label: `app.kubernetes.io/component: kubeflow-contrib`)_
         1. `kf-contrib--kserve--kserve`
         2. `kf-contrib--kserve--models-web-app`

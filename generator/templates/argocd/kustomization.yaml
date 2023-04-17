@@ -34,7 +34,7 @@ resources:
   {{<- end >}}
 
   ###################
-  ## kubeflow-apps ##
+  ## kubeflow-tools ##
   ###################
   {{<- if .Values.kubeflow_apps.katib.enabled >}}
   - kubeflow-tools/katib.yaml
