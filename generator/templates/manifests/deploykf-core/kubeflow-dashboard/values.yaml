@@ -102,7 +102,7 @@ centralDashboard:
     ## external links that appear in the sidebar
     ##
     externalLinks:
-      {{<- if .Values.deploykf_core.kubeflow_argo_workflows.enabled >}}
+      {{<- if .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled >}}
       - type: item
         iframe: false
         text: Argo Server

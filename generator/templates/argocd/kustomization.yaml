@@ -3,9 +3,9 @@ kind: Kustomization
 resources:
   - namespaces/kubeflow.yaml
 
-  ##########################
+  ###########################
   ## deploykf-dependencies ##
-  ##########################
+  ###########################
   {{<- if .Values.deploykf_dependencies.cert_manager.enabled >}}
   - deploykf-dependencies/cert-manager.yaml
   - namespaces/cert-manager.yaml
@@ -33,9 +33,17 @@ resources:
   - namespaces/sealed-secrets.yaml
   {{<- end >}}
 
-  ###################
+  ###########################
+  ## kubeflow-dependencies ##
+  ###########################
+  {{<- if .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled >}}
+  - kubeflow-dependencies/kubeflow-argo-workflows.yaml
+  - namespaces/kubeflow-argo-workflows.yaml
+  {{<- end >}}
+
+  ####################
   ## kubeflow-tools ##
-  ###################
+  ####################
   {{<- if .Values.kubeflow_tools.katib.enabled >}}
   - kubeflow-tools/katib.yaml
   {{<- end >}}
@@ -66,14 +74,9 @@ resources:
   - kubeflow-tools/volumes--volumes-web-app.yaml
   {{<- end >}}
 
-  #####################
+  ###################
   ## deploykf-core ##
-  #####################
-  {{<- if .Values.deploykf_core.kubeflow_argo_workflows.enabled >}}
-  - kubeflow-dependencies/kubeflow-argo-workflows.yaml
-  - namespaces/kubeflow-argo-workflows.yaml
-  {{<- end >}}
-  
+  ###################
   {{<- if .Values.deploykf_core.kubeflow_auth.enabled >}}
   - deploykf-core/kubeflow-auth.yaml
   - namespaces/kubeflow-auth.yaml

@@ -15,4 +15,4 @@ spec:
     path: {{< path.Join .Values.repo.generatorOutputPath "manifests/kubeflow-dependencies/kubeflow-argo-workflows" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
-    namespace: {{< .Values.deploykf_core.kubeflow_argo_workflows.namespace | quote >}}
+    namespace: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.namespace | quote >}}

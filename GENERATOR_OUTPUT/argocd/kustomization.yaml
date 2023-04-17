@@ -3,9 +3,9 @@ kind: Kustomization
 resources:
   - namespaces/kubeflow.yaml
 
-  ##########################
+  ###########################
   ## deploykf-dependencies ##
-  ##########################
+  ###########################
   - deploykf-dependencies/cert-manager.yaml
   - namespaces/cert-manager.yaml
   - deploykf-dependencies/istio.yaml
@@ -13,9 +13,15 @@ resources:
   - deploykf-dependencies/kyverno.yaml
   - namespaces/kyverno.yaml
 
-  ###################
+  ###########################
+  ## kubeflow-dependencies ##
+  ###########################
+  - kubeflow-dependencies/kubeflow-argo-workflows.yaml
+  - namespaces/kubeflow-argo-workflows.yaml
+
+  ####################
   ## kubeflow-tools ##
-  ###################
+  ####################
   - kubeflow-tools/katib.yaml
   - kubeflow-tools/notebooks--jupyter-web-app.yaml
   - kubeflow-tools/notebooks--notebook-controller.yaml
@@ -26,11 +32,9 @@ resources:
   - kubeflow-tools/training-operator.yaml
   - kubeflow-tools/volumes--volumes-web-app.yaml
 
-  #####################
+  ###################
   ## deploykf-core ##
-  #####################
-  - kubeflow-dependencies/kubeflow-argo-workflows.yaml
-  - namespaces/kubeflow-argo-workflows.yaml
+  ###################
   - deploykf-core/kubeflow-auth.yaml
   - namespaces/kubeflow-auth.yaml
   - deploykf-core/kubeflow-dashboard.yaml

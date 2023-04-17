@@ -82,6 +82,13 @@ argocd/namespaces/sealed-secrets.yaml
 manifests/deploykf-dependencies/sealed-secrets/
 {{<- end >}}
 
+## deployKF - kubeflow-dependencies
+{{<- if not .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled >}}
+argocd/kubeflow-dependencies/kubeflow-argo-workflows.yaml
+argocd/namespaces/kubeflow-argo-workflows.yaml
+manifests/kubeflow-dependencies/kubeflow-argo-workflows/
+{{<- end >}}
+
 ## deployKF - kubeflow-tools
 {{<- if not .Values.kubeflow_tools.katib.enabled >}}
 argocd/kubeflow-tools/katib.yaml
@@ -115,11 +122,6 @@ manifests/kubeflow-tools/volumes/
 {{<- end >}}
 
 ## deployKF - deploykf-core
-{{<- if not .Values.deploykf_core.kubeflow_argo_workflows.enabled >}}
-argocd/kubeflow-dependencies/kubeflow-argo-workflows.yaml
-argocd/namespaces/kubeflow-argo-workflows.yaml
-manifests/kubeflow-dependencies/kubeflow-argo-workflows/
-{{<- end >}}
 {{<- if not .Values.deploykf_core.kubeflow_auth.enabled >}}
 argocd/deploykf-core/kubeflow-auth.yaml
 argocd/namespaces/kubeflow-auth.yaml

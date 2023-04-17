@@ -77,7 +77,7 @@ dex:
     ## OpenID client for argo-server
     ##
     argoServer:
-      enabled: {{< .Values.deploykf_core.kubeflow_argo_workflows.enabled >}}
+      enabled: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled >}}
       clientId: "argo-server"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
