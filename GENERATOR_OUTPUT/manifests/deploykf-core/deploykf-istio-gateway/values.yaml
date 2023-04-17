@@ -7,7 +7,7 @@ deployKF:
 
   certManager:
     clusterIssuer:
-      issuerName: "kubeflow-gateway-issuer"
+      issuerName: "deploykf-gateway-issuer"
 
   argoWorkflows:
     enabled: true
@@ -17,8 +17,8 @@ deployKF:
     namespace: "deploykf-auth"
 
   gateway:
-    name: "kubeflow-gateway"
-    selectorLabels: {"app":"kubeflow-gateway","istio":"kubeflow-gateway"}
+    name: "deploykf-gateway"
+    selectorLabels: {"app":"deploykf-gateway","istio":"deploykf-gateway"}
     hostname: "kubeflow.example.com"
     ports:
       http: 8080
@@ -35,12 +35,12 @@ deployKF:
 ## we reference the "gateway" chart (https://istio-release.storage.googleapis.com/charts) in `dependencies` of Chart.yaml
 ## we must indent our values under `gateway:` in this file
 gateway:
-  name: "kubeflow-gateway"
+  name: "deploykf-gateway"
 
   replicaCount: 1
 
   serviceAccount:
-    name: "kubeflow-gateway"
+    name: "deploykf-gateway"
     annotations: {}
 
   service:

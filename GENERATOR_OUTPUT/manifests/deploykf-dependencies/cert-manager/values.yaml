@@ -3,12 +3,12 @@ deployKF:
   certManager:
     clusterIssuer:
       enabled: true
-      issuerName: "kubeflow-gateway-issuer"
+      issuerName: "deploykf-gateway-issuer"
       type: "SELF_SIGNED"
       selfSigned:
         caIssuerName: "selfsigned-ca-issuer"
         caSecretName: "selfsigned-ca-issuer-root-cert"
-        injectedConfigMapName: "kubeflow-gateway-issuer-root-ca-cert"
+        injectedConfigMapName: "deploykf-gateway-issuer-root-ca-cert"
 
 ## as we reference the "cert-manager" chart (https://charts.jetstack.io) in `dependencies` of Chart.yaml,
 ## we must indent our values under `cert-manager:` in this file

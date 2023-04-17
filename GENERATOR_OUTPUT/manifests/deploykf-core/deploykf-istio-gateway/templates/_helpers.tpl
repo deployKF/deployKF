@@ -3,8 +3,8 @@ Override the selector labels of the inner "gateway" chart.
 WARNING: note, we use gomplate to set this as a static string, because outer values are not visible to the inner "gateway" chart.
 */}}
 {{- define "gateway.selectorLabels" -}}
-app: kubeflow-gateway
-istio: kubeflow-gateway
+app: deploykf-gateway
+istio: deploykf-gateway
 {{- end -}}
 
 {{/*

@@ -14,15 +14,15 @@ deployKF:
   certManager:
     clusterIssuer:
       selfSigned:
-        injectedConfigMapName: "kubeflow-gateway-issuer-root-ca-cert"
+        injectedConfigMapName: "deploykf-gateway-issuer-root-ca-cert"
 
   istio:
     namespace: "istio-system"
 
   gateway:
     namespace: "deploykf-istio-gateway"
-    serviceAccount: "kubeflow-gateway"
-    name: "kubeflow-gateway"
+    serviceAccount: "deploykf-gateway"
+    name: "deploykf-gateway"
     hostname: "kubeflow.example.com"
     tls:
       enabled: true

@@ -19,7 +19,7 @@ configMapGenerator:
     behavior: merge
     literals:
       - USE_ISTIO="true"
-      - ISTIO_GATEWAY="deploykf-istio-gateway/kubeflow-gateway"
+      - ISTIO_GATEWAY="deploykf-istio-gateway/deploykf-gateway"
       - CLUSTER_DOMAIN="cluster.local"
       - ENABLE_CULLING="false"
       - CULL_IDLE_TIME="1440"
