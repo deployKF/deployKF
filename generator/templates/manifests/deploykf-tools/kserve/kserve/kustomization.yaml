@@ -16,10 +16,10 @@ configMapGenerator:
   - name: kserve-config
     behavior: merge
     literals:
-      - ingressDomain="{{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.hostname >}}"
-      - istioGatewayNamespace="{{< .Values.deploykf_core.kubeflow_istio_gateway.namespace >}}"
-      - istioGatewayName="{{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.name >}}"
-      - istioGatewayServiceName="{{< .Values.deploykf_core.kubeflow_istio_gateway.service.name >}}"
+      - ingressDomain="{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname >}}"
+      - istioGatewayNamespace="{{< .Values.deploykf_core.deploykf_istio_gateway.namespace >}}"
+      - istioGatewayName="{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name >}}"
+      - istioGatewayServiceName="{{< .Values.deploykf_core.deploykf_istio_gateway.service.name >}}"
       - knativeGatewayNamespace="{{< .Values.deploykf_dependencies.knative.namespace.serving >}}"
       - knativeGatewayName="knative-local-gateway"
 

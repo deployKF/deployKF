@@ -2,10 +2,10 @@
 ## The HTTP endpoint of the gateway (hides port when set to 80)
 ##
 {{<- define "kubeflow_gateway.http_endpoint" ->}}
-{{<- if eq (.Values.deploykf_core.kubeflow_istio_gateway.gateway.ports.http | conv.ToString) "80" ->}}
-{{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.hostname >}}
+{{<- if eq (.Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http | conv.ToString) "80" ->}}
+{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname >}}
 {{<- else ->}}
-{{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.hostname >}}:{{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.ports.http >}}
+{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname >}}:{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
 {{<- end ->}}
 {{<- end ->}}
 
@@ -13,10 +13,10 @@
 ## The HTTPS endpoint of the gateway (hides port when set to 443)
 ##
 {{<- define "kubeflow_gateway.https_endpoint" ->}}
-{{<- if eq (.Values.deploykf_core.kubeflow_istio_gateway.gateway.ports.https | conv.ToString) "443" ->}}
-{{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.hostname >}}
+{{<- if eq (.Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https | conv.ToString) "443" ->}}
+{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname >}}
 {{<- else ->}}
-{{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.hostname >}}:{{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.ports.https >}}
+{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname >}}:{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
 {{<- end ->}}
 {{<- end ->}}
 
@@ -25,7 +25,7 @@
 ## - NOTE: empty means false, non-empty means true
 ##
 {{<- define "kubeflow_gateway.is_self_signed_cert" ->}}
-{{<- if and (.Values.deploykf_core.kubeflow_istio_gateway.gateway.tls.enabled) (.Values.deploykf_dependencies.cert_manager.clusterIssuer.enabled) (eq .Values.deploykf_dependencies.cert_manager.clusterIssuer.type "SELF_SIGNED") ->}}
+{{<- if and (.Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled) (.Values.deploykf_dependencies.cert_manager.clusterIssuer.enabled) (eq .Values.deploykf_dependencies.cert_manager.clusterIssuer.type "SELF_SIGNED") ->}}
 true
 {{<- end ->}}
 {{<- end ->}}

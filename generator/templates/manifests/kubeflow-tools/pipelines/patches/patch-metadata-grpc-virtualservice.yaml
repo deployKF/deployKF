@@ -5,4 +5,4 @@ metadata:
   namespace: kubeflow
 spec:
   gateways:
-    - {{< .Values.deploykf_core.kubeflow_istio_gateway.namespace >}}/{{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.name >}}
+    - {{< .Values.deploykf_core.deploykf_istio_gateway.namespace >}}/{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name >}}

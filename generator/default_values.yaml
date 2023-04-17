@@ -105,7 +105,7 @@ deploykf_core:
   ## --------------------------------------
   ##        deploykf-istio-gateway
   ## --------------------------------------
-  kubeflow_istio_gateway:
+  deploykf_istio_gateway:
     enabled: true
     namespace: deploykf-istio-gateway
 

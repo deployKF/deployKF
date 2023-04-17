@@ -17,16 +17,16 @@ deployKF:
     namespace: {{< .Values.deploykf_core.deploykf_auth.namespace | quote >}}
 
   gateway:
-    name: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.name | quote >}}
-    selectorLabels: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.selectorLabels | toJSON >}}
-    hostname: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.hostname | quote >}}
+    name: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name | quote >}}
+    selectorLabels: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.selectorLabels | toJSON >}}
+    hostname: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
     ports:
-      http: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.ports.http >}}
-      https: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.ports.https >}}
+      http: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
+      https: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
     tls:
-      enabled: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.tls.enabled >}}
-    enableProxyProtocol: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.enableProxyProtocol >}}
-    xffNumTrustedHops: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.xffNumTrustedHops >}}
+      enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled >}}
+    enableProxyProtocol: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.enableProxyProtocol >}}
+    xffNumTrustedHops: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.xffNumTrustedHops >}}
 
   minio:
     enabled: {{< .Values.deploykf_opt.deploykf_minio.enabled >}}
@@ -35,16 +35,16 @@ deployKF:
 ## we reference the "gateway" chart (https://istio-release.storage.googleapis.com/charts) in `dependencies` of Chart.yaml
 ## we must indent our values under `gateway:` in this file
 gateway:
-  name: {{< .Values.deploykf_core.kubeflow_istio_gateway.service.name | quote >}}
+  name: {{< .Values.deploykf_core.deploykf_istio_gateway.service.name | quote >}}
 
-  replicaCount: {{< .Values.deploykf_core.kubeflow_istio_gateway.deployment.replicaCount >}}
+  replicaCount: {{< .Values.deploykf_core.deploykf_istio_gateway.deployment.replicaCount >}}
 
   serviceAccount:
-    name: {{< .Values.deploykf_core.kubeflow_istio_gateway.serviceAccount.name | quote >}}
-    annotations: {{< .Values.deploykf_core.kubeflow_istio_gateway.serviceAccount.annotations | toJSON >}}
+    name: {{< .Values.deploykf_core.deploykf_istio_gateway.serviceAccount.name | quote >}}
+    annotations: {{< .Values.deploykf_core.deploykf_istio_gateway.serviceAccount.annotations | toJSON >}}
 
   service:
-    annotations: {{< .Values.deploykf_core.kubeflow_istio_gateway.service.annotations | toJSON >}}
+    annotations: {{< .Values.deploykf_core.deploykf_istio_gateway.service.annotations | toJSON >}}
 
     type: LoadBalancer
     loadBalancerIP: ""
@@ -58,13 +58,13 @@ gateway:
         protocol: TCP
         targetPort: 15021
       - name: http
-        port: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.ports.http >}}
+        port: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
         protocol: TCP
-        targetPort: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.ports.http >}}
+        targetPort: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
       - name: https
-        port: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.ports.https >}}
+        port: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
         protocol: TCP
-        targetPort: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.ports.https >}}
+        targetPort: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
 
   resources:
     requests:

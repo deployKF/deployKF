@@ -30,12 +30,12 @@ deployKF:
     namespace: {{< .Values.deploykf_core.deploykf_auth.namespace | quote >}}
 
   gateway:
-    namespace: {{< .Values.deploykf_core.kubeflow_istio_gateway.namespace | quote >}}
-    serviceAccount: {{< .Values.deploykf_core.kubeflow_istio_gateway.serviceAccount.name | quote >}}
-    name: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.name | quote >}}
-    hostname: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.hostname | quote >}}
+    namespace: {{< .Values.deploykf_core.deploykf_istio_gateway.namespace | quote >}}
+    serviceAccount: {{< .Values.deploykf_core.deploykf_istio_gateway.serviceAccount.name | quote >}}
+    name: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name | quote >}}
+    hostname: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
     tls:
-      enabled: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.tls.enabled >}}
+      enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled >}}
 
   pipelines:
     bucket:
