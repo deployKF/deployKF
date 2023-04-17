@@ -165,7 +165,7 @@ deploykf_opt:
   ## --------------------------------------
   ##            deploykf-minio
   ## --------------------------------------
-  kubeflow_minio:
+  deploykf_minio:
     enabled: true
     namespace: deploykf-minio
 
@@ -273,7 +273,7 @@ kubeflow_tools:
       name: kubeflow-pipelines
       region: ""
 
-    ## NOTE: these values are ignored when `deploykf_opt.kubeflow_minio.enabled` is 'true',
+    ## NOTE: these values are ignored when `deploykf_opt.deploykf_minio.enabled` is 'true',
     ##       as we automatically populate the required settings to use the embedded minio
     objectStore:
       host: s3.amazonaws.com

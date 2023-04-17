@@ -113,7 +113,7 @@ centralDashboard:
         link: "http://argo-server.{{< tmpl.Exec "kubeflow_gateway.http_endpoint" . >}}"
         {{<- end >}}
       {{<- end >}}
-      {{<- if .Values.deploykf_opt.kubeflow_minio.enabled >}}
+      {{<- if .Values.deploykf_opt.deploykf_minio.enabled >}}
       - type: item
         iframe: false
         text: Minio Console

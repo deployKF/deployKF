@@ -87,11 +87,11 @@ minio:
   ## root user configs for minio
   ##
   rootUser:
-    username: {{< .Values.deploykf_opt.kubeflow_minio.rootUser.username | quote >}}
-    password: {{< .Values.deploykf_opt.kubeflow_minio.rootUser.password | quote >}}
-    existingSecret: {{< .Values.deploykf_opt.kubeflow_minio.rootUser.existingSecret | quote >}}
-    existingSecretUsernameKey: {{< .Values.deploykf_opt.kubeflow_minio.rootUser.existingSecretUsernameKey | quote >}}
-    existingSecretPasswordKey: {{< .Values.deploykf_opt.kubeflow_minio.rootUser.existingSecretPasswordKey | quote >}}
+    username: {{< .Values.deploykf_opt.deploykf_minio.rootUser.username | quote >}}
+    password: {{< .Values.deploykf_opt.deploykf_minio.rootUser.password | quote >}}
+    existingSecret: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecret | quote >}}
+    existingSecretUsernameKey: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretUsernameKey | quote >}}
+    existingSecretPasswordKey: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretPasswordKey | quote >}}
 
   ## identity configs for minio
   ##

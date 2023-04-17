@@ -15,4 +15,4 @@ spec:
     path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-opt/deploykf-minio" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
-    namespace: {{< .Values.deploykf_opt.kubeflow_minio.namespace | quote >}}
+    namespace: {{< .Values.deploykf_opt.deploykf_minio.namespace | quote >}}

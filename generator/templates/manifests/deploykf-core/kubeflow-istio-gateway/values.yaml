@@ -29,8 +29,8 @@ deployKF:
     xffNumTrustedHops: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.xffNumTrustedHops >}}
 
   minio:
-    enabled: {{< .Values.deploykf_opt.kubeflow_minio.enabled >}}
-    namespace: {{< .Values.deploykf_opt.kubeflow_minio.namespace | quote >}}
+    enabled: {{< .Values.deploykf_opt.deploykf_minio.enabled >}}
+    namespace: {{< .Values.deploykf_opt.deploykf_minio.namespace | quote >}}
 
 ## we reference the "gateway" chart (https://istio-release.storage.googleapis.com/charts) in `dependencies` of Chart.yaml
 ## we must indent our values under `gateway:` in this file
