@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-app--tensorboards--tensorboards-web-app
+  name: kf-app--training-operator
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
-    app.kubernetes.io/name: tensorboards-web-app
+    app.kubernetes.io/name: training-operator
     app.kubernetes.io/component: kubeflow-apps
     app.kubernetes.io/part-of: deploykf
 spec:
@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/kubeflow-apps/tensorboards/tensorboards-web-app" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/kubeflow-tools/training-operator" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: kubeflow

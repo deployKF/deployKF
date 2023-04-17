@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-app--notebooks--jupyter-web-app
+  name: kf-app--tensorboards--tensorboard-controller
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
-    app.kubernetes.io/name: jupyter-web-app
+    app.kubernetes.io/name: tensorboard-controller
     app.kubernetes.io/component: kubeflow-apps
     app.kubernetes.io/part-of: deploykf
 spec:
@@ -12,7 +12,15 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/kubeflow-apps/notebooks/jupyter-web-app" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/kubeflow-tools/tensorboards/tensorboard-controller" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: kubeflow
+
+  # TODO: is this `ignoreDifferences` needed and safe?
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: tensorboards.tensorboard.kubeflow.org
+      jsonPointers:
+        - /spec/scope

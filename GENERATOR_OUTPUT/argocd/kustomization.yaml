@@ -16,15 +16,15 @@ resources:
   ###################
   ## kubeflow-apps ##
   ###################
-  - kubeflow-apps/katib.yaml
-  - kubeflow-apps/notebooks--jupyter-web-app.yaml
-  - kubeflow-apps/notebooks--notebook-controller.yaml
-  - kubeflow-apps/pipelines.yaml
-  - kubeflow-apps/poddefaults-webhook.yaml
-  - kubeflow-apps/tensorboards--tensorboard-controller.yaml
-  - kubeflow-apps/tensorboards--tensorboards-web-app.yaml
-  - kubeflow-apps/training-operator.yaml
-  - kubeflow-apps/volumes--volumes-web-app.yaml
+  - kubeflow-tools/katib.yaml
+  - kubeflow-tools/notebooks--jupyter-web-app.yaml
+  - kubeflow-tools/notebooks--notebook-controller.yaml
+  - kubeflow-tools/pipelines.yaml
+  - kubeflow-tools/poddefaults-webhook.yaml
+  - kubeflow-tools/tensorboards--tensorboard-controller.yaml
+  - kubeflow-tools/tensorboards--tensorboards-web-app.yaml
+  - kubeflow-tools/training-operator.yaml
+  - kubeflow-tools/volumes--volumes-web-app.yaml
 
   #####################
   ## kubeflow-common ##

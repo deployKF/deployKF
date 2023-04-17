@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kf-app--poddefaults-webhook
+  name: kf-app--katib
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
-    app.kubernetes.io/name: poddefaults-webhook
+    app.kubernetes.io/name: katib
     app.kubernetes.io/component: kubeflow-apps
     app.kubernetes.io/part-of: deploykf
 spec:
@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/kubeflow-apps/poddefaults-webhook" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/kubeflow-tools/katib" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: kubeflow

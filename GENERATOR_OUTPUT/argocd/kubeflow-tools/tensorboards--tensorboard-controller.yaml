@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: "https://github.com/deployKF/deployKF"
     targetRevision: "dev"
-    path: "GENERATOR_OUTPUT/manifests/kubeflow-apps/tensorboards/tensorboard-controller"
+    path: "GENERATOR_OUTPUT/manifests/kubeflow-tools/tensorboards/tensorboard-controller"
   destination:
     server: "https://kubernetes.default.svc"
     namespace: kubeflow

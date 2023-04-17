@@ -82,36 +82,36 @@ argocd/namespaces/sealed-secrets.yaml
 manifests/deploykf-dependencies/sealed-secrets/
 {{<- end >}}
 
-## deployKF - kubeflow-apps
+## deployKF - kubeflow-tools
 {{<- if not .Values.kubeflow_apps.katib.enabled >}}
-argocd/kubeflow-apps/katib.yaml
-manifests/kubeflow-apps/katib/
+argocd/kubeflow-tools/katib.yaml
+manifests/kubeflow-tools/katib/
 {{<- end >}}
 {{<- if not .Values.kubeflow_apps.notebooks.enabled >}}
-argocd/kubeflow-apps/notebooks--jupyter-web-app.yaml
-argocd/kubeflow-apps/notebooks--notebook-controller.yaml
-manifests/kubeflow-apps/notebooks/
+argocd/kubeflow-tools/notebooks--jupyter-web-app.yaml
+argocd/kubeflow-tools/notebooks--notebook-controller.yaml
+manifests/kubeflow-tools/notebooks/
 {{<- end >}}
 {{<- if not .Values.kubeflow_apps.pipelines.enabled >}}
-argocd/kubeflow-apps/pipelines.yaml
-manifests/kubeflow-apps/pipelines/
+argocd/kubeflow-tools/pipelines.yaml
+manifests/kubeflow-tools/pipelines/
 {{<- end >}}
 {{<- if not .Values.kubeflow_apps.poddefaults_webhook.enabled >}}
-argocd/kubeflow-apps/poddefaults-webhook.yaml
-manifests/kubeflow-apps/poddefaults-webhook/
+argocd/kubeflow-tools/poddefaults-webhook.yaml
+manifests/kubeflow-tools/poddefaults-webhook/
 {{<- end >}}
 {{<- if not .Values.kubeflow_apps.tensorboards.enabled >}}
-argocd/kubeflow-apps/tensorboards--tensorboard-controller.yaml
-argocd/kubeflow-apps/tensorboards--tensorboards-web-app.yaml
-manifests/kubeflow-apps/tensorboards/
+argocd/kubeflow-tools/tensorboards--tensorboard-controller.yaml
+argocd/kubeflow-tools/tensorboards--tensorboards-web-app.yaml
+manifests/kubeflow-tools/tensorboards/
 {{<- end >}}
 {{<- if not .Values.kubeflow_apps.training_operator.enabled >}}
-argocd/kubeflow-apps/training-operator.yaml
-manifests/kubeflow-apps/training-operator/
+argocd/kubeflow-tools/training-operator.yaml
+manifests/kubeflow-tools/training-operator/
 {{<- end >}}
 {{<- if not .Values.kubeflow_apps.volumes.enabled >}}
-argocd/kubeflow-apps/volumes--volumes-web-app.yaml
-manifests/kubeflow-apps/volumes/
+argocd/kubeflow-tools/volumes--volumes-web-app.yaml
+manifests/kubeflow-tools/volumes/
 {{<- end >}}
 
 ## deployKF - kubeflow-common
