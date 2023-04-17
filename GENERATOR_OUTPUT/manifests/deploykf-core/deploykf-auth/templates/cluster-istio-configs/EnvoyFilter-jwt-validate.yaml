@@ -11,12 +11,12 @@
 #apiVersion: networking.istio.io/v1alpha3
 #kind: EnvoyFilter
 #metadata:
-#  name: kubeflow-auth--jwt-validate
+#  name: deploykf-auth--jwt-validate
 #  ## NOTE: this is in the root istio namespace, so that it can select pods across all namespaces
 #  namespace: {{ .Values.deployKF.istio.namespace | quote }}
 #  labels:
-#    helm.sh/chart: {{ include "kubeflow-auth.labels.chart" . }}
-#    app.kubernetes.io/name: {{ include "kubeflow-auth.labels.name" . }}
+#    helm.sh/chart: {{ include "deploykf-auth.labels.chart" . }}
+#    app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
 #    app.kubernetes.io/instance: {{ .Release.Name }}
 #    app.kubernetes.io/managed-by: {{ .Release.Service }}
 #    app.kubernetes.io/component: cluster-istio-configs

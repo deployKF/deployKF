@@ -3,8 +3,8 @@ kind: Deployment
 metadata:
   name: oauth2-proxy
   labels:
-    helm.sh/chart: {{ include "kubeflow-auth.labels.chart" . }}
-    app.kubernetes.io/name: {{ include "kubeflow-auth.labels.name" . }}
+    helm.sh/chart: {{ include "deploykf-auth.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: oauth2-proxy
@@ -12,7 +12,7 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "kubeflow-auth.labels.name" . }}
+      app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
       app.kubernetes.io/managed-by: {{ .Release.Service }}
       app.kubernetes.io/component: oauth2-proxy
@@ -22,7 +22,7 @@ spec:
         checksum/secret-dex: {{ include (print $.Template.BasePath "/dex/Secret-config.yaml") . | sha256sum }}
         checksum/secret-oauth2-proxy: {{ include (print $.Template.BasePath "/oauth2-proxy/Secret-config.yaml") . | sha256sum }}
       labels:
-        app.kubernetes.io/name: {{ include "kubeflow-auth.labels.name" . }}
+        app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/component: oauth2-proxy

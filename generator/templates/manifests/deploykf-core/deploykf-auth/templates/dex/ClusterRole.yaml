@@ -3,8 +3,8 @@ kind: ClusterRole
 metadata:
   name: dex
   labels:
-    helm.sh/chart: {{ include "kubeflow-auth.labels.chart" . }}
-    app.kubernetes.io/name: {{ include "kubeflow-auth.labels.name" . }}
+    helm.sh/chart: {{ include "deploykf-auth.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: dex

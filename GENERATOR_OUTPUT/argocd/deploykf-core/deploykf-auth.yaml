@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: dkf-core--kubeflow-auth
+  name: dkf-core--deploykf-auth
   namespace: "argocd"
   labels:
     app.kubernetes.io/name: deploykf-auth
