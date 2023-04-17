@@ -103,11 +103,11 @@ deploykf_core:
     enabled: true
 
   ## --------------------------------------
-  ##        kubeflow-istio-gateway
+  ##        deploykf-istio-gateway
   ## --------------------------------------
   kubeflow_istio_gateway:
     enabled: true
-    namespace: kubeflow-istio-gateway
+    namespace: deploykf-istio-gateway
 
     gateway:
       name: kubeflow-gateway
@@ -132,7 +132,7 @@ deploykf_core:
       enableProxyProtocol: false
 
       ## the number of x-forwarded-for HTTP header hops to trust
-      ##  - important if using a LoadBalancer (like AWS NLB) as the Service type of kubeflow-istio-gateway
+      ##  - important if using a LoadBalancer (like AWS NLB) as the Service type of deploykf-istio-gateway
       ##
       ## TODO: this should probably be 0 by default
       xffNumTrustedHops: 1

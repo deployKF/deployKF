@@ -20,7 +20,7 @@ deployKF:
     namespace: "istio-system"
 
   gateway:
-    namespace: "kubeflow-istio-gateway"
+    namespace: "deploykf-istio-gateway"
     serviceAccount: "kubeflow-gateway"
     name: "kubeflow-gateway"
     hostname: "kubeflow.example.com"

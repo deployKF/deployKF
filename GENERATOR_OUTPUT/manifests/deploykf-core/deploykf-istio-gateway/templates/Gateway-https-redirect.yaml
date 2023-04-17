@@ -2,7 +2,7 @@
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: kubeflow-istio-gateway-https-redirect
+  name: deploykf-istio-gateway-https-redirect
   labels:
     helm.sh/chart: {{ include "kubeflow-istio-gateway.labels.chart" . }}
     app.kubernetes.io/name: {{ include "kubeflow-istio-gateway.labels.name" . }}

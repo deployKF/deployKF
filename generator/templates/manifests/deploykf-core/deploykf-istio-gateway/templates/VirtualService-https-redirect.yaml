@@ -16,7 +16,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   gateways:
-    - {{ .Release.Namespace }}/kubeflow-istio-gateway-https-redirect
+    - {{ .Release.Namespace }}/deploykf-istio-gateway-https-redirect
   hosts:
     - {{ .Values.deployKF.gateway.hostname | quote }}
     - "*.{{ .Values.deployKF.gateway.hostname }}"

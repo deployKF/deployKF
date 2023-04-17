@@ -13,7 +13,7 @@ repo:
 deploykf_core:
 
   ## --------------------------------------
-  ##        kubeflow-istio-gateway
+  ##        deploykf-istio-gateway
   ## --------------------------------------
   kubeflow_istio_gateway:
     gateway:

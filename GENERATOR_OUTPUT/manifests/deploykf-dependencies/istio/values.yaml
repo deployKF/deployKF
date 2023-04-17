@@ -38,7 +38,7 @@ istio-discovery:
     accessLogFile: /dev/stdout
 
     ## enable the istio "DNS Proxying" feature
-    ## (allows this Pods to reference the kubeflow-istio-gateway using the DNS name from its ServiceEntry)
+    ## (allows this Pods to reference the deploykf-istio-gateway using the DNS name from its ServiceEntry)
     defaultConfig:
       proxyMetadata:
         ISTIO_META_DNS_CAPTURE: "true"

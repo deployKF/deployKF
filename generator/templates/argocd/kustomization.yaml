@@ -46,8 +46,8 @@ resources:
   {{<- end >}}
 
   {{<- if .Values.deploykf_core.kubeflow_istio_gateway.enabled >}}
-  - deploykf-core/kubeflow-istio-gateway.yaml
-  - namespaces/kubeflow-istio-gateway.yaml
+  - deploykf-core/deploykf-istio-gateway.yaml
+  - namespaces/deploykf-istio-gateway.yaml
   {{<- end >}}
 
   {{<- if .Values.deploykf_core.deploykf_profiles_generator.enabled >}}

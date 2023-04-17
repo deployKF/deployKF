@@ -32,7 +32,7 @@ spec:
         protocol: HTTPS
       tls:
         mode: SIMPLE
-        credentialName: kubeflow-istio-gateway-cert
+        credentialName: deploykf-istio-gateway-cert
       {{- else }}
       port:
         name: http

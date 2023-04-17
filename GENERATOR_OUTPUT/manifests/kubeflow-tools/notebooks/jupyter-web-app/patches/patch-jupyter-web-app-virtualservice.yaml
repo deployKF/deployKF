@@ -5,4 +5,4 @@ metadata:
   namespace: kubeflow
 spec:
   gateways:
-    - kubeflow-istio-gateway/kubeflow-gateway
+    - deploykf-istio-gateway/kubeflow-gateway
