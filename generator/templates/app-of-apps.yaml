@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "apps" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "argocd" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: {{< .Values.argocd.namespace | quote >}}

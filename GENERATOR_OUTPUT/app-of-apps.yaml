@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: "https://github.com/deployKF/deployKF"
     targetRevision: "dev"
-    path: "GENERATOR_OUTPUT/apps"
+    path: "GENERATOR_OUTPUT/argocd"
   destination:
     server: "https://kubernetes.default.svc"
     namespace: "argocd"
