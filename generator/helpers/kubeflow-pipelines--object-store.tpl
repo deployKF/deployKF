@@ -3,7 +3,7 @@
 ## - NOTE: empty means false, non-empty means true
 ##
 {{<- define "kubeflow_pipelines.use_embedded_minio" ->}}
-{{<- if .Values.deploykf_core.kubeflow_minio.enabled ->}}
+{{<- if .Values.deploykf_opt.kubeflow_minio.enabled ->}}
 true
 {{<- end ->}}
 {{<- end ->}}
@@ -13,7 +13,7 @@ true
 ##
 {{<- define "kubeflow_pipelines.object_store.hostname" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
-minio-api.{{< .Values.deploykf_core.kubeflow_minio.namespace >}}.svc.cluster.local
+minio-api.{{< .Values.deploykf_opt.kubeflow_minio.namespace >}}.svc.cluster.local
 {{<- else ->}}
 {{< .Values.kubeflow_tools.pipelines.objectStore.host >}}
 {{<- end ->}}
@@ -35,7 +35,7 @@ minio-api.{{< .Values.deploykf_core.kubeflow_minio.namespace >}}.svc.cluster.loc
 ##
 {{<- define "kubeflow_pipelines.object_store.endpoint" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
-minio-api.{{< .Values.deploykf_core.kubeflow_minio.namespace >}}.svc.cluster.local:9000
+minio-api.{{< .Values.deploykf_opt.kubeflow_minio.namespace >}}.svc.cluster.local:9000
 {{<- else ->}}
 {{<- if .Values.kubeflow_tools.pipelines.objectStore.port ->}}
 {{< .Values.kubeflow_tools.pipelines.objectStore.host >}}:{{< .Values.kubeflow_tools.pipelines.objectStore.port >}}
@@ -76,8 +76,8 @@ true
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.source_secret_name" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
-{{<- if .Values.deploykf_core.kubeflow_minio.rootUser.existingSecret ->}}
-{{< .Values.deploykf_core.kubeflow_minio.rootUser.existingSecret >}}
+{{<- if .Values.deploykf_opt.kubeflow_minio.rootUser.existingSecret ->}}
+{{< .Values.deploykf_opt.kubeflow_minio.rootUser.existingSecret >}}
 {{<- else ->}}
 minio-root-user
 {{<- end ->}}
@@ -96,7 +96,7 @@ pipelines-bucket-secret
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.source_secret_namespace" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
-{{< .Values.deploykf_core.kubeflow_minio.namespace >}}
+{{< .Values.deploykf_opt.kubeflow_minio.namespace >}}
 {{<- else ->}}
 kubeflow
 {{<- end ->}}
@@ -114,8 +114,8 @@ cloned--pipelines-bucket-secret
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.access_key_key" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
-{{<- if .Values.deploykf_core.kubeflow_minio.rootUser.existingSecret ->}}
-{{< .Values.deploykf_core.kubeflow_minio.rootUser.existingSecretUsernameKey >}}
+{{<- if .Values.deploykf_opt.kubeflow_minio.rootUser.existingSecret ->}}
+{{< .Values.deploykf_opt.kubeflow_minio.rootUser.existingSecretUsernameKey >}}
 {{<- else ->}}
 username
 {{<- end ->}}
@@ -133,8 +133,8 @@ ACCESS_KEY
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.secret_key_key" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
-{{<- if .Values.deploykf_core.kubeflow_minio.rootUser.existingSecret ->}}
-{{< .Values.deploykf_core.kubeflow_minio.rootUser.existingSecretPasswordKey >}}
+{{<- if .Values.deploykf_opt.kubeflow_minio.rootUser.existingSecret ->}}
+{{< .Values.deploykf_opt.kubeflow_minio.rootUser.existingSecretPasswordKey >}}
 {{<- else ->}}
 password
 {{<- end ->}}

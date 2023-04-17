@@ -108,7 +108,7 @@ manifests/deploykf-core/kubeflow-profiles-generator/
 {{<- end >}}
 
 ## deployKF - deploykf-opt
-{{<- if not .Values.deploykf_core.kubeflow_minio.enabled >}}
+{{<- if not .Values.deploykf_opt.kubeflow_minio.enabled >}}
 argocd/deploykf-opt/kubeflow-minio.yaml
 argocd/namespaces/kubeflow-minio.yaml
 manifests/deploykf-opt/kubeflow-minio/

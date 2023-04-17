@@ -62,7 +62,7 @@ resources:
   ##################
   ## deploykf-opt ##
   ##################
-  {{<- if .Values.deploykf_core.kubeflow_minio.enabled >}}
+  {{<- if .Values.deploykf_opt.kubeflow_minio.enabled >}}
   - deploykf-opt/kubeflow-minio.yaml
   - namespaces/kubeflow-minio.yaml
   {{<- end >}}
