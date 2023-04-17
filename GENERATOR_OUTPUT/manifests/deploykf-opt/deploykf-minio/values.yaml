@@ -13,7 +13,7 @@ deployKF:
         injectedConfigMapName: "kubeflow-gateway-issuer-root-ca-cert"
 
   auth:
-    namespace: "kubeflow-auth"
+    namespace: "deploykf-auth"
 
   gateway:
     namespace: "kubeflow-istio-gateway"

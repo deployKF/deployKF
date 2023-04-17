@@ -4,7 +4,7 @@ metadata:
   name: dkf-core--kubeflow-auth
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
-    app.kubernetes.io/name: kubeflow-auth
+    app.kubernetes.io/name: deploykf-auth
     app.kubernetes.io/component: deploykf-core
     app.kubernetes.io/part-of: deploykf
 spec:
@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: {{< .Values.repo.url | quote >}}
     targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-core/kubeflow-auth" | quote >}}
+    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-core/deploykf-auth" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: {{< .Values.deploykf_core.kubeflow_auth.namespace | quote >}}

@@ -16,8 +16,8 @@ resources:
   ###################
   ## deploykf-core ##
   ###################
-  - deploykf-core/kubeflow-auth.yaml
-  - namespaces/kubeflow-auth.yaml
+  - deploykf-core/deploykf-auth.yaml
+  - namespaces/deploykf-auth.yaml
   - deploykf-core/kubeflow-dashboard.yaml
   - deploykf-core/kubeflow-istio-gateway.yaml
   - namespaces/kubeflow-istio-gateway.yaml

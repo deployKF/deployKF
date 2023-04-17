@@ -37,8 +37,8 @@ resources:
   ## deploykf-core ##
   ###################
   {{<- if .Values.deploykf_core.kubeflow_auth.enabled >}}
-  - deploykf-core/kubeflow-auth.yaml
-  - namespaces/kubeflow-auth.yaml
+  - deploykf-core/deploykf-auth.yaml
+  - namespaces/deploykf-auth.yaml
   {{<- end >}}
   
   {{<- if .Values.deploykf_core.kubeflow_dashboard.enabled >}}

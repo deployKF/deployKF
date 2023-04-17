@@ -14,7 +14,7 @@ deployKF:
     namespace: "kubeflow-argo-workflows"
 
   auth:
-    namespace: "kubeflow-auth"
+    namespace: "deploykf-auth"
 
   gateway:
     name: "kubeflow-gateway"

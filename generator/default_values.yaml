@@ -90,11 +90,11 @@ deploykf_dependencies:
 deploykf_core:
 
   ## --------------------------------------
-  ##             kubeflow-auth
+  ##             deploykf-auth
   ## --------------------------------------
   kubeflow_auth:
     enabled: true
-    namespace: kubeflow-auth
+    namespace: deploykf-auth
 
   ## --------------------------------------
   ##          kubeflow-dashboard
