@@ -115,36 +115,36 @@ manifests/kubeflow-tools/volumes/
 {{<- end >}}
 
 ## deployKF - deploykf-core
-{{<- if not .Values.kubeflow_common.kubeflow_argo_workflows.enabled >}}
+{{<- if not .Values.deploykf_core.kubeflow_argo_workflows.enabled >}}
 argocd/deploykf-core/kubeflow-argo-workflows.yaml
 argocd/namespaces/kubeflow-argo-workflows.yaml
 manifests/deploykf-core/kubeflow-argo-workflows/
 {{<- end >}}
-{{<- if not .Values.kubeflow_common.kubeflow_auth.enabled >}}
+{{<- if not .Values.deploykf_core.kubeflow_auth.enabled >}}
 argocd/deploykf-core/kubeflow-auth.yaml
 argocd/namespaces/kubeflow-auth.yaml
 manifests/deploykf-core/kubeflow-auth/
 {{<- end >}}
-{{<- if not .Values.kubeflow_common.kubeflow_dashboard.enabled >}}
+{{<- if not .Values.deploykf_core.kubeflow_dashboard.enabled >}}
 argocd/deploykf-core/kubeflow-dashboard.yaml
 manifests/deploykf-core/kubeflow-dashboard/
 {{<- end >}}
-{{<- if not .Values.kubeflow_common.kubeflow_istio_gateway.enabled >}}
+{{<- if not .Values.deploykf_core.kubeflow_istio_gateway.enabled >}}
 argocd/deploykf-core/kubeflow-istio-gateway.yaml
 argocd/namespaces/kubeflow-istio-gateway.yaml
 manifests/deploykf-core/kubeflow-istio-gateway/
 {{<- end >}}
-{{<- if not .Values.kubeflow_common.kubeflow_minio.enabled >}}
+{{<- if not .Values.deploykf_core.kubeflow_minio.enabled >}}
 argocd/deploykf-core/kubeflow-minio.yaml
 argocd/namespaces/kubeflow-minio.yaml
 manifests/deploykf-core/kubeflow-minio/
 {{<- end >}}
-{{<- if not .Values.kubeflow_common.kubeflow_mysql.enabled >}}
+{{<- if not .Values.deploykf_core.kubeflow_mysql.enabled >}}
 argocd/deploykf-core/kubeflow-mysql.yaml
 argocd/namespaces/kubeflow-mysql.yaml
 manifests/deploykf-core/kubeflow-mysql/
 {{<- end >}}
-{{<- if not .Values.kubeflow_common.kubeflow_profiles_generator.enabled >}}
+{{<- if not .Values.deploykf_core.kubeflow_profiles_generator.enabled >}}
 argocd/deploykf-core/kubeflow-profiles-generator.yaml
 manifests/deploykf-core/kubeflow-profiles-generator/
 {{<- end >}}

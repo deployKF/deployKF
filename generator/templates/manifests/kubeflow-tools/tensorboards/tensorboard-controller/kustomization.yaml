@@ -13,7 +13,7 @@ configMapGenerator:
   - name: tensorboard-controller-config
     behavior: merge
     literals:
-      - ISTIO_GATEWAY="{{< .Values.kubeflow_common.kubeflow_istio_gateway.namespace >}}/{{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.name >}}"
+      - ISTIO_GATEWAY="{{< .Values.deploykf_core.kubeflow_istio_gateway.namespace >}}/{{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.name >}}"
       - RWO_PVC_SCHEDULING="True"
       #- TENSORBOARD_IMAGE="tensorflow/tensorflow:2.1.0"
 

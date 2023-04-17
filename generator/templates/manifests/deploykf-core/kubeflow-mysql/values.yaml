@@ -57,18 +57,18 @@ mysql:
   ## configs for the "root@localhost" mysql user
   ##
   rootUser:
-    password: {{< .Values.kubeflow_common.kubeflow_mysql.rootUser.password | quote >}}
-    existingSecret: {{< .Values.kubeflow_common.kubeflow_mysql.rootUser.existingSecret | quote >}}
-    existingSecretPasswordKey: {{< .Values.kubeflow_common.kubeflow_mysql.rootUser.existingSecretPasswordKey | quote >}}
+    password: {{< .Values.deploykf_core.kubeflow_mysql.rootUser.password | quote >}}
+    existingSecret: {{< .Values.deploykf_core.kubeflow_mysql.rootUser.existingSecret | quote >}}
+    existingSecretPasswordKey: {{< .Values.deploykf_core.kubeflow_mysql.rootUser.existingSecretPasswordKey | quote >}}
 
   ## configs for the "kubeflow" mysql user
   ##
   kubeflowUser:
-    username: {{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.username | quote >}}
-    password: {{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.password | quote >}}
-    existingSecret: {{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecret | quote >}}
-    existingSecretUsernameKey: {{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecretUsernameKey | quote >}}
-    existingSecretPasswordKey: {{< .Values.kubeflow_common.kubeflow_mysql.kubeflowUser.existingSecretPasswordKey | quote >}}
+    username: {{< .Values.deploykf_core.kubeflow_mysql.kubeflowUser.username | quote >}}
+    password: {{< .Values.deploykf_core.kubeflow_mysql.kubeflowUser.password | quote >}}
+    existingSecret: {{< .Values.deploykf_core.kubeflow_mysql.kubeflowUser.existingSecret | quote >}}
+    existingSecretUsernameKey: {{< .Values.deploykf_core.kubeflow_mysql.kubeflowUser.existingSecretUsernameKey | quote >}}
+    existingSecretPasswordKey: {{< .Values.deploykf_core.kubeflow_mysql.kubeflowUser.existingSecretPasswordKey | quote >}}
 
   ## the string content of a config file mounted at `/etc/mysql/conf.d/custom.cnf`
   ##

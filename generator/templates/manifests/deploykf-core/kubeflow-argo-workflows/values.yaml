@@ -27,15 +27,15 @@ deployKF:
         injectedConfigMapName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
 
   auth:
-    namespace: {{< .Values.kubeflow_common.kubeflow_auth.namespace | quote >}}
+    namespace: {{< .Values.deploykf_core.kubeflow_auth.namespace | quote >}}
 
   gateway:
-    namespace: {{< .Values.kubeflow_common.kubeflow_istio_gateway.namespace | quote >}}
-    serviceAccount: {{< .Values.kubeflow_common.kubeflow_istio_gateway.serviceAccount.name | quote >}}
-    name: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.name | quote >}}
-    hostname: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.hostname | quote >}}
+    namespace: {{< .Values.deploykf_core.kubeflow_istio_gateway.namespace | quote >}}
+    serviceAccount: {{< .Values.deploykf_core.kubeflow_istio_gateway.serviceAccount.name | quote >}}
+    name: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.name | quote >}}
+    hostname: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.hostname | quote >}}
     tls:
-      enabled: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.tls.enabled >}}
+      enabled: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.tls.enabled >}}
 
   pipelines:
     bucket:

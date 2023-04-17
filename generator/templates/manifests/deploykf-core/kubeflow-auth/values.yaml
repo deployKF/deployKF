@@ -20,12 +20,12 @@ deployKF:
     namespace: {{< .Values.deploykf_dependencies.istio.namespace | quote >}}
 
   gateway:
-    namespace: {{< .Values.kubeflow_common.kubeflow_istio_gateway.namespace | quote >}}
-    serviceAccount: {{< .Values.kubeflow_common.kubeflow_istio_gateway.serviceAccount.name | quote >}}
-    name: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.name | quote >}}
-    hostname: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.hostname | quote >}}
+    namespace: {{< .Values.deploykf_core.kubeflow_istio_gateway.namespace | quote >}}
+    serviceAccount: {{< .Values.deploykf_core.kubeflow_istio_gateway.serviceAccount.name | quote >}}
+    name: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.name | quote >}}
+    hostname: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.hostname | quote >}}
     tls:
-      enabled: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.tls.enabled >}}
+      enabled: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.tls.enabled >}}
 
 
 ########################################
@@ -66,7 +66,7 @@ dex:
     ## OpenID client for minio-console
     ##
     minio:
-      enabled: {{< .Values.kubeflow_common.kubeflow_minio.enabled >}}
+      enabled: {{< .Values.deploykf_core.kubeflow_minio.enabled >}}
       clientId: "minio-console"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
@@ -77,7 +77,7 @@ dex:
     ## OpenID client for argo-server
     ##
     argoServer:
-      enabled: {{< .Values.kubeflow_common.kubeflow_argo_workflows.enabled >}}
+      enabled: {{< .Values.deploykf_core.kubeflow_argo_workflows.enabled >}}
       clientId: "argo-server"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"

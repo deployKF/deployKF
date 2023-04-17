@@ -8,4 +8,4 @@ spec:
     - from:
         - source:
             principals:
-              - cluster.local/ns/{{< .Values.kubeflow_common.kubeflow_istio_gateway.namespace >}}/sa/{{< .Values.kubeflow_common.kubeflow_istio_gateway.serviceAccount.name >}}
+              - cluster.local/ns/{{< .Values.deploykf_core.kubeflow_istio_gateway.namespace >}}/sa/{{< .Values.deploykf_core.kubeflow_istio_gateway.serviceAccount.name >}}

@@ -69,36 +69,36 @@ resources:
   #####################
   ## deploykf-core ##
   #####################
-  {{<- if .Values.kubeflow_common.kubeflow_argo_workflows.enabled >}}
+  {{<- if .Values.deploykf_core.kubeflow_argo_workflows.enabled >}}
   - deploykf-core/kubeflow-argo-workflows.yaml
   - namespaces/kubeflow-argo-workflows.yaml
   {{<- end >}}
   
-  {{<- if .Values.kubeflow_common.kubeflow_auth.enabled >}}
+  {{<- if .Values.deploykf_core.kubeflow_auth.enabled >}}
   - deploykf-core/kubeflow-auth.yaml
   - namespaces/kubeflow-auth.yaml
   {{<- end >}}
   
-  {{<- if .Values.kubeflow_common.kubeflow_dashboard.enabled >}}
+  {{<- if .Values.deploykf_core.kubeflow_dashboard.enabled >}}
   - deploykf-core/kubeflow-dashboard.yaml
   {{<- end >}}
 
-  {{<- if .Values.kubeflow_common.kubeflow_istio_gateway.enabled >}}
+  {{<- if .Values.deploykf_core.kubeflow_istio_gateway.enabled >}}
   - deploykf-core/kubeflow-istio-gateway.yaml
   - namespaces/kubeflow-istio-gateway.yaml
   {{<- end >}}
 
-  {{<- if .Values.kubeflow_common.kubeflow_minio.enabled >}}
+  {{<- if .Values.deploykf_core.kubeflow_minio.enabled >}}
   - deploykf-core/kubeflow-minio.yaml
   - namespaces/kubeflow-minio.yaml
   {{<- end >}}
 
-  {{<- if .Values.kubeflow_common.kubeflow_mysql.enabled >}}
+  {{<- if .Values.deploykf_core.kubeflow_mysql.enabled >}}
   - deploykf-core/kubeflow-mysql.yaml
   - namespaces/kubeflow-mysql.yaml
   {{<- end >}}
 
-  {{<- if .Values.kubeflow_common.kubeflow_profiles_generator.enabled >}}
+  {{<- if .Values.deploykf_core.kubeflow_profiles_generator.enabled >}}
   - deploykf-core/kubeflow-profiles-generator.yaml
   {{<- end >}}
 

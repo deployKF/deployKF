@@ -6,10 +6,10 @@ deployKF:
     useridHeader: kubeflow-userid
 
   gateway:
-    namespace: {{< .Values.kubeflow_common.kubeflow_istio_gateway.namespace | quote >}}
-    serviceAccount: {{< .Values.kubeflow_common.kubeflow_istio_gateway.serviceAccount.name | quote >}}
-    name: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.name | quote >}}
-    hostname: {{< .Values.kubeflow_common.kubeflow_istio_gateway.gateway.hostname | quote >}}
+    namespace: {{< .Values.deploykf_core.kubeflow_istio_gateway.namespace | quote >}}
+    serviceAccount: {{< .Values.deploykf_core.kubeflow_istio_gateway.serviceAccount.name | quote >}}
+    name: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.name | quote >}}
+    hostname: {{< .Values.deploykf_core.kubeflow_istio_gateway.gateway.hostname | quote >}}
 
 
 ########################################
@@ -102,23 +102,23 @@ centralDashboard:
     ## external links that appear in the sidebar
     ##
     externalLinks:
-      {{<- if .Values.kubeflow_common.kubeflow_argo_workflows.enabled >}}
+      {{<- if .Values.deploykf_core.kubeflow_argo_workflows.enabled >}}
       - type: item
         iframe: false
         text: Argo Server
         icon: settings-input-composite
-        {{<- if .Values.kubeflow_common.kubeflow_istio_gateway.gateway.tls.enabled >}}
+        {{<- if .Values.deploykf_core.kubeflow_istio_gateway.gateway.tls.enabled >}}
         link: "https://argo-server.{{< tmpl.Exec "kubeflow_gateway.https_endpoint" . >}}"
         {{<- else >}}
         link: "http://argo-server.{{< tmpl.Exec "kubeflow_gateway.http_endpoint" . >}}"
         {{<- end >}}
       {{<- end >}}
-      {{<- if .Values.kubeflow_common.kubeflow_minio.enabled >}}
+      {{<- if .Values.deploykf_core.kubeflow_minio.enabled >}}
       - type: item
         iframe: false
         text: Minio Console
         icon: cloud
-        {{<- if .Values.kubeflow_common.kubeflow_istio_gateway.gateway.tls.enabled >}}
+        {{<- if .Values.deploykf_core.kubeflow_istio_gateway.gateway.tls.enabled >}}
         link: "https://minio-console.{{< tmpl.Exec "kubeflow_gateway.https_endpoint" . >}}"
         {{<- else >}}
         link: "http://minio-console.{{< tmpl.Exec "kubeflow_gateway.http_endpoint" . >}}"
