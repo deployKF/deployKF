@@ -83,14 +83,14 @@ data:
   sso: |
     ## This is the root URL of the OIDC provider
     {{- if .Values.deployKF.gateway.tls.enabled }}
-    issuer: "https://{{ .Values.deployKF_helpers.kubeflow_gateway.https_endpoint }}/dex"
+    issuer: "https://{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/dex"
     {{- else }}
-    issuer: "http://{{ .Values.deployKF_helpers.kubeflow_gateway.http_endpoint }}/dex"
+    issuer: "http://{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/dex"
     {{- end }}
 
     ## If TLS certificate verification is skipped for SSO endpoints
     ## TODO: remove once argo-server supports using local CA files (https://github.com/argoproj/argo-workflows/issues/7198)
-    {{- if .Values.deployKF_helpers.kubeflow_gateway.is_self_signed_cert }}
+    {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
     insecureSkipVerify: true
     {{- else }}
     insecureSkipVerify: false
@@ -118,9 +118,9 @@ data:
 
     ## This is the OIDC redirect URL
     {{- if .Values.deployKF.gateway.tls.enabled }}
-    redirectUrl: "https://argo-server.{{ .Values.deployKF_helpers.kubeflow_gateway.https_endpoint }}/oauth2/callback"
+    redirectUrl: "https://argo-server.{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/oauth2/callback"
     {{- else }}
-    redirectUrl: "http://argo-server.{{ .Values.deployKF_helpers.kubeflow_gateway.http_endpoint }}/oauth2/callback"
+    redirectUrl: "http://argo-server.{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/oauth2/callback"
     {{- end }}
 
     ## Additional OIDC scopes to request

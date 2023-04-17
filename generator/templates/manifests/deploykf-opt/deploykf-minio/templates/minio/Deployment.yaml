@@ -84,17 +84,17 @@ spec:
             ## minio - console
             - name: MINIO_BROWSER_REDIRECT_URL
               {{- if .Values.deployKF.gateway.tls.enabled }}
-              value: "https://minio-console.{{ .Values.deployKF_helpers.kubeflow_gateway.https_endpoint }}"
+              value: "https://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}"
               {{- else }}
-              value: "http://minio-console.{{ .Values.deployKF_helpers.kubeflow_gateway.http_endpoint }}"
+              value: "http://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}"
               {{- end }}
 
             ## minio - openid
             - name: MINIO_IDENTITY_OPENID_CONFIG_URL
               {{- if .Values.deployKF.gateway.tls.enabled }}
-              value: "https://{{ .Values.deployKF_helpers.kubeflow_gateway.https_endpoint }}/dex/.well-known/openid-configuration"
+              value: "https://{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/dex/.well-known/openid-configuration"
               {{- else }}
-              value: "http://{{ .Values.deployKF_helpers.kubeflow_gateway.http_endpoint }}/dex/.well-known/openid-configuration"
+              value: "http://{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/dex/.well-known/openid-configuration"
               {{- end }}
             - name: MINIO_IDENTITY_OPENID_CLIENT_ID
               value: {{ .Values.minio.identity.openid.clientId | quote }}
@@ -111,9 +111,9 @@ spec:
               value: {{ .Values.minio.identity.openid.policyClaim | quote }}
             - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
               {{- if .Values.deployKF.gateway.tls.enabled }}
-              value: "https://minio-console.{{ .Values.deployKF_helpers.kubeflow_gateway.https_endpoint }}/oauth_callback"
+              value: "https://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/oauth_callback"
               {{- else }}
-              value: "http://minio-console.{{ .Values.deployKF_helpers.kubeflow_gateway.http_endpoint }}/oauth_callback"
+              value: "http://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/oauth_callback"
               {{- end }}
             - name: MINIO_IDENTITY_OPENID_SCOPES
               ## TODO: minio-console does not currently support refresh tokens
@@ -180,7 +180,7 @@ spec:
             - name: minio-data
               mountPath: "/minio-data"
             {{- end }}
-            {{- if .Values.deployKF_helpers.kubeflow_gateway.is_self_signed_cert }}
+            {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
             ## TODO: check if minio needs to restart is CA cert changes
             - name: gateway-root-ca-cert
               mountPath: "/etc/minio/certs/CAs/"
@@ -204,7 +204,7 @@ spec:
         - name: minio-data
           emptyDir: {}
         {{- end }}
-        {{- if .Values.deployKF_helpers.kubeflow_gateway.is_self_signed_cert }}
+        {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
         - name: gateway-root-ca-cert
           configMap:
             name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}

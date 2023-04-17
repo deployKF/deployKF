@@ -1,8 +1,8 @@
 deployKF_helpers:
-  kubeflow_gateway:
-    http_endpoint: {{< (tmpl.Exec "kubeflow_gateway.http_endpoint" .) | quote >}}
-    https_endpoint: {{< (tmpl.Exec "kubeflow_gateway.https_endpoint" .) | quote >}}
-    is_self_signed_cert: {{< (tmpl.Exec "kubeflow_gateway.is_self_signed_cert" .) | quote >}}
+  deploykf_gateway:
+    http_endpoint: {{< (tmpl.Exec "deploykf_gateway.http_endpoint" .) | quote >}}
+    https_endpoint: {{< (tmpl.Exec "deploykf_gateway.https_endpoint" .) | quote >}}
+    is_self_signed_cert: {{< (tmpl.Exec "deploykf_gateway.is_self_signed_cert" .) | quote >}}
 
 deployKF:
   clusterDomain: cluster.local

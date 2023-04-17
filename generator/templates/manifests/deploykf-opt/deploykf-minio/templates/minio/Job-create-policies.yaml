@@ -52,9 +52,9 @@ spec:
               ## add an alias for the local minio server
               mc alias set "myminio" \
                 {{- if .Values.deployKF.gateway.tls.enabled }}
-                {{ printf "https://minio-api.%s" .Values.deployKF_helpers.kubeflow_gateway.https_endpoint | quote }} \
+                {{ printf "https://minio-api.%s" .Values.deployKF_helpers.deploykf_gateway.https_endpoint | quote }} \
                 {{- else }}
-                {{ printf "http://minio-api.%s" .Values.deployKF_helpers.kubeflow_gateway.http_endpoint | quote }} \
+                {{ printf "http://minio-api.%s" .Values.deployKF_helpers.deploykf_gateway.http_endpoint | quote }} \
                 {{- end }}
                 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD";
 
@@ -93,7 +93,7 @@ spec:
               mountPath: "/.mc/"
             - name: minio-policies
               mountPath: "/minio-policies/"
-            {{- if .Values.deployKF_helpers.kubeflow_gateway.is_self_signed_cert }}
+            {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
             - name: gateway-root-ca-cert
               mountPath: "/.mc/certs/CAs/"
               readOnly: true
@@ -104,7 +104,7 @@ spec:
         - name: minio-policies
           configMap:
             name: minio-policies
-        {{- if .Values.deployKF_helpers.kubeflow_gateway.is_self_signed_cert }}
+        {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
         - name: gateway-root-ca-cert
           configMap:
             name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}

@@ -108,9 +108,9 @@ centralDashboard:
         text: Argo Server
         icon: settings-input-composite
         {{<- if .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled >}}
-        link: "https://argo-server.{{< tmpl.Exec "kubeflow_gateway.https_endpoint" . >}}"
+        link: "https://argo-server.{{< tmpl.Exec "deploykf_gateway.https_endpoint" . >}}"
         {{<- else >}}
-        link: "http://argo-server.{{< tmpl.Exec "kubeflow_gateway.http_endpoint" . >}}"
+        link: "http://argo-server.{{< tmpl.Exec "deploykf_gateway.http_endpoint" . >}}"
         {{<- end >}}
       {{<- end >}}
       {{<- if .Values.deploykf_opt.deploykf_minio.enabled >}}
@@ -119,9 +119,9 @@ centralDashboard:
         text: Minio Console
         icon: cloud
         {{<- if .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled >}}
-        link: "https://minio-console.{{< tmpl.Exec "kubeflow_gateway.https_endpoint" . >}}"
+        link: "https://minio-console.{{< tmpl.Exec "deploykf_gateway.https_endpoint" . >}}"
         {{<- else >}}
-        link: "http://minio-console.{{< tmpl.Exec "kubeflow_gateway.http_endpoint" . >}}"
+        link: "http://minio-console.{{< tmpl.Exec "deploykf_gateway.http_endpoint" . >}}"
         {{<- end >}}
       {{<- end >}}
 
