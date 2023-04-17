@@ -79,7 +79,7 @@ Get started with deployKF by following these steps:
     4. __deploykf-core__ _(label: `app.kubernetes.io/component: deploykf-core`)_
         1. `dkf-core--kubeflow-istio-gateway`
         2. `dkf-core--deploykf-auth`
-        3. `dkf-core--kubeflow-dashboard`
+        3. `dkf-core--deploykf-dashboard`
         4. `dkf-core--kubeflow-profiles-generator`
             - _WARNING: first sync may fail as profile namespaces will not immediately be created, so wait for those namespace to be created, and sync again_
     5. __deploykf-opt__ _(label: `app.kubernetes.io/component: deploykf-opt`)_

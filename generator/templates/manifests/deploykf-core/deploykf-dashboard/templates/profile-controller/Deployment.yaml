@@ -3,8 +3,8 @@ kind: Deployment
 metadata:
   name: profile-controller
   labels:
-    helm.sh/chart: {{ include "kubeflow-dashboard.labels.chart" . }}
-    app.kubernetes.io/name: {{ include "kubeflow-dashboard.labels.name" . }}
+    helm.sh/chart: {{ include "deploykf-dashboard.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: profile-controller
@@ -12,7 +12,7 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ include "kubeflow-dashboard.labels.name" . }}
+      app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
       app.kubernetes.io/instance: {{ .Release.Name }}
       app.kubernetes.io/managed-by: {{ .Release.Service }}
       app.kubernetes.io/component: profile-controller
@@ -21,7 +21,7 @@ spec:
       annotations:
         checksum/configmap-namespace-labels: {{ include (print $.Template.BasePath "/profile-controller/ConfigMap-namespace-labels.yaml") . | sha256sum }}
       labels:
-        app.kubernetes.io/name: {{ include "kubeflow-dashboard.labels.name" . }}
+        app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/component: profile-controller

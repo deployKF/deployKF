@@ -3,8 +3,8 @@ kind: ClusterRoleBinding
 metadata:
   name: central-dashboard
   labels:
-    helm.sh/chart: {{ include "kubeflow-dashboard.labels.chart" . }}
-    app.kubernetes.io/name: {{ include "kubeflow-dashboard.labels.name" . }}
+    helm.sh/chart: {{ include "deploykf-dashboard.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: central-dashboard
