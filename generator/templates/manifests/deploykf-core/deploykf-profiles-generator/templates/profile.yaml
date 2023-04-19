@@ -1,4 +1,5 @@
 {{- range $profile_name, $profile := .Values.profiles }}
+{{- $profile_name := printf "%s%s" $.Values.profileDefaults.profileNamePrefix $profile_name }}
 ---
 apiVersion: kubeflow.org/v1
 kind: Profile
@@ -12,7 +13,7 @@ metadata:
 spec:
   owner:
     kind: User
-    name: {{ $.Values.admin.email | quote }}
+    name: {{ $.Values.profileDefaults.ownerEmail | quote }}
   {{- if $profile.resourceQuotaSpec }}
   resourceQuotaSpec: {{ $profile.resourceQuotaSpec | toYaml | nindent 4 }}
   {{- else }}

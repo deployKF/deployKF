@@ -1,22 +1,39 @@
 {{- range $profile_name, $profile := .Values.profiles }}
-{{- range $user_name := $profile.usersWithAccess }}
-{{- $user := get $.Values.users $user_name }}
-{{- if not $user }}
-{{- fail (printf "failed to generate profile '%s', there is no key in `users` called '%s'" $profile_name $user_name) }}
+{{- $profile_name := printf "%s%s" $.Values.profileDefaults.profileNamePrefix $profile_name }}
+{{- range $member := $profile.members }}
+
+{{- if not $member.user }}
+{{- fail (printf "failed to generate profile '%s', member is missing required `user` key" $profile_name) }}
 {{- end }}
+
+{{- $user := get $.Values.users $member.user }}
+{{- if not $user }}
+{{- fail (printf "failed to generate profile '%s', referenced member '%s' does not exist in `users`" $profile_name $member.user) }}
+{{- end }}
+
+{{- if not $user.email }}
+{{- fail (printf "invalid user '%s', missing required `email` key" $member.user) }}
+{{- end }}
+
+{{- $user_role := $member.role | default "view" }}
+{{- if not (has $user_role (list "view" "edit")) }}
+{{- fail (printf "failed to generate profile '%s', member has invalid role '%s', must be one of 'view' or 'edit'" $profile_name $user_role) }}
+{{- end }}
+
 {{- /*
 Kubeflow generates the `AuthorizationPolicy` and `RoleBinding` resource names from the
 user's email by replacing any special characters with '-' and casting to lower-case
 */}}
 {{- $resource_name := regexReplaceAll "[^0-9a-zA-Z]" $user.email "-" | lower }}
+{{- if $member.notebooks_access}}
 ---
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
-  name: user-{{ $resource_name }}-clusterrole-edit
+  name: user-{{ $resource_name }}-clusterrole-{{ $user_role }}
   namespace: {{ $profile_name | quote }}
   annotations:
-    role: edit
+    role: {{ $user_role | quote }}
     user: {{ $user.email | quote }}
   labels:
     helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
@@ -25,18 +42,24 @@ metadata:
     app.kubernetes.io/managed-by: {{ $.Release.Service }}
 spec:
   rules:
-    - when:
+    ## allow requests from `deploykf-istio-gateway` Pods with this user's email in the `useridHeader`
+    - from:
+        - source:
+            principals:
+              - "{{ $.Values.deployKF.clusterDomain }}/ns/{{ $.Values.deployKF.gateway.namespace }}/sa/{{ $.Values.deployKF.gateway.serviceAccount }}"
+      when:
         - key: request.headers[{{ $.Values.deployKF.kubeflow.useridHeader }}]
           values:
             - {{ $user.email | quote }}
+{{- end }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: user-{{ $resource_name }}-clusterrole-edit
+  name: user-{{ $resource_name }}-clusterrole-{{ $user_role }}
   namespace: {{ $profile_name | quote }}
   annotations:
-    role: edit
+    role: {{ $user_role | quote }}
     user: {{ $user.email | quote }}
   labels:
     helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
@@ -46,7 +69,7 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: kubeflow-edit
+  name: kubeflow-{{ $user_role }}
 subjects:
   - apiGroup: rbac.authorization.k8s.io
     kind: User

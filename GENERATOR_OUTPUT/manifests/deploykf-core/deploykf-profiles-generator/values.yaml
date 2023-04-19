@@ -1,45 +1,58 @@
 deployKF:
+  clusterDomain: cluster.local
+
   kubeflow:
     useridHeader: kubeflow-userid
 
+  gateway:
+    namespace: "deploykf-istio-gateway"
+    serviceAccount: "deploykf-gateway"
 
-## details for the super-admin (which will be the OWNER of ALL profiles)
+
+## configs for generated profiles
 ##
-admin:
-  email: admin@example.com
+profileDefaults:
+
+  ## a common prefix to add to all profile names
+  ## - NOTE: the profile name is also used as the namespace name
+  ##
+  profileNamePrefix: ""
+
+  ## the email to set as the OWNER of ALL profiles
+  ##
+  ownerEmail: admin@example.com
 
 
-## details of user entities that can be referenced in `profiles.*.access_users`
+## user details
 ##
 users:
-
-  ## an example user called "person-1"
-  ##
   person-1:
     email: person-1@example.com
-
-  ## an example user called "person-2"
-  ##
   person-2:
     email: person-2@example.com
 
 
-## definitions of kubeflow profiles to generate
+## profiles to create
 ##
 profiles:
 
-  ## an example profile called "team-1" with both "person-1" and "person-2"
+  ## EXAMPLE: a profile called "team-1"
   ##
   team-1:
-    usersWithAccess:
-      - person-1
-      - person-2
-
-    ## the resource quota for this profile
-    ## - spec for ResourceQuotaSpec:
-    ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcequotaspec-v1-core
+    ## the list of members and their access to this profile
+    ## - `user`: the name of the user, from the `users` section
+    ## - `role`: the RBAC role to bind to the user (default: "view")
+    ##           "edit" -> `ClusterRole/kubeflow-edit` -> can view/create/delete resources
+    ##           "view" -> `ClusterRole/kubeflow-view` -> can only view resources
+    ## - `notebooks_access`: if the user can connect to notebooks in the profile (default: false)
     ##
-    resourceQuotaSpec: {}
+    members:
+      - user: person-1
+        role: edit
+        notebooks_access: true
+      - user: person-2
+        role: edit
+        notebooks_access: true
 
     ## the list of plugins to apply to this profile
     ##
@@ -58,14 +71,20 @@ profiles:
     ##
     plugins: []
 
-  ## an example profile called "user-person-1" with only "person-1"
-  ##
-  user-person-1:
-    usersWithAccess:
-      - person-1
+    ## the resource quota for this profile
+    ## - spec for ResourceQuotaSpec:
+    ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcequotaspec-v1-core
+    ##
+    resourceQuotaSpec: {}
 
-  ## an example profile called "user-person-2" with only "person-2"
+  ## EXAMPLE: a profile called "team-1-prod"
   ##
-  user-person-2:
-    usersWithAccess:
-      - person-2
+  team-1-prod:
+    members:
+      - user: person-1
+        role: view
+        notebooks_access: false
+      - user: person-2
+        # TODO: remove comment after test
+        #role: view
+        notebooks_access: false
