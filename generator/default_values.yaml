@@ -1,23 +1,22 @@
-## TODO: replace all instances of cluster.local with this (might need a lot of patches)
+## TODO: replace all instances of 'cluster.local' with this (might need a lot of patches)
+##       (consider putting under a "global" section)
 #clusterDomain: cluster.local
 
-repo:
-  url: ""
-  revision: ""
-  generatorOutputPath: ""
-
-
+## --------------------------------------------------------------------------------
+##
+##                                     argo cd
+##
+## --------------------------------------------------------------------------------
 argocd:
   namespace: argocd
   project: default
+  source:
+    repo:
+      url: ""
+      revision: ""
+      path: ""
   destination:
     server: https://kubernetes.default.svc
-
-
-## TODO: use in templates
-#kubeflow:
-#  namespace: kubeflow
-#  useridHeader: kubeflow-userid
 
 
 ## --------------------------------------------------------------------------------

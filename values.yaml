@@ -1,9 +1,17 @@
 ## NOTE: this file overrides the default values from `./generator/default_values.yaml`
 
-repo:
-  url: https://github.com/deployKF/deployKF
-  revision: dev
-  generatorOutputPath: ./GENERATOR_OUTPUT/
+## --------------------------------------------------------------------------------
+##
+##                                     argo cd
+##
+## --------------------------------------------------------------------------------
+argocd:
+  source:
+    repo:
+      url: https://github.com/deployKF/deployKF
+      revision: dev
+      path: ./GENERATOR_OUTPUT/
+
 
 ## --------------------------------------------------------------------------------
 ##

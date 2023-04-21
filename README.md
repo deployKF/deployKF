@@ -55,7 +55,7 @@ Get started with deployKF by following these steps:
     1. create an initial `custom-values.yaml` file ~~with the interactive `deploykf init-values --source-version "v0.1.0-alpha.0"` command~~ _(not yet implemented)_
         - _TIP: for now, use the [`values.yaml`](values.yaml) and [`generator/default_values.yaml`](generator/default_values.yaml) files in this repo as a starting point_
     2. make further customizations to your `custom-values.yaml` file
-        - _TIP: make sure you set `repo.url` and `repo.branch` to the correct values for your git repo_
+        - _TIP: make sure you set `argocd.source.repo.url` and `argocd.source.repo.revision` to the correct values for your git repo_
     3. generate your manifests using the `deploykf generate` command:
         - `deploykf generate --source-version "v0.1.0-alpha.0" --values ./custom-values.yaml --output-dir ./GENERATOR_OUTPUT`
     4. commit the generated files (and any other files you may want) to your private git repo: 

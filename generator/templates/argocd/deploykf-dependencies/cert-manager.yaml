@@ -10,9 +10,9 @@ metadata:
 spec:
   project: {{< .Values.argocd.project | quote >}}
   source:
-    repoURL: {{< .Values.repo.url | quote >}}
-    targetRevision: {{< .Values.repo.revision | quote >}}
-    path: {{< path.Join .Values.repo.generatorOutputPath "manifests/deploykf-dependencies/cert-manager" | quote >}}
+    repoURL: {{< .Values.argocd.source.repo.url | quote >}}
+    targetRevision: {{< .Values.argocd.source.repo.revision | quote >}}
+    path: {{< path.Join .Values.argocd.source.repo.path "manifests/deploykf-dependencies/cert-manager" | quote >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: {{< .Values.deploykf_dependencies.cert_manager.namespace | quote >}}
