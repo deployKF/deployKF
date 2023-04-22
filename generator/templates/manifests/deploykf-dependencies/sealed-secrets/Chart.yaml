@@ -1,7 +1,0 @@
-apiVersion: v2
-name: deploykf-dependencies--sealed-secrets
-version: 1.0.0
-dependencies:
-  - name: sealed-secrets
-    version: 2.7.3
-    repository: https://bitnami-labs.github.io/sealed-secrets

@@ -60,12 +60,6 @@ centralDashboard:
         icon: assessment
         link: "/tensorboards/"
       {{<- end >}}
-      {{<- if .Values.deploykf_tools.kserve.enabled >}}
-      - type: item
-        text: KServe
-        icon: kubeflow:models
-        link: "/kserve-endpoints/"
-      {{<- end >}}
       {{<- if .Values.kubeflow_tools.katib.enabled >}}
       - type: item
         text: Katib
@@ -167,11 +161,6 @@ centralDashboard:
       - text: Katib Documentation
         desc: Documentation for Katib
         link: https://www.kubeflow.org/docs/components/katib/
-      {{<- end >}}
-      {{<- if .Values.deploykf_tools.kserve.enabled >}}
-      - text: KServe Documentation
-        desc: Documentation for KServe
-        link: https://kserve.github.io/website/
       {{<- end >}}
 
 

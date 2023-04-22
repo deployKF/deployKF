@@ -15,22 +15,10 @@ resources:
   - deploykf-dependencies/istio.yaml
   - namespaces/istio.yaml
   {{<- end >}}
-
-  {{<- if .Values.deploykf_dependencies.knative.enabled >}}
-  - deploykf-dependencies/knative--knative-eventing.yaml
-  - deploykf-dependencies/knative--knative-serving.yaml
-  - namespaces/knative-eventing.yaml
-  - namespaces/knative-serving.yaml
-  {{<- end >}}
   
   {{<- if .Values.deploykf_dependencies.kyverno.enabled >}}
   - deploykf-dependencies/kyverno.yaml
   - namespaces/kyverno.yaml
-  {{<- end >}}
-  
-  {{<- if .Values.deploykf_dependencies.sealed_secrets.enabled >}}
-  - deploykf-dependencies/sealed-secrets.yaml
-  - namespaces/sealed-secrets.yaml
   {{<- end >}}
 
   ###################
@@ -70,10 +58,7 @@ resources:
   ####################
   ## deploykf-tools ##
   ####################
-  {{<- if .Values.deploykf_tools.kserve.enabled >}}
-  - deploykf-tools/kserve--kserve.yaml
-  - deploykf-tools/kserve--models-web-app.yaml
-  {{<- end >}}
+  ## TODO: deploykf-tools
 
   ###########################
   ## kubeflow-dependencies ##

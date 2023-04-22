@@ -57,28 +57,11 @@ deploykf_dependencies:
     namespace: istio-system
 
   ## --------------------------------------
-  ##                knative
-  ## --------------------------------------
-  knative:
-    ## TODO: knative is disabled
-    enabled: false
-    namespace:
-      eventing: knative-eventing
-      serving: knative-serving
-
-  ## --------------------------------------
   ##                kyverno
   ## --------------------------------------
   kyverno:
     enabled: true
     namespace: kyverno
-
-  ## --------------------------------------
-  ##            sealed-secrets
-  ## --------------------------------------
-  sealed_secrets:
-    enabled: false
-    namespace: sealed-secrets
 
 
 ## --------------------------------------------------------------------------------
@@ -204,14 +187,8 @@ deploykf_opt:
 ##                                deploykf-tools
 ##
 ## --------------------------------------------------------------------------------
-deploykf_tools:
-
-  ## --------------------------------------
-  ##                kserve
-  ## --------------------------------------
-  kserve:
-    ## TODO: kserve is disabled
-    enabled: false
+## TODO: add deploykf-tools
+deploykf_tools: {}
 
 
 ## --------------------------------------------------------------------------------

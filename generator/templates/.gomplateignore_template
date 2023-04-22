@@ -63,23 +63,10 @@ argocd/deploykf-dependencies/istio.yaml
 argocd/namespaces/istio.yaml
 manifests/deploykf-dependencies/istio/
 {{<- end >}}
-{{<- if not .Values.deploykf_dependencies.knative.enabled >}}
-argocd/deploykf-dependencies/knative--knative-eventing.yaml
-argocd/deploykf-dependencies/knative--knative-serving.yaml
-argocd/namespaces/knative-eventing.yaml
-argocd/namespaces/knative-serving.yaml
-manifests/deploykf-dependencies/knative-eventing/
-manifests/deploykf-dependencies/knative-serving/
-{{<- end >}}
 {{<- if not .Values.deploykf_dependencies.kyverno.enabled >}}
 argocd/deploykf-dependencies/kyverno.yaml
 argocd/namespaces/kyverno.yaml
 manifests/deploykf-dependencies/kyverno/
-{{<- end >}}
-{{<- if not .Values.deploykf_dependencies.sealed_secrets.enabled >}}
-argocd/deploykf-dependencies/sealed-secrets.yaml
-argocd/namespaces/sealed-secrets.yaml
-manifests/deploykf-dependencies/sealed-secrets/
 {{<- end >}}
 
 ## deployKF - deploykf-core
@@ -115,11 +102,7 @@ manifests/deploykf-opt/deploykf-mysql/
 {{<- end >}}
 
 ## deployKF - deploykf-tools
-{{<- if not .Values.deploykf_tools.kserve.enabled >}}
-argocd/deploykf-tools/kserve--kserve.yaml
-argocd/deploykf-tools/kserve--models-web-app.yaml
-manifests/deploykf-tools/kserve/
-{{<- end >}}
+## TODO: deploykf-tools
 
 ## deployKF - kubeflow-dependencies
 {{<- if not .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled >}}
