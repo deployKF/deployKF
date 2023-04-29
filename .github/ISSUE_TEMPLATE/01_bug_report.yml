@@ -1,0 +1,62 @@
+name: 🐜 Bug Report
+description: Tell us about something not working properly
+labels: [ "kind/bug", "priority/needs-triage" ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # Bug Report
+        
+        Thanks for helping make the deployKF project better!
+  - type: checkboxes
+    attributes:
+      label: Checks
+      options:
+        - label: I have searched the [existing issues](https://github.com/deployKF/deployKF).
+          required: true
+        - label: This issue is NOT specific to the CLI. (If so, please open an issue on the [CLI repo](https://github.com/deployKF/cli/issues))
+          required: true
+  - type: input
+    id: deploykf-version
+    attributes:
+      label: deployKF Version
+      placeholder: X.X.X
+    validations:
+      required: true
+  - type: textarea
+    id: kubernetes-version
+    attributes:
+      label: Kubernetes Version
+      description: Output of `kubectl version` command.
+      placeholder: |
+        Client Version: version.Info{Major:"X", Minor:"XX", GitVersion:"vX.X.X", ...}
+        Server Version: version.Info{Major:"X", Minor:"XX", GitVersion:"vX.X.X", ...}
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: The __context__ the problem occurred in, and an __overview__ of what went wrong.
+      placeholder: I was trying to... but then...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      description: Outputs of commands like `kubectl logs my-pod` or `kubectl describe pods my-pod`.
+      placeholder: |
+        * Include any relevant log outputs here *
+      render: shell
+  - type: textarea
+    id: custom-values
+    attributes:
+      label: deployKF Values (Optional)
+      description: Your custom deployKF values which might be related (in YAML format).
+      placeholder: |
+        my:
+          custom:
+            values: here
+      render: yaml

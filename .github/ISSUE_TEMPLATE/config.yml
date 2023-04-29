@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📓 Documentation Issue
+    url: https://github.com/deployKF/website/issues
+    about: Report an issue with the documentation
+  - name: 🤔 Questions & Answers (GitHub Discussions)
+    url: https://github.com/orgs/deployKF/discussions
+    about: Ask and answer questions using GitHub Discussions
+  - name: 🤔 Questions & Answers (Google Groups)
+    url: https://groups.google.com/g/deploykf-users
+    about: Ask and answer questions using Google Groups
+  - name: 🔒 Security Issues
+    url: https://github.com/deployKF/deployKF/security/policy
+    about: Responsibly disclose security issues
