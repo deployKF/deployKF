@@ -42,7 +42,6 @@ spec:
       tolerations: []
       serviceAccountName: minio
       securityContext: {}
-      ## TODO: replace the "wait" in the container start command with an init-container that actually checks resolvability
       initContainers: []
       containers:
         - name: minio
@@ -123,21 +122,32 @@ spec:
             - "/bin/bash"
             - "-c"
           args:
-            ## TODO: ensure that the "wait" is still required in newer istio
-            ##
             ## TODO: we must manually trust our self-signed CAs until an issue with minio console is fixed
             ##       https://github.com/minio/console/issues/2681
             - |
-              ## wait for "DNS Proxy" entries to propagate,
-              ## if Minio's initial OPENID check fails, it never tries again
-              echo "Waiting 10s for Istio DNS Proxy"
-              for run in {1..10}; do
-                echo ".";
-                sleep 1;
-              done
-
               echo "Updating CA Trust"
               update-ca-trust
+
+              ## if Minio can't GET the OPENID URL on start, it never tries again
+              ## so we must ensure the URL is reachable before starting Minio
+              echo "Checking OPENID Config URL: $MINIO_IDENTITY_OPENID_CONFIG_URL";
+              retries=5;
+              while [[ $retries -gt 0 ]]; do
+                curl -f -k -s -S "$MINIO_IDENTITY_OPENID_CONFIG_URL" >/dev/null
+                if [[ $? -eq 0 ]]; then
+                  echo "URL GET succeeded.";
+                  break
+                else
+                  retries=$((retries - 1))
+                  if [[ $retries -gt 0 ]]; then
+                    echo "URL GET failed. Retrying in 5 seconds... (attempts remaining: $retries)";
+                    sleep 5
+                  else
+                    echo "URL GET failed. No attempts remaining. Exiting...";
+                    exit 1
+                  fi
+                fi
+              done
 
               ## run minio
               exec /usr/bin/docker-entrypoint.sh \
