@@ -25,7 +25,7 @@ Kubeflow generates the `AuthorizationPolicy` and `RoleBinding` resource names fr
 user's email by replacing any special characters with '-' and casting to lower-case
 */}}
 {{- $resource_name := regexReplaceAll "[^0-9a-zA-Z]" $user.email "-" | lower }}
-{{- if $member.notebooks_access}}
+{{- if $member.notebooks_access }}
 ---
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
