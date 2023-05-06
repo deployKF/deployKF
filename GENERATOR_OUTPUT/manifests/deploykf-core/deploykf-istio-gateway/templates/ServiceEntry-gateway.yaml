@@ -22,9 +22,13 @@ spec:
       {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
   hosts:
     - {{ .Values.deployKF.gateway.hostname | quote }}
+    {{- if .Values.deployKF.argoWorkflows.enabled }}
     - "argo-server.{{ .Values.deployKF.gateway.hostname }}"
+    {{- end }}
+    {{- if .Values.deployKF.minio.enabled }}
     - "minio-api.{{ .Values.deployKF.gateway.hostname }}"
     - "minio-console.{{ .Values.deployKF.gateway.hostname }}"
+    {{- end }}
   location: MESH_INTERNAL
   ports:
     - name: http
