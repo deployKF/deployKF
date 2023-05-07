@@ -42,7 +42,6 @@ spec:
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
-            {{- if not (eq .Values.deployKF.kubeflow.useridHeader "x-auth-request-email") }}
             ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua"
             envoy.filters.http.lua:
               ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
@@ -50,7 +49,6 @@ spec:
 
               ## if true, disables the Lua filter on this HTTP_ROUTE
               disabled: true
-            {{- end }}
     {{- end }}
 
     ################################################################################
@@ -76,7 +74,6 @@ spec:
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
-            {{- if not (eq .Values.deployKF.kubeflow.useridHeader "x-auth-request-email") }}
             ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua"
             envoy.filters.http.lua:
               ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
@@ -84,7 +81,6 @@ spec:
 
               ## if true, disables the Lua filter on this HTTP_ROUTE
               disabled: true
-            {{- end }}
 
     ################################################################################
     ## PATCH - Disable ext_authz for `oauth2-proxy` route
@@ -109,7 +105,6 @@ spec:
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
-            {{- if not (eq .Values.deployKF.kubeflow.useridHeader "x-auth-request-email") }}
             ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua"
             envoy.filters.http.lua:
               ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
@@ -117,7 +112,6 @@ spec:
 
               ## if true, disables the Lua filter on this HTTP_ROUTE
               disabled: true
-            {{- end }}
 
     {{- if .Values.deployKF.argoWorkflows.enabled }}
     ################################################################################
@@ -143,7 +137,6 @@ spec:
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
-            {{- if not (eq .Values.deployKF.kubeflow.useridHeader "x-auth-request-email") }}
             ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua"
             envoy.filters.http.lua:
               ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
@@ -151,7 +144,6 @@ spec:
 
               ## if true, disables the Lua filter on this HTTP_ROUTE
               disabled: true
-            {{- end }}
     {{- end }}
 
     {{- if .Values.deployKF.minio.enabled }}
@@ -178,7 +170,6 @@ spec:
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
-            {{- if not (eq .Values.deployKF.kubeflow.useridHeader "x-auth-request-email") }}
             ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua"
             envoy.filters.http.lua:
               ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
@@ -186,7 +177,6 @@ spec:
 
               ## if true, disables the Lua filter on this HTTP_ROUTE
               disabled: true
-            {{- end }}
 
     ################################################################################
     ## PATCH - Disable ext_authz for `minio-console` route
@@ -211,7 +201,6 @@ spec:
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
-            {{- if not (eq .Values.deployKF.kubeflow.useridHeader "x-auth-request-email") }}
             ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua"
             envoy.filters.http.lua:
               ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
@@ -219,5 +208,4 @@ spec:
 
               ## if true, disables the Lua filter on this HTTP_ROUTE
               disabled: true
-            {{- end }}
     {{- end }}

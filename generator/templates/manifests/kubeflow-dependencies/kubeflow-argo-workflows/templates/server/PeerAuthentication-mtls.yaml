@@ -1,0 +1,24 @@
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: argo-server-mtls
+  labels:
+    helm.sh/chart: {{ include "kubeflow-argo-workflows.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: argo
+    app.kubernetes.io/sub-component: server
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: argo
+      app.kubernetes.io/sub-component: server
+  mtls:
+    ## while not strictly required in this case, as our AuthorizationPolicy matches a specific value of `principals`
+    ## it is good practice to enforce mtls on Pods which do not need plain text access
+    ## https://istio.io/latest/docs/concepts/security/#dependency-on-mutual-tls
+    mode: STRICT

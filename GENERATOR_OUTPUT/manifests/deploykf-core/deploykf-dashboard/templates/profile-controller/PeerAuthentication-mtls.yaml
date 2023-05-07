@@ -1,0 +1,22 @@
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: profile-controller-mtls
+  labels:
+    helm.sh/chart: {{ include "deploykf-dashboard.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: profile-controller
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: profile-controller
+  mtls:
+    ## while not strictly required in this case, as our AuthorizationPolicy matches no traffic
+    ## it is good practice to enforce mtls on Pods which do not need plain text access
+    ## https://istio.io/latest/docs/concepts/security/#dependency-on-mutual-tls
+    mode: STRICT

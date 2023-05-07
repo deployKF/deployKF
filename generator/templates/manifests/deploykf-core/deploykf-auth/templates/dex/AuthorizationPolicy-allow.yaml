@@ -27,12 +27,13 @@ spec:
             ports:
               - "5556"
 
-    ## allow requests to the JWKS endpoint
-    - to:
-        - operation:
-            ports:
-              - "5556"
-            methods:
-              - "GET"
-            paths:
-              - "/dex/keys"
+    ## TODO: we only need this if we use `EnvoyFilter/deploykf-auth--jwt-validate`
+    ## allow requests to the JWKS endpoint from anywhere
+    #- to:
+    #    - operation:
+    #        ports:
+    #          - "5556"
+    #        methods:
+    #          - "GET"
+    #        paths:
+    #          - "/dex/keys"

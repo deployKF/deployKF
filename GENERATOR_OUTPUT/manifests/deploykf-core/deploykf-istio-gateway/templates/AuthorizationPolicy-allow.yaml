@@ -16,7 +16,7 @@ spec:
     matchLabels:
       {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
   rules:
-    ## allow requests to HTTP and HTTPS ports (from inside the istio mesh)
+    ## allow requests to HTTP and HTTPS ports
     - to:
         - operation:
             ports:

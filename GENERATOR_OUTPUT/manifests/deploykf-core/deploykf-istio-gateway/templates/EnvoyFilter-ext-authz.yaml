@@ -87,13 +87,9 @@ spec:
                     - exact: set-cookie
                       ignore_case: true
 
-    {{- if not (eq .Values.deployKF.kubeflow.useridHeader "x-auth-request-email") }}
     ################################################################################
     ## FILTER 2 - Set USERID_HEADER from `x-auth-request-email`
     ################################################################################
-    ## TODO: describe why this currently has to be on the gateway (rather than extracting from the JWT "email" claim on the sidecar_inbound)
-    ##  - because the profile controller currently just creates an AuthorizationPolicy which checks your userid header is equal to the profile's owner's email
-    ##  - what do we need the profile controller to change to make this unnecessary??
     - applyTo: HTTP_FILTER
       match:
         context: GATEWAY
@@ -134,4 +130,3 @@ spec:
                 )
 
               end
-    {{- end }}
