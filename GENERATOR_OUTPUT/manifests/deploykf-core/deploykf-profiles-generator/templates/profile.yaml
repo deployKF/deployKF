@@ -1,5 +1,14 @@
 {{- range $profile_name, $profile := .Values.profiles }}
 {{- $profile_name := printf "%s%s" $.Values.profileDefaults.profileNamePrefix $profile_name }}
+
+{{- $profile_ownerEmail := $profile.ownerEmail | default $.Values.profileDefaults.ownerEmail }}
+{{- if not $profile_ownerEmail }}
+{{- fail (printf "failed to generate profile '%s', ownerEmail must be non-empty" $profile_name) }}
+{{- end }}
+
+{{- $profile_plugins := $profile.plugins | default $.Values.profileDefaults.plugins }}
+
+{{- $profile_resourceQuotaSpec := $profile.resourceQuotaSpec | default $.Values.profileDefaults.resourceQuotaSpec }}
 ---
 apiVersion: kubeflow.org/v1
 kind: Profile
@@ -13,13 +22,13 @@ metadata:
 spec:
   owner:
     kind: User
-    name: {{ $.Values.profileDefaults.ownerEmail | quote }}
-  {{- if $profile.resourceQuotaSpec }}
-  resourceQuotaSpec: {{ $profile.resourceQuotaSpec | toYaml | nindent 4 }}
+    name: {{ $profile_ownerEmail | quote }}
+  {{- if $profile_plugins }}
+  plugins: {{ $profile_plugins | toYaml | nindent 4 }}
+  {{- end }}
+  {{- if $profile_resourceQuotaSpec }}
+  resourceQuotaSpec: {{ $profile_resourceQuotaSpec | toYaml | nindent 4 }}
   {{- else }}
   resourceQuotaSpec: {}
-  {{- end }}
-  {{- if $profile.plugins }}
-  plugins: {{ $profile.plugins | toYaml | nindent 4 }}
   {{- end }}
 {{- end }}

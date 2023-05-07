@@ -15,9 +15,14 @@
 {{- fail (printf "invalid user '%s', missing required `email` key" $member.user) }}
 {{- end }}
 
-{{- $user_role := $member.role | default "view" }}
+{{- $user_role := $member.role | default $.Values.profileDefaults.memberAccess.role }}
 {{- if not (has $user_role (list "view" "edit")) }}
 {{- fail (printf "failed to generate profile '%s', member has invalid role '%s', must be one of 'view' or 'edit'" $profile_name $user_role) }}
+{{- end }}
+
+{{- $user_notebookAccess := $member.notebooksAccess | default $.Values.profileDefaults.memberAccess.notebooksAccess }}
+{{- if not (has $user_notebookAccess (list true false)) }}
+{{- fail (printf "failed to generate profile '%s', member has invalid notebookAccess '%s', must be true or false" $profile_name $user_notebookAccess) }}
 {{- end }}
 
 {{- /*
@@ -25,7 +30,8 @@ Kubeflow generates the `AuthorizationPolicy` and `RoleBinding` resource names fr
 user's email by replacing any special characters with '-' and casting to lower-case
 */}}
 {{- $resource_name := regexReplaceAll "[^0-9a-zA-Z]" $user.email "-" | lower }}
-{{- if $member.notebooks_access }}
+
+{{- if $user_notebookAccess }}
 ---
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
@@ -47,6 +53,10 @@ spec:
         - source:
             principals:
               - "{{ $.Values.deployKF.clusterDomain }}/ns/{{ $.Values.deployKF.gateway.namespace }}/sa/{{ $.Values.deployKF.gateway.serviceAccount }}"
+              {{- if $.Values.deployKF.kubeflow.pipelines.enabled }}
+              ## the `ml-pipeline-ui` pod will proxy some requests into the user's namespace, for example, to view logs on the object store
+              - "{{ $.Values.deployKF.clusterDomain }}/ns/{{ $.Values.deployKF.kubeflow.pipelines.pipelineUI.namespace }}/sa/{{ $.Values.deployKF.kubeflow.pipelines.pipelineUI.serviceAccount }}"
+              {{- end }}
       when:
         - key: request.headers[{{ $.Values.deployKF.kubeflow.useridHeader }}]
           values:
