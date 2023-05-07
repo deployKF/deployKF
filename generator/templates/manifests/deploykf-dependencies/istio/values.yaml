@@ -34,16 +34,27 @@ istio-discovery:
     trustDomain: cluster.local
     #enablePrometheusMerge: true
 
-    ## TODO: disable after development (prints all istio access logs to STDOUT)
+    ## TODO: disable after development (as it prints all istio access logs to STDOUT)
     accessLogFile: /dev/stdout
 
-    ## enable the istio "DNS Proxying" feature
-    ## (allows this Pods to reference the deploykf-istio-gateway using the DNS name from its ServiceEntry)
     defaultConfig:
       proxyMetadata:
+        ## these configs enable the istio "DNS Proxying" feature
+        ##
+        ## we use this feature to allow Pods in the mesh to access the deploykf-istio-gateway without the traffic
+        ## leaving the mesh, this is achieved by creating a ServiceEntry for the gateway with its public DNS name,
+        ## causing istio to intercept traffic to the gateway and route it directly to the gateway Pods
         ISTIO_META_DNS_CAPTURE: "true"
         ISTIO_META_DNS_AUTO_ALLOCATE: "true"
 
-      ## TODO: if this works, write a doc explaining that this is needed to prevent a race-condition
-      ##       where the DNS is not available from istio until a few seconds after the pods starts
+      ## this important config prevents race conditions between application containers and their injected sidecars
+      ##
+      ## that is, if an application starts before its sidecar, things might break:
+      ## - example 1: the application successfully connects to an external service (like a MySQL database),
+      ##   but once the sidecar begins intercepting all TCP traffic, the sidecar drops the connection or
+      ##   fails to translate the already open TCP socket, causing the application to misbehave
+      ## - example 2: the application attempts to access the gateway via a hostname which is not actually resolvable
+      ##   on the cluster's DNS, for example, when we use the istio "DNS Proxying" feature to expose the gateway within
+      ##   the mesh at deploykf.example.com, which we do not control on the public internet, so is unlikely
+      ##   to successfully resolve on the cluster's DNS
       holdApplicationUntilProxyStarts: true
