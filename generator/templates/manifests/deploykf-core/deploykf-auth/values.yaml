@@ -88,12 +88,29 @@ dex:
   ## TODO: replace `staticPasswords` with a list, allowing `existingSecret` as one of the keys
   staticPasswords:
     value:
-      ## default user (user: "admin@example.com", pass: "admin")
+      ## default admin (username: "admin@example.com", password: "admin")
       - email: "admin@example.com"
-        ## bcrypt hash of "admin": `echo "admin" | htpasswd -BinC 10 NULL | cut -d: -f2`
+        ## bcrypt hash of "admin":
+        ##  echo "admin" | htpasswd -BinC 10 NULL | cut -d: -f2
         hash: "$2y$10$uIPSv59XLpcS6iFGltZkOep/QuJv8z7Nry6n.LsRXb2Qt0Wsenzbu"
         username: "admin@example.com"
         userID: "00000000-0000-0000-0000-000000000000"
+
+      ## default user1 (username: "user1@example.com", password: "user1")
+      - email: "user1@example.com"
+        ## bcrypt hash of "user1":
+        ##  echo "user1" | htpasswd -BinC 10 NULL | cut -d: -f2
+        hash: "$2y$10$/eC.AP5m0ObnYKjmDbSEeeG8dXAb3BGZhwPJf6FRxWFV11dzaDu16"
+        username: "user1@example.com"
+        userID: "00000000-0000-0000-0000-000000000001"
+
+      ## default user2 (username: "user2@example.com", password: "user2")
+      - email: "user2@example.com"
+        ## bcrypt hash of "user2":
+        ##  echo "user2" | htpasswd -BinC 10 NULL | cut -d: -f2
+        hash: "$2y$10$1C.vyfnl3o09VDbeZvT6ueSLLaIvQsJ5IO1H2iAzR1JVcjdNroikO"
+        username: "user2@example.com"
+        userID: "00000000-0000-0000-0000-000000000002"
 
     existingSecret: ""
     existingSecretKey: "static_passwords"
