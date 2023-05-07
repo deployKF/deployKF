@@ -1,6 +1,3 @@
-################
-## This AuthorizationPolicy ensures that Pods in the mesh can access the deploykf-istio-gateway Pods.
-################
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -16,7 +13,7 @@ spec:
     matchLabels:
       {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
   rules:
-    ## allow requests to HTTP and HTTPS ports
+    ## allow requests from anywhere
     - to:
         - operation:
             ports:
