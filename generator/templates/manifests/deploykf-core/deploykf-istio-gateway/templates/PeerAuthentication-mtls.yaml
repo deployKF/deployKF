@@ -1,0 +1,16 @@
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: deploykf-istio-gateway-mtls
+  labels:
+    helm.sh/chart: {{ include "deploykf-istio-gateway.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-istio-gateway.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
+  mtls:
+    ## the gateway is accessed from both inside and outside the mesh
+    mode: PERMISSIVE
