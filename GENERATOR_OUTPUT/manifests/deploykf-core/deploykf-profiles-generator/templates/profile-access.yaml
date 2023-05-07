@@ -54,7 +54,8 @@ spec:
             principals:
               - "{{ $.Values.deployKF.clusterDomain }}/ns/{{ $.Values.deployKF.gateway.namespace }}/sa/{{ $.Values.deployKF.gateway.serviceAccount }}"
               {{- if $.Values.deployKF.kubeflow.pipelines.enabled }}
-              ## the `ml-pipeline-ui` pod will proxy some requests into the user's namespace, for example, to view logs on the object store
+              ## the `ml-pipeline-ui` pod will proxy some requests into the user's namespace,
+              ## for example, to view logs on the object store
               - "{{ $.Values.deployKF.clusterDomain }}/ns/{{ $.Values.deployKF.kubeflow.pipelines.pipelineUI.namespace }}/sa/{{ $.Values.deployKF.kubeflow.pipelines.pipelineUI.serviceAccount }}"
               {{- end }}
       when:
