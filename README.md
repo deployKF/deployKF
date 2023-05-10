@@ -1,6 +1,15 @@
 <h1 align="center">deployKF</h1>
+
 <div align="center">
   <b>Deploy the Machine Learning Toolkit for Kubernetes</b>
+</div>
+
+<br>
+
+<div align="center">
+  <a href="https://www.deploykf.org/" target="_blank" rel="noopener">
+    <img src="https://www.deploykf.org/assets/images/logo.svg" width="100">
+  </a>
 </div>
 
 <br>
