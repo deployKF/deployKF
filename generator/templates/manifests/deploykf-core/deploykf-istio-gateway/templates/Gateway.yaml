@@ -12,16 +12,14 @@ spec:
     {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 4 }}
   servers:
     - hosts:
-        ## "*" namespace is needed because VirtualServices for Notebooks live in the user's namespace
+        ## select VirtualServices in any namespace with the deployKF hostname
         - "*/{{ .Values.deployKF.gateway.hostname }}"
-        ## due to a bug in istio, and because the notebook-controller creates VirtualServices with "*" hosts,
-        ## our namespace selector for VirtualServices with subdomains can't be "*", instead we must
-        ## manually select each namespace that contains a VirtualServices with a subdomain
-        ## (see issue: https://github.com/istio/istio/issues/35826)
         {{- if .Values.deployKF.argoWorkflows.enabled }}
+        ## select VirtualService for Argo Workflows UI
         - "{{ .Values.deployKF.argoWorkflows.namespace }}/argo-server.{{ .Values.deployKF.gateway.hostname }}"
         {{- end }}
         {{- if .Values.deployKF.minio.enabled }}
+        ## select VirtualServices for Minio API and Console
         - "{{ .Values.deployKF.minio.namespace }}/minio-api.{{ .Values.deployKF.gateway.hostname }}"
         - "{{ .Values.deployKF.minio.namespace }}/minio-console.{{ .Values.deployKF.gateway.hostname }}"
         {{- end }}
