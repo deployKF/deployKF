@@ -31,6 +31,7 @@ resources:
   
   {{<- if .Values.deploykf_core.deploykf_dashboard.enabled >}}
   - deploykf-core/deploykf-dashboard.yaml
+  - namespaces/deploykf-dashboard.yaml
   {{<- end >}}
 
   {{<- if .Values.deploykf_core.deploykf_istio_gateway.enabled >}}

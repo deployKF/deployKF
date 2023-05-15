@@ -15,4 +15,4 @@ spec:
     path: "GENERATOR_OUTPUT/manifests/deploykf-core/deploykf-dashboard"
   destination:
     server: "https://kubernetes.default.svc"
-    namespace: kubeflow
+    namespace: "deploykf-dashboard"

@@ -19,6 +19,7 @@ resources:
   - deploykf-core/deploykf-auth.yaml
   - namespaces/deploykf-auth.yaml
   - deploykf-core/deploykf-dashboard.yaml
+  - namespaces/deploykf-dashboard.yaml
   - deploykf-core/deploykf-istio-gateway.yaml
   - namespaces/deploykf-istio-gateway.yaml
   - deploykf-core/deploykf-profiles-generator.yaml

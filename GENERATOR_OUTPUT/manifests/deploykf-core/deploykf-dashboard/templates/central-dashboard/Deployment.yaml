@@ -57,6 +57,10 @@ spec:
               value: {{ .Values.centralDashboard.registrationFlow | quote }}
             - name: DASHBOARD_CONFIGMAP
               value: "central-dashboard-config"
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
           ports:
             - name: http
               containerPort: 8082

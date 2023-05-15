@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: "deploykf-dashboard"
+  labels:
+    istio-injection: enabled
+    deploykf.github.io/inject-root-ca-cert: enabled

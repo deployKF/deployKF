@@ -2,7 +2,6 @@ deployKF:
   clusterDomain: cluster.local
 
   kubeflow:
-    namespace: kubeflow
     useridHeader: kubeflow-userid
 
   gateway:
@@ -18,7 +17,9 @@ deployKF:
 centralDashboard:
   image:
     repository: kubeflownotebookswg/centraldashboard
-    tag: v1.6.1
+    ## NOTE: this is an unreleased tag that includes the fix for non-kubeflow namespaces
+    ##       https://github.com/kubeflow/kubeflow/pull/7064
+    tag: c5df200
     pullPolicy: IfNotPresent
     pullSecret: ""
     uid: 0
