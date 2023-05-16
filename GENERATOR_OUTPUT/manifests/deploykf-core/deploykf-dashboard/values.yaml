@@ -16,10 +16,8 @@ deployKF:
 ########################################
 centralDashboard:
   image:
-    repository: kubeflownotebookswg/centraldashboard
-    ## NOTE: this is an unreleased tag that includes the fix for non-kubeflow namespaces
-    ##       https://github.com/kubeflow/kubeflow/pull/7064
-    tag: c5df200
+    repository: ghcr.io/deploykf/ci/dashboard
+    tag: sha-f7b4239
     pullPolicy: IfNotPresent
     pullSecret: ""
     uid: 0
@@ -111,11 +109,8 @@ centralDashboard:
     ## documentation links that appear in the home page
     ##
     documentationItems:
-      - text: Kubeflow Website
-        desc: Official Kubeflow website
-        link: https://www.kubeflow.org/
       - text: deployKF Website
-        desc: The tool that deployed your Kubeflow!
+        desc: The tool that deployed your ML platform!
         link: https://github.com/deployKF/deployKF
       - text: Kubeflow Pipelines Documentation
         desc: Documentation for Kubeflow Pipelines
