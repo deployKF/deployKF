@@ -1,0 +1,4 @@
+{{- range $manifest := .Values.deployKF.extraManifests }}
+---
+{{ (tpl $manifest $) | fromYaml | toYaml }}
+{{- end }}

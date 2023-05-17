@@ -2,10 +2,11 @@ apiVersion: v2
 name: deploykf-dependencies--cert-manager
 version: 1.0.0
 dependencies:
-  - name: cert-manager
-    version: 1.11.0
-    repository: https://charts.jetstack.io
-
-  - name: trust-manager
-    version: 0.4.0
-    repository: https://charts.jetstack.io
+  - alias: cert-manager
+    name: {{< .Values.deploykf_dependencies.cert_manager.charts.certManager.name | quote >}}
+    version: {{< .Values.deploykf_dependencies.cert_manager.charts.certManager.version | quote >}}
+    repository: {{< .Values.deploykf_dependencies.cert_manager.charts.certManager.repository | quote >}}
+  - alias: trust-manager
+    name: {{< .Values.deploykf_dependencies.cert_manager.charts.trustManager.name | quote >}}
+    version: {{< .Values.deploykf_dependencies.cert_manager.charts.trustManager.version | quote >}}
+    repository: {{< .Values.deploykf_dependencies.cert_manager.charts.trustManager.repository | quote >}}

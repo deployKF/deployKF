@@ -1,4 +1,8 @@
 deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.deploykf_dependencies.cert_manager.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
 
   certManager:
     clusterIssuer:
@@ -10,6 +14,7 @@ deployKF:
         caSecretName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.selfSigned.caSecretName | quote >}}
         injectedConfigMapName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
 
+
 ## as we reference the "cert-manager" chart (https://charts.jetstack.io) in `dependencies` of Chart.yaml,
 ## we must indent our values under `cert-manager:` in this file
 cert-manager:
@@ -20,22 +25,20 @@ cert-manager:
   replicaCount: 1
 
   image:
-    repository: quay.io/jetstack/cert-manager-controller
-    #tag: latest
+    repository: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerController.repository | quote >}}
+    {{<- if .Values.deploykf_dependencies.cert_manager.images.certManagerController.tag >}}
+    tag: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerController.tag | quote >}}
+    {{<- end >}}
+    pullPolicy: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerController.pullPolicy | quote >}}
 
-  securityContext:
-    # TODO: document using with AWS IRSA: https://cert-manager.io/docs/configuration/acme/dns01/route53/
-    fsGroup: 65534
+  securityContext: {{< .Values.deploykf_dependencies.cert_manager.controller.securityContext | toJSON >}}
 
   serviceAccount:
-    create: true
-    name: "cert-manager"
-    # TODO: document using with AWS IRSA: https://cert-manager.io/docs/configuration/acme/dns01/route53/
-    annotations: {}
+    create: {{< .Values.deploykf_dependencies.cert_manager.controller.serviceAccount.create | conv.ToBool >}}
+    name: {{< .Values.deploykf_dependencies.cert_manager.controller.serviceAccount.name | quote >}}
+    annotations: {{< .Values.deploykf_dependencies.cert_manager.controller.serviceAccount.annotations | toJSON >}}
 
-  extraArgs:
-    # When this flag is enabled, secrets will be automatically removed when the certificate resource is deleted
-    - --enable-certificate-owner-ref=true
+  extraArgs: {{< .Values.deploykf_dependencies.cert_manager.controller.extraArgs | toJSON >}}
 
   prometheus:
     enabled: false
@@ -43,26 +46,38 @@ cert-manager:
   webhook:
     replicaCount: 1
     image:
-      repository: quay.io/jetstack/cert-manager-webhook
-      #tag: latest
+      repository: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerWebhook.repository | quote >}}
+      {{<- if .Values.deploykf_dependencies.cert_manager.images.certManagerWebhook.tag >}}
+      tag: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerWebhook.tag | quote >}}
+      {{<- end >}}
+      pullPolicy: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerWebhook.pullPolicy | quote >}}
 
   cainjector:
     enabled: true
     replicaCount: 1
     image:
-      repository: quay.io/jetstack/cert-manager-cainjector
-      #tag: latest
+      repository: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerCainjector.repository | quote >}}
+      {{<- if .Values.deploykf_dependencies.cert_manager.images.certManagerCainjector.tag >}}
+      tag: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerCainjector.tag | quote >}}
+      {{<- end >}}
+      pullPolicy: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerCainjector.pullPolicy | quote >}}
 
   acmesolver:
     image:
-      repository: quay.io/jetstack/cert-manager-acmesolver
-      #tag: latest
+      repository: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerAcmesolver.repository | quote >}}
+      {{<- if .Values.deploykf_dependencies.cert_manager.images.certManagerAcmesolver.tag >}}
+      tag: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerAcmesolver.tag | quote >}}
+      {{<- end >}}
 
   startupapicheck:
     enabled: true
     image:
-      repository: quay.io/jetstack/cert-manager-ctl
-      #tag: latest
+      repository: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerCtl.repository | quote >}}
+      {{<- if .Values.deploykf_dependencies.cert_manager.images.certManagerCtl.tag >}}
+      tag: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerCtl.tag | quote >}}
+      {{<- end >}}
+      pullPolicy: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerCtl.pullPolicy | quote >}}
+
 
 ## as we reference the "trust-manager" chart (https://charts.jetstack.io) in `dependencies` of Chart.yaml,
 ## we must indent our values under `trust-manager:` in this file
@@ -70,12 +85,18 @@ trust-manager:
   replicaCount: 1
 
   image:
-    repository: quay.io/jetstack/trust-manager
-    #tag: latest
+    repository: {{< .Values.deploykf_dependencies.cert_manager.images.trustManager.repository | quote >}}
+    {{<- if .Values.deploykf_dependencies.cert_manager.images.trustManager.tag >}}
+    tag: {{< .Values.deploykf_dependencies.cert_manager.images.trustManager.tag | quote >}}
+    {{<- end >}}
+    pullPolicy: {{< .Values.deploykf_dependencies.cert_manager.images.trustManager.pullPolicy | quote >}}
 
   defaultPackageImage:
-    repository: quay.io/jetstack/cert-manager-package-debian
-    #tag: latest
+    repository: {{< .Values.deploykf_dependencies.cert_manager.images.trustManagerDefaultPackage.repository | quote >}}
+    {{<- if .Values.deploykf_dependencies.cert_manager.images.trustManagerDefaultPackage.tag >}}
+    tag: {{< .Values.deploykf_dependencies.cert_manager.images.trustManagerDefaultPackage.tag | quote >}}
+    {{<- end >}}
+    pullPolicy: {{< .Values.deploykf_dependencies.cert_manager.images.trustManagerDefaultPackage.pullPolicy | quote >}}
 
   app:
     trust:
