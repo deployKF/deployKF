@@ -2,11 +2,11 @@ apiVersion: v2
 name: deploykf-dependencies--istio
 version: 1.0.0
 dependencies:
-  - name: base
-    alias: istio-base
-    version: 1.14.6
-    repository: https://istio-release.storage.googleapis.com/charts
-  - name: istiod
-    alias: istio-discovery
-    version: 1.14.6
-    repository: https://istio-release.storage.googleapis.com/charts
+  - alias: istio-base
+    name: {{< .Values.deploykf_dependencies.istio.charts.istioBase.name | quote >}}
+    version: {{< .Values.deploykf_dependencies.istio.charts.istioBase.version | quote >}}
+    repository: {{< .Values.deploykf_dependencies.istio.charts.istioBase.repository | quote >}}
+  - alias: istio-daemon
+    name: {{< .Values.deploykf_dependencies.istio.charts.istioDaemon.name | quote >}}
+    version: {{< .Values.deploykf_dependencies.istio.charts.istioDaemon.version | quote >}}
+    repository: {{< .Values.deploykf_dependencies.istio.charts.istioDaemon.repository | quote >}}
