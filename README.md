@@ -71,11 +71,8 @@ Get started with deployKF by following these steps:
         1. `dkf-dep--kyverno`
         2. `dkf-dep--cert-manager`
             - _WARNING: first sync may fail as trust-manager depends on cert-manager, so once cert-manager pods are up, terminate the first hung sync (under "SYNC STATUS"), and sync again_
-        3. `dkf-dep--sealed-secrets`
-        4. `dkf-dep--istio`
+        3. `dkf-dep--istio`
             - _WARNING: first sync may fail, so wait and sync again_
-        5. `dkf-dep--knative--knative-eventing`
-        6. `dkf-dep--knative--knative-serving`
     4. __deploykf-core__ _(label: `app.kubernetes.io/component: deploykf-core`)_
         1. `dkf-core--deploykf-istio-gateway`
         2. `dkf-core--deploykf-auth`
@@ -86,8 +83,7 @@ Get started with deployKF by following these steps:
         1. `dkf-opt--deploykf-mysql`
         2. `dkf-opt--deploykf-minio`
     6. __deploykf-tools__ _(label: `app.kubernetes.io/component: deploykf-tools`)_
-        1. `dkf-tools--kserve--kserve`
-        2. `dkf-tools--kserve--models-web-app`
+        1. N/A
     7. __kubeflow-dependencies__ _(label: `app.kubernetes.io/component: kubeflow-dependencies`)_
         1. `kf-dep--argo-workflows`
     8. __kubeflow-tools__ _(label: `app.kubernetes.io/component: kubeflow-tools`)_
