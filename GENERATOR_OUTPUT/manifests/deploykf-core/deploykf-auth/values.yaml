@@ -5,6 +5,8 @@ deployKF_helpers:
     is_self_signed_cert: "true"
 
 deployKF:
+  extraManifests:
+
   clusterDomain: cluster.local
 
   kubeflow:
@@ -35,9 +37,9 @@ dex:
   ## configs for the dex container image
   ##
   image:
-    repository: ghcr.io/dexidp/dex
-    tag: v2.35.3
-    pullPolicy: IfNotPresent
+    repository: "ghcr.io/dexidp/dex"
+    tag: "v2.36.0"
+    pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 1001
     gid: 1001
@@ -47,6 +49,21 @@ dex:
   ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
   ##
   resources: {}
+
+  ## log level for the dex container
+  ##
+  logLevel: "info"
+
+  ## configs for token/key expiration
+  ##
+  expiry:
+    deviceRequests: "5m"
+    idTokens: "24h"
+    signingKeys: "6h"
+    refreshTokens:
+      reuseInterval: "3s"
+      validIfNotUsedFor: "72h"
+      absoluteLifetime: "720h"
 
   ## OpenID client configs for dex
   ##
@@ -85,42 +102,13 @@ dex:
         existingSecret: ""
         existingSecretKey: "client_secret"
 
-  ## TODO: replace `staticPasswords` with a list, allowing `existingSecret` as one of the keys
-  staticPasswords:
-    value:
-      ## default admin (username: "admin@example.com", password: "admin")
-      - email: "admin@example.com"
-        ## bcrypt hash of "admin":
-        ##  echo "admin" | htpasswd -BinC 10 NULL | cut -d: -f2
-        hash: "$2y$10$uIPSv59XLpcS6iFGltZkOep/QuJv8z7Nry6n.LsRXb2Qt0Wsenzbu"
-        username: "admin@example.com"
-        userID: "00000000-0000-0000-0000-000000000000"
+  ## TODO: add automatic restart when secret changes
+  ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+  staticPasswords: [{"email":"admin@example.com","password":{"value":"admin"}},{"email":"user1@example.com","password":{"value":"user1"}},{"email":"user2@example.com","password":{"value":"user2"}}]
 
-      ## default user1 (username: "user1@example.com", password: "user1")
-      - email: "user1@example.com"
-        ## bcrypt hash of "user1":
-        ##  echo "user1" | htpasswd -BinC 10 NULL | cut -d: -f2
-        hash: "$2y$10$/eC.AP5m0ObnYKjmDbSEeeG8dXAb3BGZhwPJf6FRxWFV11dzaDu16"
-        username: "user1@example.com"
-        userID: "00000000-0000-0000-0000-000000000001"
-
-      ## default user2 (username: "user2@example.com", password: "user2")
-      - email: "user2@example.com"
-        ## bcrypt hash of "user2":
-        ##  echo "user2" | htpasswd -BinC 10 NULL | cut -d: -f2
-        hash: "$2y$10$1C.vyfnl3o09VDbeZvT6ueSLLaIvQsJ5IO1H2iAzR1JVcjdNroikO"
-        username: "user2@example.com"
-        userID: "00000000-0000-0000-0000-000000000002"
-
-    existingSecret: ""
-    existingSecretKey: "static_passwords"
-
-  ## TODO: replace `connectors` with a list, allowing `existingSecret` as one of the keys
-  connectors:
-    value: []
-
-    existingSecret: ""
-    existingSecretKey: "connectors"
+  ## TODO: add automatic restart when secret changes
+  ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+  connectors: []
 
 
 ########################################
@@ -130,9 +118,9 @@ oauth2Proxy:
   ## configs for the oauth2-proxy container image
   ##
   image:
-    repository: quay.io/oauth2-proxy/oauth2-proxy
-    tag: v7.4.0
-    pullPolicy: IfNotPresent
+    repository: "quay.io/oauth2-proxy/oauth2-proxy"
+    tag: "v7.4.0"
+    pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 65532
     gid: 65532
