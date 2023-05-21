@@ -1,5 +1,5 @@
 apiVersion: v2
-name: deploykf-dependencies--kyverno
+name: deploykf-kyverno
 version: 1.0.0
 dependencies:
   - alias: kyverno
