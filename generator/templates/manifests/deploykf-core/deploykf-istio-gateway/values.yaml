@@ -1,4 +1,9 @@
 deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.deploykf_core.deploykf_istio_gateway.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
   clusterDomain: cluster.local
 
   kubeflow:
@@ -32,26 +37,31 @@ deployKF:
     enabled: {{< .Values.deploykf_opt.deploykf_minio.enabled >}}
     namespace: {{< .Values.deploykf_opt.deploykf_minio.namespace | quote >}}
 
+
 ## we reference the "gateway" chart (https://istio-release.storage.googleapis.com/charts) in `dependencies` of Chart.yaml
 ## we must indent our values under `gateway:` in this file
+gatewayEnabled: {{< .Values.deploykf_core.deploykf_istio_gateway.charts.istioGateway.enabled | conv.ToBool >}}
 gateway:
-  name: {{< .Values.deploykf_core.deploykf_istio_gateway.service.name | quote >}}
+  name: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.name | quote >}}
 
-  replicaCount: {{< .Values.deploykf_core.deploykf_istio_gateway.deployment.replicaCount >}}
+  replicaCount: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.replicaCount >}}
+  autoscaling:
+    enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.enabled >}}
+    minReplicas: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.minReplicas >}}
+    maxReplicas: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.maxReplicas >}}
+    targetCPUUtilizationPercentage: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.targetCPUUtilizationPercentage >}}
 
   serviceAccount:
-    name: {{< .Values.deploykf_core.deploykf_istio_gateway.serviceAccount.name | quote >}}
-    annotations: {{< .Values.deploykf_core.deploykf_istio_gateway.serviceAccount.annotations | toJSON >}}
+    name: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.name | quote >}}
+    annotations: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.annotations | toJSON >}}
 
   service:
-    annotations: {{< .Values.deploykf_core.deploykf_istio_gateway.service.annotations | toJSON >}}
-
-    type: LoadBalancer
-    loadBalancerIP: ""
-    loadBalancerSourceRanges: []
+    annotations: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.annotations | toJSON >}}
+    type: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.type | quote >}}
+    loadBalancerIP: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.loadBalancerIP | quote >}}
+    loadBalancerSourceRanges: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.loadBalancerSourceRanges | toJSON >}}
     externalTrafficPolicy: ""
     externalIPs: []
-
     ports:
       - name: status-port
         port: 15021
@@ -74,18 +84,7 @@ gateway:
       cpu: 2000m
       memory: 1024Mi
 
-  autoscaling:
-    enabled: true
-    minReplicas: 1
-    maxReplicas: 5
-    targetCPUUtilizationPercentage: 80
-
-  podAnnotations:
-    prometheus.io/port: "15020"
-    prometheus.io/scrape: "true"
-    prometheus.io/path: "/stats/prometheus"
-    inject.istio.io/templates: "gateway"
-    sidecar.istio.io/inject: "true"
+  podAnnotations: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.podAnnotations | toJSON >}}
 
   securityContext: ~
   containerSecurityContext: ~

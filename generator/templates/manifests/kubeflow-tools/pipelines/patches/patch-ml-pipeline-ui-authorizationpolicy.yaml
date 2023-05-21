@@ -9,7 +9,7 @@ spec:
     - from:
         - source:
             principals:
-              - "cluster.local/ns/{{< .Values.deploykf_core.deploykf_istio_gateway.namespace >}}/sa/{{< .Values.deploykf_core.deploykf_istio_gateway.serviceAccount.name >}}"
+              - "cluster.local/ns/{{< .Values.deploykf_core.deploykf_istio_gateway.namespace >}}/sa/{{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.name >}}"
       to:
         - operation:
             ports:

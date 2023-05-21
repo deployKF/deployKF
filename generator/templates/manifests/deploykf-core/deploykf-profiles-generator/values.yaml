@@ -12,7 +12,7 @@ deployKF:
 
   gateway:
     namespace: {{< .Values.deploykf_core.deploykf_istio_gateway.namespace | quote >}}
-    serviceAccount: {{< .Values.deploykf_core.deploykf_istio_gateway.serviceAccount.name | quote >}}
+    serviceAccount: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.name | quote >}}
 
 
 ## configs for generated profiles

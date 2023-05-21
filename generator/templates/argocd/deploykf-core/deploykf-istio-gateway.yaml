@@ -13,6 +13,10 @@ spec:
     repoURL: {{< .Values.argocd.source.repo.url | quote >}}
     targetRevision: {{< .Values.argocd.source.repo.revision | quote >}}
     path: {{< path.Join .Values.argocd.source.repo.path "manifests/deploykf-core/deploykf-istio-gateway" | quote >}}
+    helm:
+      ignoreMissingValueFiles: true
+      valueFiles:
+        - values-overrides.yaml
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: {{< .Values.deploykf_core.deploykf_istio_gateway.namespace | quote >}}
