@@ -53,7 +53,6 @@ spec:
               value: "/etc/oauth2-proxy/client_secret"
             {{- end }}
             {{- if .Values.oauth2Proxy.cookie.secret.existingSecret }}
-            ## TODO: make pod restart when secret value changes
             - name: OAUTH2_PROXY_COOKIE_SECRET
               valueFrom:
                 secretKeyRef:

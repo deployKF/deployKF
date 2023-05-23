@@ -64,7 +64,7 @@ dex:
     idTokens: {{< .Values.deploykf_core.deploykf_auth.dex.expiry.idToken | quote >}}
     signingKeys: "6h"
     refreshTokens:
-      reuseInterval: "3s"
+      reuseInterval: "30s"
       validIfNotUsedFor: {{< .Values.deploykf_core.deploykf_auth.dex.expiry.refreshToken.idle | quote >}}
       absoluteLifetime: {{< .Values.deploykf_core.deploykf_auth.dex.expiry.refreshToken.total | quote >}}
 
@@ -76,12 +76,13 @@ dex:
     ## - [WARNING] these configs must align with `oauth2Proxy.oidc.*`
     ##
     oauth2Proxy:
-      clientId: "oauth2-proxy"
+      clientId: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.oidc.clientID | quote >}}
       clientSecret:
-        value: "bbbbbbbbbbbbbbbb"
-        ## TODO: test with existing secret
-        existingSecret: ""
-        existingSecretKey: "client_secret"
+        value: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.oidc.clientSecret.value | quote >}}
+        ## TODO: add automatic restart when secret changes
+        ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_chang
+        existingSecret: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.oidc.clientSecret.existingSecret | quote >}}
+        existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.oidc.clientSecret.existingSecretKey | quote >}}
 
     ## OpenID client for minio-console
     ##
@@ -90,7 +91,6 @@ dex:
       clientId: "minio-console"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
-        ## TODO: test with existing secret
         existingSecret: ""
         existingSecretKey: "client_secret"
 
@@ -101,7 +101,6 @@ dex:
       clientId: "argo-server"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
-        ## TODO: test with existing secret
         existingSecret: ""
         existingSecretKey: "client_secret"
 
@@ -137,32 +136,24 @@ oauth2Proxy:
   ## OpenID configs for oauth2-proxy
   ##
   oidc:
-    clientId: "oauth2-proxy"
+    clientId: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.oidc.clientID | quote >}}
     clientSecret:
-      value: "bbbbbbbbbbbbbbbb"
-
-      ## TODO: test with existing secret
-      existingSecret: ""
-      existingSecretKey: "client_secret"
+      value: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.oidc.clientSecret.value | quote >}}
+      existingSecret: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.oidc.clientSecret.existingSecret | quote >}}
+      existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.oidc.clientSecret.existingSecretKey | quote >}}
 
   ## cookie configs for oauth2-proxy
   ##
   cookie:
-    ## sets oauth2-proxy config: `cookie_name`
-    ##
-    name: _kubeflow_token
-
-    ## sets oauth2-proxy config: `cookie_expire`
-    ##
-    expire: 12h
-
-    ## sets oauth2-proxy config: `cookie_refresh`
-    ##
-    refresh: 1h
-
-    ## sets oauth2-proxy config: `cookie_secret`
-    ##
+    name: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.name | quote >}}
+    expire: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.expire | quote >}}
+    refresh: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.refresh | quote >}}
+    csrf:
+      expire: "15m"
+      perRequest: true
     secret:
-      value: cccccccccccccccc
-      existingSecret: ""
-      existingSecretKey: "cookie_secret"
+      value: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.value | quote >}}
+      ## TODO: add automatic restart when secret changes
+      ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+      existingSecret: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.existingSecret | quote >}}
+      existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.existingSecretKey | quote >}}

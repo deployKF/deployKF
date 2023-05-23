@@ -58,12 +58,12 @@ dex:
   ##
   expiry:
     deviceRequests: "5m"
-    idTokens: "24h"
+    idTokens: "60m"
     signingKeys: "6h"
     refreshTokens:
-      reuseInterval: "3s"
-      validIfNotUsedFor: "72h"
-      absoluteLifetime: "720h"
+      reuseInterval: "30s"
+      validIfNotUsedFor: "168h"
+      absoluteLifetime: "2160h"
 
   ## OpenID client configs for dex
   ##
@@ -76,7 +76,8 @@ dex:
       clientId: "oauth2-proxy"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
-        ## TODO: test with existing secret
+        ## TODO: add automatic restart when secret changes
+        ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_chang
         existingSecret: ""
         existingSecretKey: "client_secret"
 
@@ -87,7 +88,6 @@ dex:
       clientId: "minio-console"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
-        ## TODO: test with existing secret
         existingSecret: ""
         existingSecretKey: "client_secret"
 
@@ -98,7 +98,6 @@ dex:
       clientId: "argo-server"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
-        ## TODO: test with existing secret
         existingSecret: ""
         existingSecretKey: "client_secret"
 
@@ -137,29 +136,21 @@ oauth2Proxy:
     clientId: "oauth2-proxy"
     clientSecret:
       value: "bbbbbbbbbbbbbbbb"
-
-      ## TODO: test with existing secret
       existingSecret: ""
       existingSecretKey: "client_secret"
 
   ## cookie configs for oauth2-proxy
   ##
   cookie:
-    ## sets oauth2-proxy config: `cookie_name`
-    ##
-    name: _kubeflow_token
-
-    ## sets oauth2-proxy config: `cookie_expire`
-    ##
-    expire: 12h
-
-    ## sets oauth2-proxy config: `cookie_refresh`
-    ##
-    refresh: 1h
-
-    ## sets oauth2-proxy config: `cookie_secret`
-    ##
+    name: "_deploykf_token"
+    expire: "168h"
+    refresh: "60m"
+    csrf:
+      expire: "15m"
+      perRequest: true
     secret:
-      value: cccccccccccccccc
+      value: "cccccccccccccccc"
+      ## TODO: add automatic restart when secret changes
+      ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
       existingSecret: ""
       existingSecretKey: "cookie_secret"
