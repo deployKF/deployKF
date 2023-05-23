@@ -15,6 +15,10 @@ rm -rf "$GENERATOR_OUTPUT_PATH"
 # suppress the generation of empty files
 export GOMPLATE_SUPPRESS_EMPTY=true
 
+# populate the runtime templates
+echo -n "$GENERATOR_SOURCE_PATH/templates" > "$GENERATOR_SOURCE_PATH/runtime/input_dir"
+echo -n "$GENERATOR_OUTPUT_PATH" > "$GENERATOR_SOURCE_PATH/runtime/output_dir"
+
 # PHASE 1: render our `.gomplateignore_template` files
 gomplate \
   --input-dir="$GENERATOR_SOURCE_PATH/templates" \
@@ -25,7 +29,8 @@ gomplate \
   --datasource "Values_default=$GENERATOR_SOURCE_PATH/default_values.yaml" \
   --datasource "Values_custom=$CUSTOM_VALUES_PATH" \
   --context "Values=merge:Values_custom|Values_default" \
-  --template "$GENERATOR_SOURCE_PATH/helpers/"
+  --template "helpers=$GENERATOR_SOURCE_PATH/helpers/" \
+  --template "runtime=$GENERATOR_SOURCE_PATH/runtime/"
 
 # PHASE 2: populate generator output directory
 gomplate \
@@ -36,4 +41,5 @@ gomplate \
   --datasource "Values_default=$GENERATOR_SOURCE_PATH/default_values.yaml" \
   --datasource "Values_custom=$CUSTOM_VALUES_PATH" \
   --context "Values=merge:Values_custom|Values_default" \
-  --template "$GENERATOR_SOURCE_PATH/helpers/"
+  --template "helpers=$GENERATOR_SOURCE_PATH/helpers/" \
+  --template "runtime=$GENERATOR_SOURCE_PATH/runtime/"
