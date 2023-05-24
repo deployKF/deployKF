@@ -1,4 +1,6 @@
 deployKF:
+  extraManifests:
+
   clusterDomain: cluster.local
 
   kubeflow:
@@ -16,9 +18,9 @@ deployKF:
 ########################################
 centralDashboard:
   image:
-    repository: ghcr.io/deploykf/ci/dashboard
-    tag: sha-f7b4239
-    pullPolicy: IfNotPresent
+    repository: "ghcr.io/deploykf/ci/dashboard"
+    tag: "sha-f7b4239"
+    pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 0
     gid: 0
@@ -39,7 +41,6 @@ centralDashboard:
 
     ## menu links that appear in the sidebar
     ##
-    ## TODO: add gomplates values to let users bring their own links
     menuLinks:
       - type: item
         text: Notebooks
@@ -131,9 +132,9 @@ centralDashboard:
 ########################################
 profileController:
   image:
-    repository: kubeflownotebookswg/profile-controller
-    tag: v1.6.1
-    pullPolicy: IfNotPresent
+    repository: "kubeflownotebookswg/profile-controller"
+    tag: "v1.7.0"
+    pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 0
     gid: 0
@@ -163,10 +164,10 @@ profileController:
   ##    4. Apply new ConfigMap
   ##
   namespaceLabels:
-    katib.kubeflow.org/metrics-collector-injection: "enabled"
-    serving.kubeflow.org/inferenceservice: "enabled"
-    pipelines.kubeflow.org/enabled: "true"
     app.kubernetes.io/part-of: "kubeflow-profile"
+    katib.kubeflow.org/metrics-collector-injection: "enabled"
+    pipelines.kubeflow.org/enabled: "true"
+    serving.kubeflow.org/inferenceservice: "enabled"
 
 
 ########################################
@@ -174,9 +175,9 @@ profileController:
 ########################################
 kfamAPI:
   image:
-    repository: kubeflownotebookswg/kfam
-    tag: v1.6.1
-    pullPolicy: IfNotPresent
+    repository: "kubeflownotebookswg/kfam"
+    tag: "v1.7.0"
+    pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 0
     gid: 0

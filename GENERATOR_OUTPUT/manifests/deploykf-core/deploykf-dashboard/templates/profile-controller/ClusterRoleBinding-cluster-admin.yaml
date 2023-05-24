@@ -13,7 +13,7 @@ roleRef:
   kind: ClusterRole
   ## The profile-controller creates Namespaces and RoleBindings that give permissions in various user namespaces.
   ## Thus, profile-controller is using the highly privileged `cluster-admin` ClusterRole.
-  ## TODO: we can use a more precise role than cluster-admin
+  ## TODO: stop binding to cluster-admin, and instead bind to a role that only has the permissions needed
   name: cluster-admin
 subjects:
   - kind: ServiceAccount

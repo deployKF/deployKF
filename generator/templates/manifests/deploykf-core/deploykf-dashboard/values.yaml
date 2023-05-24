@@ -1,4 +1,9 @@
 deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.deploykf_core.deploykf_dashboard.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
   clusterDomain: cluster.local
 
   kubeflow:
@@ -16,9 +21,9 @@ deployKF:
 ########################################
 centralDashboard:
   image:
-    repository: ghcr.io/deploykf/ci/dashboard
-    tag: sha-f7b4239
-    pullPolicy: IfNotPresent
+    repository: {{< .Values.deploykf_core.deploykf_dashboard.images.dashboard.repository | quote >}}
+    tag: {{< .Values.deploykf_core.deploykf_dashboard.images.dashboard.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_core.deploykf_dashboard.images.dashboard.pullPolicy | quote >}}
     pullSecret: ""
     uid: 0
     gid: 0
@@ -39,7 +44,6 @@ centralDashboard:
 
     ## menu links that appear in the sidebar
     ##
-    ## TODO: add gomplates values to let users bring their own links
     menuLinks:
       {{<- if .Values.kubeflow_tools.notebooks.enabled >}}
       - type: item
@@ -117,6 +121,13 @@ centralDashboard:
         link: "http://minio-console.{{< tmpl.Exec "deploykf_gateway.http_endpoint" . >}}"
         {{<- end >}}
       {{<- end >}}
+      {{<- range $externalLink := .Values.deploykf_core.deploykf_dashboard.navigation.externalLinks >}}
+      - type: item
+        iframe: false
+        text: {{< $externalLink.text | quote >}}
+        icon: {{< $externalLink.icon | quote >}}
+        link: {{< $externalLink.url | quote >}}
+      {{<- end >}}
 
     ## quick action links that appear in the home page
     ##
@@ -165,9 +176,9 @@ centralDashboard:
 ########################################
 profileController:
   image:
-    repository: kubeflownotebookswg/profile-controller
-    tag: v1.6.1
-    pullPolicy: IfNotPresent
+    repository: {{< .Values.deploykf_core.deploykf_dashboard.images.profileController.repository | quote >}}
+    tag: {{< .Values.deploykf_core.deploykf_dashboard.images.profileController.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_core.deploykf_dashboard.images.profileController.pullPolicy | quote >}}
     pullSecret: ""
     uid: 0
     gid: 0
@@ -197,10 +208,10 @@ profileController:
   ##    4. Apply new ConfigMap
   ##
   namespaceLabels:
-    katib.kubeflow.org/metrics-collector-injection: "enabled"
-    serving.kubeflow.org/inferenceservice: "enabled"
-    pipelines.kubeflow.org/enabled: "true"
     app.kubernetes.io/part-of: "kubeflow-profile"
+    katib.kubeflow.org/metrics-collector-injection: "enabled"
+    pipelines.kubeflow.org/enabled: "true"
+    serving.kubeflow.org/inferenceservice: "enabled"
 
 
 ########################################
@@ -208,9 +219,9 @@ profileController:
 ########################################
 kfamAPI:
   image:
-    repository: kubeflownotebookswg/kfam
-    tag: v1.6.1
-    pullPolicy: IfNotPresent
+    repository: {{< .Values.deploykf_core.deploykf_dashboard.images.kfamApi.repository | quote >}}
+    tag: {{< .Values.deploykf_core.deploykf_dashboard.images.kfamApi.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_core.deploykf_dashboard.images.kfamApi.pullPolicy | quote >}}
     pullSecret: ""
     uid: 0
     gid: 0
