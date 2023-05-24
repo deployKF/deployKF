@@ -1,4 +1,9 @@
 deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.deploykf_core.deploykf_profiles_generator.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
   clusterDomain: cluster.local
 
   kubeflow:
@@ -20,102 +25,52 @@ deployKF:
 profileDefaults:
 
   ## a common prefix to add to all profile names
-  ##  - NOTE: the profile name is also used as the namespace name
   ##
-  profileNamePrefix: ""
+  profileNamePrefix: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.profileNamePrefix | quote >}}
 
   ## the default email to set as the OWNER of profiles
   ##
-  ownerEmail: admin@example.com
+  ownerEmail: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.ownerEmail | quote >}}
 
-  ## the default access given to members, if not specified
+  ## the default access for members of profiles
   ##
   memberAccess:
 
-    ## the RBAC role to bind to the user
+    ## the default RBAC role to bind to members
     ##  - "edit" -> `ClusterRole/kubeflow-edit` -> can view/create/delete resources
     ##  - "view" -> `ClusterRole/kubeflow-view` -> can only view resources
     ##
-    role: view
+    role: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.memberAccess.role | quote >}}
 
-    ## if the user can connect to notebooks in the profile
-    notebooksAccess: false
+    ## if the user can ~connect~ to notebooks in the profile
+    notebooksAccess: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.memberAccess.notebooksAccess | conv.ToBool >}}
 
-  ## the default plugins for all profiles, if none are specified
+  ## the default plugins for profiles
+  ##  - available plugin "kinds":
+  ##     - "AwsIamForServiceAccount":
+  ##        https://github.com/kubeflow/kubeflow/blob/v1.7.0/components/profile-controller/controllers/plugin_iam.go#L30
+  ##     - "WorkloadIdentity":
+  ##        https://github.com/kubeflow/kubeflow/blob/v1.7.0/components/profile-controller/controllers/plugin_workload_identity.go#L39
   ##
-  ## ____ EXAMPLE _______________
-  ##  plugins:
-  ##    ## EKS IRSA plugin
-  ##    ##  https://github.com/kubeflow/kubeflow/blob/v1.6.1/components/profile-controller/controllers/plugin_iam.go#L30
-  ##    - kind: AwsIamForServiceAccount
-  ##      spec:
-  ##        awsIamRole: arn:aws:iam::000000000000:role/MY_ROLE_NAME
-  ##    ## GKE WorkloadIdentity plugin
-  ##    ##  https://github.com/kubeflow/kubeflow/blob/v1.6.1/components/profile-controller/controllers/plugin_workload_identity.go#L39
-  ##    - kind: WorkloadIdentity
-  ##      spec:
-  ##        gcpServiceAccount: SA_NAME@PROJECT_ID.iam.gserviceaccount.com
-  ##
-  plugins: {}
+  plugins: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.plugins | toJSON >}}
 
   ## the resource quota for this profile
-  ## - spec for ResourceQuotaSpec:
-  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#resourcequotaspec-v1-core
+  ##  - spec for ResourceQuotaSpec:
+  ##    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#resourcequotaspec-v1-core
   ##
-  resourceQuotaSpec: {}
+  resourceQuotaSpec: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.resourceQuotaSpec | toJSON >}}
 
 
-## user details
+## user entities
 ##
 users:
-  user-1:
-    email: user1@example.com
-  user-2:
-    email: user2@example.com
+  {{<- range $user := .Values.deploykf_core.deploykf_profiles_generator.users >}}
+  {{< $user.id | quote >}}: {{< $user | coll.Omit "id" | toJSON >}}
+  {{<- end >}}
 
-
-## profiles to create
+## profile definitions
 ##
 profiles:
-
-  ## EXAMPLE: a profile called "team-1"
-  ##
-  team-1:
-    ## override the `profileDefaults.ownerEmail` for this specific profile
-    ##
-    #ownerEmail: admin@example.com
-
-    ## the list of members and their access to this profile
-    ##  - `user`: the name of the user, from the `users` section
-    ##  - `role`: the RBAC role to bind to the user ("edit" or "view")
-    ##  - `notebooksAccess`: if the user can connect to notebooks in the profile
-    ##
-    members:
-      - user: user-1
-        role: edit
-        notebooksAccess: true
-      - user: user-2
-        role: edit
-        notebooksAccess: true
-
-    ## the list of plugins to apply to this profile
-    ##
-    plugins: []
-
-    ## the resource quota for this profile
-    ##
-    resourceQuotaSpec: {}
-
-  ## EXAMPLE: a profile called "team-1-prod"
-  ##
-  team-1-prod:
-
-    ## the list of members and their access to this profile
-    ##
-    members:
-      - user: user-1
-        role: view
-        notebooksAccess: false
-      - user: user-2
-        role: view
-        notebooksAccess: false
+  {{<- range $profile := .Values.deploykf_core.deploykf_profiles_generator.profiles >}}
+  {{< $profile.name | quote >}}: {{< $profile | coll.Omit "name" | toJSON >}}
+  {{<- end >}}
