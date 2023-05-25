@@ -12,10 +12,6 @@ deployKF:
 
   clusterDomain: cluster.local
 
-  kubeflow:
-    namespace: kubeflow
-    useridHeader: kubeflow-userid
-
   certManager:
     clusterIssuer:
       selfSigned:
