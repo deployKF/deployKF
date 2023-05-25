@@ -5,6 +5,9 @@
 {{- if not $profile_ownerEmail }}
 {{- fail (printf "failed to generate profile '%s', ownerEmail must be non-empty" $profile_name) }}
 {{- end }}
+{{- if $.Values.deployKF.gateway.emailToLowercase }}
+{{- $profile_ownerEmail = $profile_ownerEmail | lower }}
+{{- end }}
 
 {{- $profile_plugins := $profile.plugins | default $.Values.profileDefaults.plugins }}
 

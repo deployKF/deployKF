@@ -29,6 +29,7 @@ deployKF:
       enabled: true
     enableProxyProtocol: false
     xffNumTrustedHops: 1
+    emailToLowercase: false
 
   minio:
     enabled: true

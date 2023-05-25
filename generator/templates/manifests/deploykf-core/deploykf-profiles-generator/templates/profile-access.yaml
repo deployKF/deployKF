@@ -14,6 +14,9 @@
 {{- if not $user.email }}
 {{- fail (printf "invalid user '%s', missing required `email` key" $member.user) }}
 {{- end }}
+{{- if $.Values.deployKF.gateway.emailToLowercase }}
+{{- $_ := set $user "email" ($user.email | lower) }}
+{{- end }}
 
 {{- $user_role := $member.role | default $.Values.profileDefaults.memberAccess.role }}
 {{- if not (has $user_role (list "view" "edit")) }}

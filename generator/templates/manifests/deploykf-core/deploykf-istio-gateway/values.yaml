@@ -32,6 +32,7 @@ deployKF:
       enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled >}}
     enableProxyProtocol: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.enableProxyProtocol >}}
     xffNumTrustedHops: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.xffNumTrustedHops >}}
+    emailToLowercase: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.emailToLowercase | conv.ToBool >}}
 
   minio:
     enabled: {{< .Values.deploykf_opt.deploykf_minio.enabled >}}

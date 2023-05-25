@@ -18,6 +18,7 @@ deployKF:
   gateway:
     namespace: {{< .Values.deploykf_core.deploykf_istio_gateway.namespace | quote >}}
     serviceAccount: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.name | quote >}}
+    emailToLowercase: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.emailToLowercase | conv.ToBool >}}
 
 
 ## configs for generated profiles

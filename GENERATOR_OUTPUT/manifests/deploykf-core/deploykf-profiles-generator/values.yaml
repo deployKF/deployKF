@@ -15,6 +15,7 @@ deployKF:
   gateway:
     namespace: "deploykf-istio-gateway"
     serviceAccount: "deploykf-gateway"
+    emailToLowercase: false
 
 
 ## configs for generated profiles

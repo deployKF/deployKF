@@ -123,6 +123,12 @@ spec:
                   )
                 end
 
+                {{- if .Values.deployKF.gateway.emailToLowercase }}
+                {{- "\n" }}
+                -- cast the value of 'x-auth-request-email' to lowercase
+                x_auth_request_email = string.lower(x_auth_request_email)
+                {{- end }}
+
                 -- set Kubeflow USERID_HEADER from 'x-auth-request-email'
                 request_handle:headers():replace(
                   "{{ .Values.deployKF.kubeflow.useridHeader }}",
