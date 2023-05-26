@@ -59,7 +59,7 @@ spec:
 
               ## create or update the defined access policies
               {{- range $policy := .Values.minio.policies }}
-              mc admin policy add "myminio" {{ $policy.name | quote }} {{ printf "/minio-policies/%s.json" $policy.name | quote }};
+              mc admin policy create "myminio" {{ $policy.name | squote }} {{ printf "/minio-policies/%s.json" $policy.name | squote }};
               {{- end }}
 
               ## we were successful, send quit command to istio-proxy sidecar

@@ -59,11 +59,11 @@ spec:
 
               ## create the specified buckets
               {{- range $bucket := .Values.minio.buckets }}
-              mc mb --ignore-existing {{ (printf "myminio/%s" $bucket.name) | quote }};
+              mc mb --ignore-existing {{ (printf "myminio/%s" $bucket.name) | squote }};
               {{- if $bucket.versioning }}
-              mc version enable {{ (printf "myminio/%s" $bucket.name) | quote }};
+              mc version enable {{ (printf "myminio/%s" $bucket.name) | squote }};
               {{- else }}
-              mc version suspend {{ (printf "myminio/%s" $bucket.name) | quote }};
+              mc version suspend {{ (printf "myminio/%s" $bucket.name) | squote }};
               {{- end }}
               {{- end }}
 
