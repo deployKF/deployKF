@@ -20,3 +20,10 @@ spec:
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: {{< .Values.deploykf_dependencies.istio.namespace | quote >}}
+  ignoreDifferences:
+    ## istio patches the `failurePolicy` from "Ignore" to "Fail" once the webhook is up
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      name: istiod-default-validator
+      jqPathExpressions:
+        - ".webhooks[].failurePolicy"
