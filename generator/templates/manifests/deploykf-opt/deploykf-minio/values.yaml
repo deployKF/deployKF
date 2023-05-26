@@ -5,6 +5,11 @@ deployKF_helpers:
     is_self_signed_cert: {{< (tmpl.Exec "deploykf_gateway.is_self_signed_cert" .) | quote >}}
 
 deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.deploykf_opt.deploykf_minio.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
   clusterDomain: cluster.local
 
   certManager:
@@ -31,9 +36,9 @@ minio:
   ## configs for the minio container image
   ##
   image:
-    repository: minio/minio
-    tag: RELEASE.2023-02-17T17-52-43Z
-    pullPolicy: IfNotPresent
+    repository: {{< .Values.deploykf_opt.deploykf_minio.images.minio.repository | quote >}}
+    tag: {{< .Values.deploykf_opt.deploykf_minio.images.minio.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_opt.deploykf_minio.images.minio.pullPolicy | quote >}}
     pullSecret: ""
     uid: 1000
     gid: 1000
@@ -41,9 +46,9 @@ minio:
   ## configs for the mc container image
   ##
   mcImage:
-    repository: minio/mc
-    tag: RELEASE.2023-02-16T19-20-11Z
-    pullPolicy: IfNotPresent
+    repository: {{< .Values.deploykf_opt.deploykf_minio.images.minioMc.repository | quote >}}
+    tag: {{< .Values.deploykf_opt.deploykf_minio.images.minioMc.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_opt.deploykf_minio.images.minioMc.pullPolicy | quote >}}
     pullSecret: ""
     uid: 1000
     gid: 1000
@@ -57,38 +62,40 @@ minio:
   ## persistence configs for minio
   ##
   persistence:
-    enabled: true
+    enabled: {{< .Values.deploykf_opt.deploykf_minio.persistence.enabled | conv.ToBool >}}
 
     ## the name of an existing PersistentVolumeClaim to use
     ## - if non-emtpy, you must manually create a PVC with this name
     ##
-    existingClaim: ""
+    existingClaim: {{< .Values.deploykf_opt.deploykf_minio.persistence.existingClaim | quote >}}
 
     ## the sub-path within the PersistentVolume to mount, instead of the root
     ##
-    subPath: ""
+    subPath: {{< .Values.deploykf_opt.deploykf_minio.persistence.subPath | quote >}}
 
     ## the name of the StorageClass requested by the PersistentVolumeClaim
     ## - if set to "", then `PersistentVolumeClaim/spec.storageClassName` is omitted
     ## - if set to "-", then `PersistentVolumeClaim/spec.storageClassName` is set to ""
     ##
-    storageClass: ""
+    storageClass: {{< .Values.deploykf_opt.deploykf_minio.persistence.storageClass | quote >}}
 
     ## the access mode of the PersistentVolumeClaim
     ##
-    accessMode: ReadWriteOnce
+    accessMode: {{< .Values.deploykf_opt.deploykf_minio.persistence.accessMode | quote >}}
 
     ## the initial size for the PersistentVolumeClaim to request
-    ## - kubernetes allows the PVC to grow in size as needed, starting from this value
-    ##   (if your StorageClass has `allowVolumeExpansion=true`)
+    ## - if your StorageClass has `allowVolumeExpansion=true`, kubernetes allows the
+    ##   PVC to grow in size as needed, starting from this value
     ##
-    size: 5Gi
+    size: {{< .Values.deploykf_opt.deploykf_minio.persistence.size | quote >}}
 
   ## root user configs for minio
   ##
   rootUser:
     username: {{< .Values.deploykf_opt.deploykf_minio.rootUser.username | quote >}}
     password: {{< .Values.deploykf_opt.deploykf_minio.rootUser.password | quote >}}
+    ## TODO: add automatic restart when secret changes
+    ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
     existingSecret: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecret | quote >}}
     existingSecretUsernameKey: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretUsernameKey | quote >}}
     existingSecretPasswordKey: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretPasswordKey | quote >}}
@@ -96,47 +103,31 @@ minio:
   ## identity configs for minio
   ##
   identity:
+
     ## OpenID configs for minio
     ##
     openid:
-      ## TODO: explain how this can be set to "groups" when using LDAP/OAUTH as your dex connector
-      policyClaim: "aud"
-
-      clientId: "minio-console"
-      ## TODO: we can remove the need to set these here by moving them into the auth chart, and replicating secrets
+      policyClaim: {{< .Values.deploykf_opt.deploykf_minio.identity.openid.policyClaim | quote >}}
+      scopes: {{< .Values.deploykf_opt.deploykf_minio.identity.openid.scopes | quote >}}
+      clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientId | quote >}}
       clientSecret:
-        ## TODO: we currently use hard-coded `value` environment variables in the deployment, use secret
-        value: "bbbbbbbbbbbbbbbb"
-        existingSecret: ""
-        existingSecretKey: "client_secret"
+        value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.value | quote >}}
+        existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecret | quote >}}
+        existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecretKey | quote >}}
 
-  ## minio access policies to create with a post-install job
+  ## minio buckets
+  ##  - these buckets are created and/or updated by a post-install job
   ##
-  policies:
-    ## TODO: consider if we can use policy conditions to assign access based on email (all users are assigned `minio-console`)
-    ##       https://min.io/docs/minio/linux/administration/identity-access-management/policy-based-access-control.html#supported-s3-policy-condition-keys
-    - name: minio-console
-      policy:
-        version: "2012-10-17"
-        statement:
-          - effect: Allow
-            action:
-              - "admin:*"
-          - effect: Allow
-            action:
-              - "kms:*"
-          - effect: Allow
-            action:
-              - "s3:*"
-            resource:
-              - "arn:aws:s3:::*"
+  {{<- $buckets := .Values.deploykf_opt.deploykf_minio.buckets | default coll.Slice >}}
+  {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
+  {{<- $buckets = $buckets | append (dict "name" .Values.kubeflow_tools.pipelines.bucket.name "versioning" false) >}}
+  {{<- end >}}
+  buckets: {{< $buckets | toJSON >}}
 
-  ## minio buckets to create with a post-install job
+  ## minio access policies
+  ##  - these policies are created and/or updated by a post-install job
   ##
-  buckets:
-    ## TODO: should we be taking the bucket name from kubeflow-pipelines value, or forcing user to align them?
-    - name: {{< .Values.kubeflow_tools.pipelines.bucket.name | quote >}}
-      versioning: false
+  policies: {{< .Values.deploykf_opt.deploykf_minio.policies | toJSON >}}
 
-  ## TODO: consider adding programmatic creation of access keys
+  ## TODO: consider supporting programmatic creation of access keys
   #accessKeys: []

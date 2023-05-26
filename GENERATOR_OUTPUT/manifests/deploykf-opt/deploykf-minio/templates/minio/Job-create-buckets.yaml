@@ -32,7 +32,6 @@ spec:
       tolerations: []
       serviceAccountName: minio
       securityContext: {}
-      ## TODO: replace the "wait" in the container start command with an init-container that actually checks resolvability
       initContainers: []
       containers:
         - name: create-buckets

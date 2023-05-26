@@ -5,6 +5,8 @@ deployKF_helpers:
     is_self_signed_cert: "true"
 
 deployKF:
+  extraManifests:
+
   clusterDomain: cluster.local
 
   certManager:
@@ -31,9 +33,9 @@ minio:
   ## configs for the minio container image
   ##
   image:
-    repository: minio/minio
-    tag: RELEASE.2023-02-17T17-52-43Z
-    pullPolicy: IfNotPresent
+    repository: "docker.io/minio/minio"
+    tag: "RELEASE.2023-05-18T00-05-36Z"
+    pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 1000
     gid: 1000
@@ -41,9 +43,9 @@ minio:
   ## configs for the mc container image
   ##
   mcImage:
-    repository: minio/mc
-    tag: RELEASE.2023-02-16T19-20-11Z
-    pullPolicy: IfNotPresent
+    repository: "docker.io/minio/mc"
+    tag: "RELEASE.2023-05-18T16-59-00Z"
+    pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 1000
     gid: 1000
@@ -76,19 +78,21 @@ minio:
 
     ## the access mode of the PersistentVolumeClaim
     ##
-    accessMode: ReadWriteOnce
+    accessMode: "ReadWriteOnce"
 
     ## the initial size for the PersistentVolumeClaim to request
-    ## - kubernetes allows the PVC to grow in size as needed, starting from this value
-    ##   (if your StorageClass has `allowVolumeExpansion=true`)
+    ## - if your StorageClass has `allowVolumeExpansion=true`, kubernetes allows the
+    ##   PVC to grow in size as needed, starting from this value
     ##
-    size: 5Gi
+    size: "5Gi"
 
   ## root user configs for minio
   ##
   rootUser:
     username: "minioadmin"
     password: "minioadmin"
+    ## TODO: add automatic restart when secret changes
+    ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
     existingSecret: ""
     existingSecretUsernameKey: "username"
     existingSecretPasswordKey: "password"
@@ -96,47 +100,27 @@ minio:
   ## identity configs for minio
   ##
   identity:
+
     ## OpenID configs for minio
     ##
     openid:
-      ## TODO: explain how this can be set to "groups" when using LDAP/OAUTH as your dex connector
       policyClaim: "aud"
-
+      scopes: "openid,email,groups,profile,offline_access"
       clientId: "minio-console"
-      ## TODO: we can remove the need to set these here by moving them into the auth chart, and replicating secrets
       clientSecret:
-        ## TODO: we currently use hard-coded `value` environment variables in the deployment, use secret
         value: "bbbbbbbbbbbbbbbb"
         existingSecret: ""
         existingSecretKey: "client_secret"
 
-  ## minio access policies to create with a post-install job
+  ## minio buckets
+  ##  - these buckets are created and/or updated by a post-install job
   ##
-  policies:
-    ## TODO: consider if we can use policy conditions to assign access based on email (all users are assigned `minio-console`)
-    ##       https://min.io/docs/minio/linux/administration/identity-access-management/policy-based-access-control.html#supported-s3-policy-condition-keys
-    - name: minio-console
-      policy:
-        version: "2012-10-17"
-        statement:
-          - effect: Allow
-            action:
-              - "admin:*"
-          - effect: Allow
-            action:
-              - "kms:*"
-          - effect: Allow
-            action:
-              - "s3:*"
-            resource:
-              - "arn:aws:s3:::*"
+  buckets: [{"name":"kubeflow-pipelines","versioning":false}]
 
-  ## minio buckets to create with a post-install job
+  ## minio access policies
+  ##  - these policies are created and/or updated by a post-install job
   ##
-  buckets:
-    ## TODO: should we be taking the bucket name from kubeflow-pipelines value, or forcing user to align them?
-    - name: "kubeflow-pipelines"
-      versioning: false
+  policies: [{"name":"minio-console","policy":{"statement":[{"action":["admin:*"],"effect":"Allow"},{"action":["kms:*"],"effect":"Allow"},{"action":["s3:*"],"effect":"Allow","resource":["arn:aws:s3:::*"]}],"version":"2012-10-17"}}]
 
-  ## TODO: consider adding programmatic creation of access keys
+  ## TODO: consider supporting programmatic creation of access keys
   #accessKeys: []

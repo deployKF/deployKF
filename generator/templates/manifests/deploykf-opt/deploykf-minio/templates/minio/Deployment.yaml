@@ -23,10 +23,13 @@ spec:
       app.kubernetes.io/component: minio
   template:
     metadata:
-      {{- if not .Values.minio.rootUser.existingSecret }}
       annotations:
+        {{- if not .Values.minio.identity.openid.clientSecret.existingSecret }}
+        checksum/openid: {{ include (print $.Template.BasePath "/minio/Secret-openid.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if not .Values.minio.rootUser.existingSecret }}
         checksum/root-user: {{ include (print $.Template.BasePath "/minio/Secret-root-user.yaml") . | sha256sum }}
-      {{- end }}
+        {{- end }}
       labels:
         app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
@@ -48,10 +51,7 @@ spec:
           image: {{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}
           imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
           securityContext:
-            ## TODO: we must manually trust our self-signed CAs until an issue with minio console is fixed
-            ##       https://github.com/minio/console/issues/2681
-            runAsUser: 0
-            #runAsUser: {{ .Values.minio.image.uid }}
+            runAsUser: {{ .Values.minio.image.uid }}
             runAsGroup: {{ .Values.minio.image.gid }}
           {{- if .Values.minio.resources }}
           resources:
@@ -98,14 +98,15 @@ spec:
             - name: MINIO_IDENTITY_OPENID_CLIENT_ID
               value: {{ .Values.minio.identity.openid.clientId | quote }}
             - name: MINIO_IDENTITY_OPENID_CLIENT_SECRET
-              {{- if .Values.minio.identity.openid.clientSecret.existingSecret }}
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.minio.identity.openid.clientSecret.existingSecret | quote }}
+                  {{- if .Values.minio.identity.openid.clientSecret.existingSecret }}
+                  name: cloned--minio-openid-secret
                   key: {{ .Values.minio.identity.openid.clientSecret.existingSecretKey | quote }}
-              {{- else }}
-              value: {{ .Values.minio.identity.openid.clientSecret.value | quote }}
-              {{- end }}
+                  {{- else }}
+                  name: minio-openid
+                  key: client_secret
+                  {{- end }}
             - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
               value: {{ .Values.minio.identity.openid.policyClaim | quote }}
             - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
@@ -115,19 +116,12 @@ spec:
               value: "http://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/oauth_callback"
               {{- end }}
             - name: MINIO_IDENTITY_OPENID_SCOPES
-              ## TODO: minio-console does not currently support refresh tokens
-              ##       https://github.com/minio/console/issues/2643
-              value: "openid,email,groups,profile,offline_access"
+              value: {{ .Values.minio.identity.openid.scopes | quote }}
           command:
             - "/bin/bash"
             - "-c"
           args:
-            ## TODO: we must manually trust our self-signed CAs until an issue with minio console is fixed
-            ##       https://github.com/minio/console/issues/2681
             - |
-              echo "Updating CA Trust"
-              update-ca-trust
-
               ## if Minio can't GET the OPENID URL on start, it never tries again
               ## so we must ensure the URL is reachable before starting Minio
               echo "Checking OPENID Config URL: $MINIO_IDENTITY_OPENID_CONFIG_URL";
@@ -191,14 +185,9 @@ spec:
               mountPath: "/minio-data"
             {{- end }}
             {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
-            ## TODO: check if minio needs to restart is CA cert changes
+            ## TODO: check if minio needs to restart when CA cert changes
             - name: gateway-root-ca-cert
               mountPath: "/etc/minio/certs/CAs/"
-              readOnly: true
-            ## TODO: we must manually trust our self-signed CAs until an issue with minio console is fixed
-            ##       https://github.com/minio/console/issues/2681
-            - name: gateway-root-ca-cert
-              mountPath: "/etc/pki/ca-trust/source/anchors/"
               readOnly: true
             {{- end }}
       volumes:

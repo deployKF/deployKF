@@ -84,12 +84,12 @@ spec:
                   name: {{ .Values.dex.clients.oauth2Proxy.clientSecret.existingSecret | quote }}
                   key: {{ .Values.dex.clients.oauth2Proxy.clientSecret.existingSecretKey | quote }}
             {{- end }}
-            {{- if and .Values.dex.clients.minio.enabled .Values.dex.clients.minio.clientSecret.existingSecret }}
-            - name: CONFIG__CLIENT_SECRET__MINIO
+            {{- if and .Values.dex.clients.minioConsole.enabled .Values.dex.clients.minioConsole.clientSecret.existingSecret }}
+            - name: CONFIG__CLIENT_SECRET__MINIO_CONSOLE
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.dex.clients.minio.clientSecret.existingSecret | quote }}
-                  key: {{ .Values.dex.clients.minio.clientSecret.existingSecretKey | quote }}
+                  name: {{ .Values.dex.clients.minioConsole.clientSecret.existingSecret | quote }}
+                  key: {{ .Values.dex.clients.minioConsole.clientSecret.existingSecretKey | quote }}
             {{- end }}
             {{- if and .Values.dex.clients.argoServer.enabled .Values.dex.clients.argoServer.clientSecret.existingSecret }}
             - name: CONFIG__CLIENT_SECRET__ARGO_SERVER
