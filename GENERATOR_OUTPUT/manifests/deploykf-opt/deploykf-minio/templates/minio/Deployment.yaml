@@ -89,6 +89,8 @@ spec:
               {{- end }}
 
             ## minio - openid
+            - name: MINIO_IDENTITY_OPENID_DISPLAY_NAME
+              value: {{ .Values.minio.identity.openid.displayName | quote }}
             - name: MINIO_IDENTITY_OPENID_CONFIG_URL
               {{- if .Values.deployKF.gateway.tls.enabled }}
               value: "https://{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/dex/.well-known/openid-configuration"

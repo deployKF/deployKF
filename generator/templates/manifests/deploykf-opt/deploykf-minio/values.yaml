@@ -107,6 +107,7 @@ minio:
     ## OpenID configs for minio
     ##
     openid:
+      displayName: "deployKF Auth"
       policyClaim: {{< .Values.deploykf_opt.deploykf_minio.identity.openid.policyClaim | quote >}}
       scopes: {{< .Values.deploykf_opt.deploykf_minio.identity.openid.scopes | quote >}}
       clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientId | quote >}}

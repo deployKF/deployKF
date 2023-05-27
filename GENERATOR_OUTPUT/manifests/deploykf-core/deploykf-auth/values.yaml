@@ -101,11 +101,11 @@ dex:
         existingSecretKey: "client_secret"
 
   ## TODO: add automatic restart when secret changes
-  ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/e/
+  ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
   staticPasswords: [{"email":"admin@example.com","password":{"value":"admin"}},{"email":"user1@example.com","password":{"value":"user1"}},{"email":"user2@example.com","password":{"value":"user2"}}]
 
   ## TODO: add automatic restart when secret changes
-  ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/e/
+  ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
   connectors: []
 
 
@@ -150,6 +150,6 @@ oauth2Proxy:
     secret:
       value: "cccccccccccccccc"
       ## TODO: add automatic restart when secret changes
-      ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/e/
+      ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
       existingSecret: ""
       existingSecretKey: "cookie_secret"

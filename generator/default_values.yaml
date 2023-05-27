@@ -386,6 +386,15 @@ deploykf_core:
       ##
       clients:
 
+        ## OpenID client for oauth2-proxy (deployKF Dashboard)
+        ##
+        oauth2Proxy:
+          clientId: "oauth2-proxy"
+          clientSecret:
+            value: "bbbbbbbbbbbbbbbb"
+            existingSecret: ""
+            existingSecretKey: "client_secret"
+
         ## OpenID client for Minio Console
         ##
         minioConsole:
@@ -398,22 +407,6 @@ deploykf_core:
     ## oauth2-proxy configs
     ##
     oauth2Proxy:
-
-      ## OpenID Connect configs (connects to `deploykf-auth` dex)
-      ##
-      ## TODO: move to `dex.clients` section
-      oidc:
-        ## sets oauth2-proxy config `--client-id`
-        clientID: "oauth2-proxy"
-
-        ## sets oauth2-proxy config `--client-secret`
-        ## [WARNING] it is strongly recommended to override this value, generate using one of:
-        ##  - echo $(head -c32 /dev/urandom | base64 | tr -d '\n')
-        ##  - python -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())'
-        clientSecret:
-          value: "bbbbbbbbbbbbbbbb"
-          existingSecret: ""
-          existingSecretKey: "client_secret"
 
       ## cookie configs
       ##

@@ -104,6 +104,7 @@ minio:
     ## OpenID configs for minio
     ##
     openid:
+      displayName: "deployKF Auth"
       policyClaim: "aud"
       scopes: "openid,email,groups,profile,offline_access"
       clientId: "minio-console"
