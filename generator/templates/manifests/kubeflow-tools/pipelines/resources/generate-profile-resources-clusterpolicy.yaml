@@ -3,7 +3,9 @@ kind: ClusterPolicy
 metadata:
   name: kubeflow-pipelines--generate-profile-resources
 spec:
-  generateExistingOnPolicyUpdate: true
+  generateExisting: true
+  ## TODO: kyverno 1.10 made a breaking change without an api version bump https://github.com/kyverno/kyverno/issues/7319
+  #generateExistingOnPolicyUpdate: true
   rules:
     ## TODO: create values to allow users to provide additional custom resources in each namespace
     ##       (probably put these values in the profile controller app, rather than pipelines, as not all users will deploy pipelines)
