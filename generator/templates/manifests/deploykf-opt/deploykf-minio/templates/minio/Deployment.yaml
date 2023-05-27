@@ -103,7 +103,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   {{- if .Values.minio.identity.openid.clientSecret.existingSecret }}
-                  name: cloned--minio-openid-secret
+                  name: {{ .Values.minio.identity.openid.clientSecret.existingSecret | quote }}
                   key: {{ .Values.minio.identity.openid.clientSecret.existingSecretKey | quote }}
                   {{- else }}
                   name: minio-openid

@@ -113,7 +113,11 @@ minio:
       clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientId | quote >}}
       clientSecret:
         value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.value | quote >}}
-        existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecret | quote >}}
+        {{<- if .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecret >}}
+        existingSecret: "cloned--minio-openid-secret"
+        {{<- else >}}
+        existingSecret: ""
+        {{<- end >}}
         existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecretKey | quote >}}
 
   ## minio buckets

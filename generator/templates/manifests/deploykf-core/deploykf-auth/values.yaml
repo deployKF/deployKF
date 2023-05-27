@@ -84,6 +84,7 @@ dex:
     ##
     minioConsole:
       enabled: {{< .Values.deploykf_opt.deploykf_minio.enabled >}}
+      namespace: {{< .Values.deploykf_opt.deploykf_minio.namespace | quote >}}
       clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientId | quote >}}
       clientSecret:
         value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.value | quote >}}

@@ -81,6 +81,7 @@ dex:
     ##
     minioConsole:
       enabled: true
+      namespace: "deploykf-minio"
       clientId: "minio-console"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
