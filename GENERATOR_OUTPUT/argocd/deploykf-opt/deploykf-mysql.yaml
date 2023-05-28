@@ -13,6 +13,10 @@ spec:
     repoURL: "https://github.com/deployKF/deployKF"
     targetRevision: "dev"
     path: "GENERATOR_OUTPUT/manifests/deploykf-opt/deploykf-mysql"
+    helm:
+      ignoreMissingValueFiles: true
+      valueFiles:
+        - values-overrides.yaml
   destination:
     server: "https://kubernetes.default.svc"
     namespace: "deploykf-mysql"

@@ -27,6 +27,12 @@ spec:
         {{- if not .Values.mysql.rootUser.existingSecret }}
         checksum/root-user: {{ include (print $.Template.BasePath "/mysql/Secret-root-user.yaml") . | sha256sum }}
         {{- end }}
+        {{- if .Values.mysql.customUsers }}
+        checksum/custom-users: {{ include (print $.Template.BasePath "/mysql/Secret-custom-users.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if .Values.mysql.customDatabases }}
+        checksum/custom-databases: {{ include (print $.Template.BasePath "/mysql/Secret-custom-databases.yaml") . | sha256sum }}
+        {{- end }}
       labels:
         app.kubernetes.io/name: {{ include "deploykf-mysql.labels.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
@@ -92,6 +98,42 @@ spec:
                   name: deploykf-mysql-kubeflow-user
                   key: password
                   {{- end }}
+            {{- range $index, $user := .Values.mysql.customUsers }}
+            - name: {{ printf "MYSQL_USERNAME_%d" $index | quote }}
+              valueFrom:
+                secretKeyRef:
+                  {{- if $user.existingSecret }}
+                  name: {{ $user.existingSecret | quote }}
+                  key: {{ $user.existingSecretUsernameKey | default "username" | quote }}
+                  {{- else }}
+                  name: deploykf-mysql-custom-users
+                  key: {{ printf "%d_username" $index | quote }}
+                  {{- end }}
+            - name: {{ printf "MYSQL_PASSWORD_%d" $index | quote }}
+              valueFrom:
+                secretKeyRef:
+                  {{- if $user.existingSecret }}
+                  name: {{ $user.existingSecret | quote }}
+                  key: {{ $user.existingSecretPasswordKey | default "password" | quote }}
+                  {{- else }}
+                  name: deploykf-mysql-custom-users
+                  key: {{ printf "%d_password" $index | quote }}
+                  {{- end }}
+            {{- end }}
+            {{- range $db_index, $database := .Values.mysql.customDatabases }}
+            {{- range $owner_index, $owner := $database.grantAllPrivileges }}
+            - name: {{ printf "MYSQL_DATABASE_%d_OWNER_%d_USERNAME" $db_index $owner_index | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: deploykf-mysql-custom-databases
+                  key: {{ printf "%d_owner_%d_username" $db_index $owner_index | quote }}
+            - name: {{ printf "MYSQL_DATABASE_%d_OWNER_%d_HOSTNAME" $db_index $owner_index | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: deploykf-mysql-custom-databases
+                  key: {{ printf "%d_owner_%d_hostname" $db_index $owner_index | quote }}
+            {{- end }}
+            {{- end }}
           command:
             ## our custom entrypoint generates an init_file that configures the database on each startup
             - /etc/mysql/scripts/custom_entrypoint.sh

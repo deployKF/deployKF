@@ -1,11 +1,14 @@
+deployKF:
+  extraManifests:
+
 ########################################
 ## COMPONENT | mysql
 ########################################
 mysql:
   image:
-    repository: mysql
-    tag: 8.0.32
-    pullPolicy: IfNotPresent
+    repository: "docker.io/mysql"
+    tag: "8.0.33"
+    pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 999
     gid: 999
@@ -46,13 +49,21 @@ mysql:
 
     ## the access mode of the PersistentVolumeClaim
     ##
-    accessMode: ReadWriteOnce
+    accessMode: "ReadWriteOnce"
 
     ## the initial size for the PersistentVolumeClaim to request
-    ## - kubernetes allows the PVC to grow in size as needed, starting from this value
-    ##   (if your StorageClass has `allowVolumeExpansion=true`)
+    ## - if your StorageClass has `allowVolumeExpansion=true`, kubernetes allows the
+    ##   PVC to grow in size as needed, starting from this value
     ##
-    size: 5Gi
+    size: "5Gi"
+
+  ## the string content of a config file mounted at `/etc/mysql/conf.d/custom.cnf`
+  ##
+  ## TODO: test setting `default_authentication_plugin` as `caching_sha2_password`
+  ##       ensure that kubeflow pipelines still works (e.g. uses 8.0 compatible client)
+  configuration: |
+    [mysqld]
+    default_authentication_plugin=mysql_native_password
 
   ## configs for the "root@localhost" mysql user
   ##
@@ -61,7 +72,7 @@ mysql:
     existingSecret: ""
     existingSecretPasswordKey: "password"
 
-  ## configs for the "kubeflow" mysql user
+  ## configs for the kubeflow mysql user
   ##
   kubeflowUser:
     username: "kubeflow"
@@ -70,16 +81,18 @@ mysql:
     existingSecretUsernameKey: "username"
     existingSecretPasswordKey: "password"
 
-  ## the string content of a config file mounted at `/etc/mysql/conf.d/custom.cnf`
+  ## kubeflow databases to create with the init_file
   ##
-  configuration: |
-    [mysqld]
-    default_authentication_plugin=mysql_native_password
-
-  ## mysql databases to create with the init_file
-  ##
-  databases:
+  kubeflowDatabases:
     - name: "katib"
     - name: "kfp_cache"
     - name: "kfp_metadata"
     - name: "kfp_pipelines"
+
+  ## custom users to create with the init_file
+  ##
+  customUsers: []
+
+  ## custom databases to create with the init_file
+  ##
+  customDatabases: []
