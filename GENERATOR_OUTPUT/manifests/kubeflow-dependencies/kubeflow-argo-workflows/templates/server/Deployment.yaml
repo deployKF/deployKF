@@ -20,6 +20,8 @@ spec:
       app.kubernetes.io/sub-component: server
   template:
     metadata:
+      annotations:
+        checksum/argo-config: {{ include (print $.Template.BasePath "/ConfigMap-argo-config.yaml") . | sha256sum }}
       labels:
         app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
@@ -70,6 +72,12 @@ spec:
             - name: ARGO_SECURE
               ## the istio gateway provides HTTPS
               value: "false"
+            - name: FEEDBACK_MODAL
+              value: "false"
+            - name: FIRST_TIME_USER_MODAL
+              value: "false"
+            - name: NEW_VERSION_MODAL
+              value: "false"
             ## TODO: we must manually set `POD_NAMES=v1` until kubeflow-pipelines supports argo-workflows 3.4+
             ##       https://github.com/kubeflow/pipelines/issues/8935
             - name: POD_NAMES
@@ -96,19 +104,21 @@ spec:
           volumeMounts:
             - name: tmp
               mountPath: /tmp
-{{/*            {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}*/}}
-{{/*            - name: gateway-root-ca-cert*/}}
-{{/*              mountPath: "/etc/argo-server/CAs/"*/}}
-{{/*              readOnly: true*/}}
-{{/*            {{- end }}*/}}
+            ## TODO: use once argo-server can trust a self-signed cert https://github.com/argoproj/argo-workflows/issues/7198
+            #{{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
+            #- name: gateway-root-ca-cert
+            #  mountPath: "/etc/argo-server/CAs/"
+            #  readOnly: true
+            #{{- end }}
       volumes:
         - name: tmp
           emptyDir: {}
-{{/*        {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}*/}}
-{{/*        - name: gateway-root-ca-cert*/}}
-{{/*          configMap:*/}}
-{{/*            name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}*/}}
-{{/*            items:*/}}
-{{/*              - key: root-cert.pem*/}}
-{{/*                path: root-cert.pem*/}}
-{{/*        {{- end }}*/}}
+        ## TODO: use once argo-server can trust a self-signed cert https://github.com/argoproj/argo-workflows/issues/7198
+        #{{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
+        #- name: gateway-root-ca-cert
+        #  configMap:
+        #    name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}
+        #    items:
+        #      - key: root-cert.pem
+        #        path: root-cert.pem
+        #{{- end }}

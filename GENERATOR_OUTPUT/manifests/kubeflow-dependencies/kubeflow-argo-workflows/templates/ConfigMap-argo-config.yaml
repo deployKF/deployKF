@@ -9,54 +9,25 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: argo
 data:
-  ## TODO: review these configs
-  #parallelism: 10
-  #namespaceParallelism: "10"
+  {{- if .Values.controller.restrictions.parallelism }}
+  parallelism: {{ .Values.controller.restrictions.parallelism | quote }}
+  {{- end }}
 
-  ## TODO: review this config
-  #resourceRateLimit: |
-  #  limit: 10
-  #  burst: 1
-
-  ## TODO: review this config
-  #nodeEvents: |
-  #  enabled: true
-
-  ## TODO: review this config (perhaps addd link back to Kubeflow central dashboard)
-  #links: |
-  #  ## Adds a button to the workflow page. E.g. linking to you logging facility.
-  #  - name: Example Workflow Link
-  #    scope: workflow
-  #    url: http://logging-facility?namespace=${metadata.namespace}&workflowName=${metadata.name}&startedAt=${status.startedAt}&finishedAt=${status.finishedAt}
-
-  ## TODO: review this config
-  #images: |
-  #  argoproj/argosay:v2:
-  #    cmd: [/argosay]
-  #  docker/whalesay:latest:
-  #    cmd: [/bin/bash]
-
-  ## TODO: create values to set executor requests
-  executor: |
-    resources:
-      requests:
-        cpu: 0.01
-        memory: 32Mi
-      limits:
-        cpu: 0.5
-        memory: 512Mi
+  {{- if .Values.controller.restrictions.namespaceParallelism }}
+  namespaceParallelism: {{ .Values.controller.restrictions.namespaceParallelism | quote }}
+  {{- end }}
 
   artifactRepository: |
-    # if true, archive the container logs as an artifact
+    ## if true, archive the container logs as an artifact
     archiveLogs: true
 
-    # configs for s3 object store
+    ## configs for s3 object store
     s3:
       endpoint: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.endpoint | quote }}
       insecure: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.not_use_ssl }}
       bucket: {{ .Values.deployKF.pipelines.bucket.name | quote }}
       region: {{ .Values.deployKF.pipelines.bucket.region | quote }}
-      keyFormat: {{ `artifacts/{{ workflow.namespace }}/{{ workflow.name }}/{{ workflow.creationTimestamp.Y }}/{{ workflow.creationTimestamp.m }}/{{ workflow.creationTimestamp.d }}/{{ pod.name }}` }}
+      keyFormat: {{ .Values.controller.artifactRepository.keyFormat | quote }}
       accessKeySecret:
         name: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_name | quote }}
         key: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.access_key_key | quote }}
@@ -64,32 +35,17 @@ data:
         name: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_name | quote }}
         key: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_key_key | quote }}
 
-  ## TODO: review this config
-  #persistence: |
-  #  archive: false
-
-  ## TODO: review this config
-  #workflowDefaults: |
-  #  metadata:
-  #    annotations:
-  #      argo: workflows
-  #    labels:
-  #      foo: bar
-  #  spec:
-  #    ttlStrategy:
-  #      secondsAfterSuccess: 5
-  #    parallelism: 3
-
   sso: |
-    ## This is the root URL of the OIDC provider
+    ## the issuer of the OIDC provider
     {{- if .Values.deployKF.gateway.tls.enabled }}
     issuer: "https://{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/dex"
     {{- else }}
     issuer: "http://{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/dex"
     {{- end }}
 
-    ## If TLS certificate verification is skipped for SSO endpoints
-    ## TODO: remove once argo-server supports using local CA files (https://github.com/argoproj/argo-workflows/issues/7198)
+    ## if TLS certificate verification is skipped for SSO endpoints
+    ## TODO: remove once argo-server supports using local CA files
+    ##       https://github.com/argoproj/argo-workflows/issues/7198
     {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
     insecureSkipVerify: true
     {{- else }}
@@ -97,16 +53,14 @@ data:
     {{- end }}
 
     ## how long each session (JWT issued by argo) is valid for
-    ## TODO: argo-server currently does not support refresh tokens
-    ##       https://github.com/argoproj/argo-workflows/issues/5053
-    sessionExpiry: 12h
+    sessionExpiry: {{ .Values.server.identity.sessionExpiry | quote }}
 
-    ## The Secret that contains the OIDC client id
+    ## the Secret which contains the OIDC client id
     clientId:
       name: argo-server-sso
       key: client_id
 
-    ## The Secret that contains the OIDC client secret
+    ## the Secret that contains the OIDC client secret
     clientSecret:
       {{- if .Values.server.identity.openid.clientSecret.existingSecret }}
       name: {{ .Values.server.identity.openid.clientSecret.existingSecret | quote }}
@@ -116,17 +70,17 @@ data:
       key: client_secret
       {{- end }}
 
-    ## This is the OIDC redirect URL
+    ## the OIDC redirect URL
     {{- if .Values.deployKF.gateway.tls.enabled }}
     redirectUrl: "https://argo-server.{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/oauth2/callback"
     {{- else }}
     redirectUrl: "http://argo-server.{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/oauth2/callback"
     {{- end }}
 
-    ## Additional OIDC scopes to request
+    ## additional OIDC scopes to request
     scopes:
-     - groups
-     - email
+      - groups
+      - email
 
     ## RBAC Config
     rbac:

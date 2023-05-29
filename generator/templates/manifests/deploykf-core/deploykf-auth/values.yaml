@@ -83,7 +83,7 @@ dex:
     ## OpenID client for Minio Console
     ##
     minioConsole:
-      enabled: {{< .Values.deploykf_opt.deploykf_minio.enabled >}}
+      enabled: {{< .Values.deploykf_opt.deploykf_minio.enabled | conv.ToBool >}}
       namespace: {{< .Values.deploykf_opt.deploykf_minio.namespace | quote >}}
       clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientId | quote >}}
       clientSecret:
@@ -93,16 +93,18 @@ dex:
         existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecret | quote >}}
         existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecretKey | quote >}}
 
-    ## OpenID client for argo-server
+    ## OpenID client for Argo Server
     ##
-    ## TODO: add templates for these values
     argoServer:
-      enabled: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled >}}
-      clientId: "argo-server"
+      enabled: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled | conv.ToBool >}}
+      namespace: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.namespace | quote >}}
+      clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientId | quote >}}
       clientSecret:
-        value: "bbbbbbbbbbbbbbbb"
-        existingSecret: ""
-        existingSecretKey: "client_secret"
+        value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.value | quote >}}
+        ## TODO: add automatic restart when secret changes
+        ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+        existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecret | quote >}}
+        existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecretKey | quote >}}
 
   ## TODO: add automatic restart when secret changes
   ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/

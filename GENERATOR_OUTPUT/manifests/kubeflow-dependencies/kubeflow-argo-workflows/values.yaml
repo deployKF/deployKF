@@ -19,6 +19,8 @@ deployKF_helpers:
         secret_key_key: "password"
 
 deployKF:
+  extraManifests:
+
   clusterDomain: cluster.local
 
   certManager:
@@ -50,19 +52,19 @@ controller:
   ## configs for the argo workflow-controller container image
   ##
   image:
-    repository: quay.io/argoproj/workflow-controller
-    tag: v3.3.10
-    pullPolicy: IfNotPresent
+    repository: "quay.io/argoproj/workflow-controller"
+    tag: "v3.3.10"
+    pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 8737
     gid: 8737
 
-  ## configs for the argo workflow-controller executor container image
+  ## configs for the argo executor container image
   ##
   executorImage:
-    repository: quay.io/argoproj/argoexec
-    tag: v3.3.10
-    pullPolicy: IfNotPresent
+    repository: "quay.io/argoproj/argoexec"
+    tag: "v3.3.10"
+    pullPolicy: "IfNotPresent"
 
   ## resource requests/limits for the argo workflow-controller Pods
   ## - spec for ResourceRequirements:
@@ -70,11 +72,23 @@ controller:
   ##
   resources: {}
 
-  ## resource requests/limits for the argo workflow-controller executor Pods
-  ## - spec for ResourceRequirements:
-  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ## configs for the default artifact repository
   ##
-  executorResources: {}
+  artifactRepository:
+
+    ## a format pattern to define how artifacts will be organized in the bucket
+    ##
+    keyFormat: "artifacts/{{ workflow.namespace }}/{{ workflow.name }}/{{ workflow.creationTimestamp.Y }}/{{ workflow.creationTimestamp.m }}/{{ workflow.creationTimestamp.d }}/{{ pod.name }}"
+
+  ## configs which restrict aspects of argo workflows
+  ##
+  restrictions:
+
+    ## the max total parallel workflows that can execute at the same time
+    parallelism: ~
+
+    ## the max workflows that can execute at the same time in a namespace
+    namespaceParallelism: ~
 
 
 ########################################
@@ -84,9 +98,9 @@ server:
   ## configs for the argo-server container image
   ##
   image:
-    repository: quay.io/argoproj/argocli
-    tag: v3.3.10
-    pullPolicy: IfNotPresent
+    repository: "quay.io/argoproj/argocli"
+    tag: "v3.3.10"
+    pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 8737
     gid: 8737
@@ -99,17 +113,23 @@ server:
 
   ## identity configs for argo-server
   ##
-  ## TODO: update once "SSO Impersonate" feature is added (https://github.com/argoproj/argo-workflows/pull/7193)
   identity:
+
+    ## how long each session (JWT issued by argo) is valid for
+    ##
+    ## TODO: argo-server does not currently support refresh tokens
+    ##       https://github.com/argoproj/argo-workflows/issues/5053
+    sessionExpiry: "2h"
+
+    ## TODO: update once "SSO Impersonate" feature is added, to align UI access with cluster RBAC
+    ##       https://github.com/argoproj/argo-workflows/pull/7193
+    #impersonate: {}
 
     ## OpenID configs for argo-server
     ##
     openid:
       clientId: "argo-server"
-
-      ## TODO: we can remove the need to set these here by moving them to the auth chart, and replicating the secrets
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
-        ## TODO: test with existing secret
         existingSecret: ""
         existingSecretKey: "client_secret"

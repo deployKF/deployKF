@@ -20,6 +20,8 @@ spec:
       app.kubernetes.io/sub-component: workflow-controller
   template:
     metadata:
+      annotations:
+        checksum/argo-config: {{ include (print $.Template.BasePath "/ConfigMap-argo-config.yaml") . | sha256sum }}
       labels:
         app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}

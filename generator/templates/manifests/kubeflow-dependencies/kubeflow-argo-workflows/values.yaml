@@ -19,6 +19,11 @@ deployKF_helpers:
         secret_key_key: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_key_key" .) | quote >}}
 
 deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.kubeflow_dependencies.kubeflow_argo_workflows.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
   clusterDomain: cluster.local
 
   certManager:
@@ -50,19 +55,19 @@ controller:
   ## configs for the argo workflow-controller container image
   ##
   image:
-    repository: quay.io/argoproj/workflow-controller
-    tag: v3.3.10
-    pullPolicy: IfNotPresent
+    repository: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoWorkflowController.repository | quote >}}
+    tag: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoWorkflowController.tag | quote >}}
+    pullPolicy: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoWorkflowController.pullPolicy | quote >}}
     pullSecret: ""
     uid: 8737
     gid: 8737
 
-  ## configs for the argo workflow-controller executor container image
+  ## configs for the argo executor container image
   ##
   executorImage:
-    repository: quay.io/argoproj/argoexec
-    tag: v3.3.10
-    pullPolicy: IfNotPresent
+    repository: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoExecutor.repository | quote >}}
+    tag: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoExecutor.tag | quote >}}
+    pullPolicy: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoExecutor.pullPolicy | quote >}}
 
   ## resource requests/limits for the argo workflow-controller Pods
   ## - spec for ResourceRequirements:
@@ -70,11 +75,23 @@ controller:
   ##
   resources: {}
 
-  ## resource requests/limits for the argo workflow-controller executor Pods
-  ## - spec for ResourceRequirements:
-  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ## configs for the default artifact repository
   ##
-  executorResources: {}
+  artifactRepository:
+
+    ## a format pattern to define how artifacts will be organized in the bucket
+    ##
+    keyFormat: "artifacts/{{ workflow.namespace }}/{{ workflow.name }}/{{ workflow.creationTimestamp.Y }}/{{ workflow.creationTimestamp.m }}/{{ workflow.creationTimestamp.d }}/{{ pod.name }}"
+
+  ## configs which restrict aspects of argo workflows
+  ##
+  restrictions:
+
+    ## the max total parallel workflows that can execute at the same time
+    parallelism: ~
+
+    ## the max workflows that can execute at the same time in a namespace
+    namespaceParallelism: ~
 
 
 ########################################
@@ -84,9 +101,9 @@ server:
   ## configs for the argo-server container image
   ##
   image:
-    repository: quay.io/argoproj/argocli
-    tag: v3.3.10
-    pullPolicy: IfNotPresent
+    repository: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoCli.repository | quote >}}
+    tag: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoCli.tag | quote >}}
+    pullPolicy: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoCli.pullPolicy | quote >}}
     pullSecret: ""
     uid: 8737
     gid: 8737
@@ -99,17 +116,29 @@ server:
 
   ## identity configs for argo-server
   ##
-  ## TODO: update once "SSO Impersonate" feature is added (https://github.com/argoproj/argo-workflows/pull/7193)
   identity:
+
+    ## how long each session (JWT issued by argo) is valid for
+    ##
+    ## TODO: argo-server does not currently support refresh tokens
+    ##       https://github.com/argoproj/argo-workflows/issues/5053
+    sessionExpiry: "2h"
+
+    ## TODO: update once "SSO Impersonate" feature is added, to align UI access with cluster RBAC
+    ##       https://github.com/argoproj/argo-workflows/pull/7193
+    #impersonate: {}
 
     ## OpenID configs for argo-server
     ##
     openid:
-      clientId: "argo-server"
-
-      ## TODO: we can remove the need to set these here by moving them to the auth chart, and replicating the secrets
+      clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientId | quote >}}
       clientSecret:
-        value: "bbbbbbbbbbbbbbbb"
-        ## TODO: test with existing secret
+        value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.value | quote >}}
+        {{<- if .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecret >}}
+        ## TODO: add automatic restart when secret changes
+        ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+        existingSecret: "cloned--argo-server-openid-secret"
+        {{<- else >}}
         existingSecret: ""
-        existingSecretKey: "client_secret"
+        {{<- end >}}
+        existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecretKey | quote >}}

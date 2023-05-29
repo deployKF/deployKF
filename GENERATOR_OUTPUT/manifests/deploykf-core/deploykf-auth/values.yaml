@@ -90,14 +90,16 @@ dex:
         existingSecret: ""
         existingSecretKey: "client_secret"
 
-    ## OpenID client for argo-server
+    ## OpenID client for Argo Server
     ##
-    ## TODO: add templates for these values
     argoServer:
       enabled: true
+      namespace: "kubeflow-argo-workflows"
       clientId: "argo-server"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
+        ## TODO: add automatic restart when secret changes
+        ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
         existingSecret: ""
         existingSecretKey: "client_secret"
 

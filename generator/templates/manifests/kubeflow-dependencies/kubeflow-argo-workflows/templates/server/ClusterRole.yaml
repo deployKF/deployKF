@@ -1,5 +1,5 @@
 ## The rules come from upstream manifests.
-## https://github.com/argoproj/argo-workflows/blob/v3.3.10/manifests/cluster-install/argo-server-rbac/argo-server-clusterole.yaml]
+## https://github.com/argoproj/argo-workflows/blob/v3.3.10/manifests/cluster-install/argo-server-rbac/argo-server-clusterole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -14,12 +14,12 @@ metadata:
 rules:
   ## TODO: SubjectAccessReviews are needed for testing "SSO Impersonate" feature
   ##       https://github.com/argoproj/argo-workflows/pull/7193
-  - apiGroups:
-      - authorization.k8s.io
-    resources:
-      - subjectaccessreviews
-    verbs:
-      - create
+  #- apiGroups:
+  #    - authorization.k8s.io
+  #  resources:
+  #    - subjectaccessreviews
+  #  verbs:
+  #    - create
   - apiGroups:
       - ""
     resources:
