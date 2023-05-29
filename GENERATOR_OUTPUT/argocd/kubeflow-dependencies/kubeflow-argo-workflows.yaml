@@ -7,6 +7,8 @@ metadata:
     app.kubernetes.io/name: kubeflow-argo-workflows
     app.kubernetes.io/component: kubeflow-dependencies
     app.kubernetes.io/part-of: deploykf
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: "default"
   source:

@@ -7,6 +7,8 @@ metadata:
     app.kubernetes.io/name: kyverno
     app.kubernetes.io/component: deploykf-dependencies
     app.kubernetes.io/part-of: deploykf
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: "default"
   source:

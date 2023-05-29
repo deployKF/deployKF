@@ -7,6 +7,8 @@ metadata:
     app.kubernetes.io/name: cert-manager
     app.kubernetes.io/component: deploykf-dependencies
     app.kubernetes.io/part-of: deploykf
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   project: {{< .Values.argocd.project | quote >}}
   source:
