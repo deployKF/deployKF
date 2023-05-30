@@ -959,7 +959,6 @@ deploykf_opt:
 ##                                deploykf-tools
 ##
 ## --------------------------------------------------------------------------------
-## TODO: add deploykf-tools
 deploykf_tools: {}
 
 
@@ -1021,6 +1020,21 @@ kubeflow_tools:
   ## --------------------------------------
   katib:
     enabled: true
+
+    ## image overrides
+    ##
+    images:
+      katibController:
+        repository: docker.io/kubeflowkatib/katib-controller
+        tag: ~
+
+      katibDbManager:
+        repository: docker.io/kubeflowkatib/katib-db-manager
+        tag: ~
+
+      katibUi:
+        repository: docker.io/kubeflowkatib/katib-ui
+        tag: ~
 
     ## NOTE: these values are ignored when `deploykf_opt.deploykf_mysql.enabled` is 'true',
     ##       as we automatically populate the required settings to use the embedded mysql
