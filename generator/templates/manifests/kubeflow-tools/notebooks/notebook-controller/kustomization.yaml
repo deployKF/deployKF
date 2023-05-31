@@ -9,11 +9,6 @@ resources:
   ## upstream
   - upstream/apps/jupyter/notebook-controller/upstream/overlays/kubeflow
 
-patchesStrategicMerge:
-  ## NOTE: the upstream v1.6.1 manifests do not include parameters for notebook culling,
-  ##       so we fix it temporarily with this patch (fixed in https://github.com/kubeflow/kubeflow/pull/6689)
-  - patches/patch-notebook-controller-deployment.yaml
-
 configMapGenerator:
   - name: config
     behavior: merge
@@ -21,11 +16,13 @@ configMapGenerator:
       - USE_ISTIO="true"
       - ISTIO_GATEWAY="{{< .Values.deploykf_core.deploykf_istio_gateway.namespace >}}/{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name >}}"
       - CLUSTER_DOMAIN="cluster.local"
-      - ENABLE_CULLING="false"
-      - CULL_IDLE_TIME="1440"
-      - IDLENESS_CHECK_PERIOD="1"
+      - ENABLE_CULLING={{< .Values.kubeflow_tools.notebooks.notebookCulling.enabled | conv.ToBool | quote >}}
+      - CULL_IDLE_TIME={{< .Values.kubeflow_tools.notebooks.notebookCulling.idleTime | quote >}}
+      - IDLENESS_CHECK_PERIOD={{< .Values.kubeflow_tools.notebooks.notebookCulling.idlenessCheckPeriod | quote >}}
 
 images:
   - name: docker.io/kubeflownotebookswg/notebook-controller
-    newName: docker.io/kubeflownotebookswg/notebook-controller
-    newTag: v1.6.1
+    newName: {{< .Values.kubeflow_tools.notebooks.images.notebookController.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.notebooks.images.notebookController.tag >}}
+    newTag: {{< .Values.kubeflow_tools.notebooks.images.jupyterWebApp.tag | quote >}}
+    {{<- end >}}

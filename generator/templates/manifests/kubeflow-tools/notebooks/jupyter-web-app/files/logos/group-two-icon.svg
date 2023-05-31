@@ -1,3 +1,6 @@
+{{<- if .Values.kubeflow_tools.notebooks.spawnerIcons.imageGroupTwo.icon ->}}
+{{< .Values.kubeflow_tools.notebooks.spawnerIcons.imageGroupTwo.icon >}}
+{{<- else ->}}
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" preserveAspectRatio="xMidYMid meet" viewBox="2.5876182424017884 207.8612937826341 225.86158805904017 226.26343653651998" width="221.86" height="222.26">
   <defs>
     <path d="M192.9 241.41C236.3 284.81 236.3 355.18 192.9 398.58C149.5 441.97 79.14 441.97 35.74 398.58C-7.66 355.18 -7.66 284.81 35.74 241.41C79.14 198.01 149.5 198.01 192.9 241.41Z" id="b3b525el65"/>
@@ -32,3 +35,4 @@
     </g>
   </g>
 </svg>
+{{<- end >}}

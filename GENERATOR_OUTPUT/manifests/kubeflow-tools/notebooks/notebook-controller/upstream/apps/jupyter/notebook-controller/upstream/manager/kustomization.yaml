@@ -1,7 +1,6 @@
 configMapGenerator:
-- literals:
-  - USE_ISTIO=true
-  - ISTIO_GATEWAY=kubeflow/kubeflow-gateway
+- envs:
+  - params.env
   name: config
 resources:
 - manager.yaml

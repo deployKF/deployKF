@@ -11,7 +11,8 @@ configMapGenerator:
   name: config
 images:
 - name: docker.io/kubeflownotebookswg/jupyter-web-app
-  newTag: v1.6.1
+  newName: docker.io/kubeflownotebookswg/jupyter-web-app
+  newTag: v1.7.0
 kind: Kustomization
 namePrefix: jupyter-web-app-
 namespace: kubeflow
@@ -63,6 +64,13 @@ vars:
 - fieldref:
     fieldPath: data.JWA_PREFIX
   name: JWA_PREFIX
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: data.JWA_APP_SECURE_COOKIES
+  name: JWA_APP_SECURE_COOKIES
   objref:
     apiVersion: v1
     kind: ConfigMap

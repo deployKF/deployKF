@@ -1,5 +1,5 @@
-## NOTE: this overwrites the `notebook_template.yaml` with our custom one from `ConfigMap/notebook-template`
-##
+{{<- if .Values.kubeflow_tools.notebooks.notebookTemplate ->}}
+## this overwrites the `notebook_template.yaml` with our custom one from `ConfigMap/notebook-template`
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,3 +19,4 @@ spec:
         - name: notebook-template-volume
           configMap:
             name: notebook-template
+{{<- end >}}

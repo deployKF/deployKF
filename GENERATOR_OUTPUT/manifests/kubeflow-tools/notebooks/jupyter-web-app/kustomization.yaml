@@ -10,7 +10,7 @@ resources:
   - upstream/apps/jupyter/jupyter-web-app/upstream/overlays/istio
 
 patchesStrategicMerge:
-  - patches/patch-jupyter-web-app-deployment.yaml
+  - patches/patch-jupyter-web-app-authorizationpolicy.yaml
   - patches/patch-jupyter-web-app-virtualservice.yaml
 
 configMapGenerator:
@@ -24,6 +24,7 @@ configMapGenerator:
       - JWA_USERID_PREFIX=""
       - JWA_APP_SECURE_COOKIES="true"
 
+  ## this is used to overwrite the default `spawner_ui_config.yaml` with our custom one
   - name: config
     behavior: merge
     files:
@@ -43,23 +44,6 @@ configMapGenerator:
       - files/logos/jupyter-icon.svg
       - files/logos/jupyter-logo.svg
 
-  ## this is used to overwrite the default `notebook_template.yaml` with our custom one
-  - name: notebook-template
-    files:
-      - files/notebook_template.yaml
-
 images:
   - name: docker.io/kubeflownotebookswg/jupyter-web-app
-    newName: docker.io/kubeflownotebookswg/jupyter-web-app
-    newTag: v1.6.1
-
-vars:
-  ## NOTE: the upstream v1.6.1 manifests forgot to set JWA_APP_SECURE_COOKIES as a variable,
-  ##       so we fix it temporarily here (fixed in https://github.com/kubeflow/kubeflow/pull/6688)
-  - name: JWA_APP_SECURE_COOKIES
-    objref:
-      apiVersion: v1
-      kind: ConfigMap
-      name: parameters
-    fieldref:
-      fieldpath: data.JWA_APP_SECURE_COOKIES
+    newName: "docker.io/kubeflownotebookswg/jupyter-web-app"

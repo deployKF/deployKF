@@ -1,3 +1,6 @@
+{{<- if .Values.kubeflow_tools.notebooks.spawnerIcons.imageGroupOne.logo ->}}
+{{< .Values.kubeflow_tools.notebooks.spawnerIcons.imageGroupOne.logo >}}
+{{<- else ->}}
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="Layer_1" data-name="Layer 1" viewBox="0 0 97 15">
   <defs>
     <mask id="mask" x="0.82" y="0.85" width="13.37" height="13.3" maskUnits="userSpaceOnUse">
@@ -35,3 +38,4 @@
     </g>
   </g>
 </svg>
+{{<- end >}}

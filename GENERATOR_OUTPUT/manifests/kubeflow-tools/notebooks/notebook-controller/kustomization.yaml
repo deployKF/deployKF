@@ -9,11 +9,6 @@ resources:
   ## upstream
   - upstream/apps/jupyter/notebook-controller/upstream/overlays/kubeflow
 
-patchesStrategicMerge:
-  ## NOTE: the upstream v1.6.1 manifests do not include parameters for notebook culling,
-  ##       so we fix it temporarily with this patch (fixed in https://github.com/kubeflow/kubeflow/pull/6689)
-  - patches/patch-notebook-controller-deployment.yaml
-
 configMapGenerator:
   - name: config
     behavior: merge
@@ -27,5 +22,4 @@ configMapGenerator:
 
 images:
   - name: docker.io/kubeflownotebookswg/notebook-controller
-    newName: docker.io/kubeflownotebookswg/notebook-controller
-    newTag: v1.6.1
+    newName: "docker.io/kubeflownotebookswg/notebook-controller"
