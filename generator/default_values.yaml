@@ -493,6 +493,7 @@ deploykf_core:
       ##
       externalLinks: []
 
+
   ## --------------------------------------
   ##        deploykf-istio-gateway
   ## --------------------------------------
@@ -850,6 +851,7 @@ deploykf_opt:
               resource:
                 - "arn:aws:s3:::*"
 
+
   ## --------------------------------------
   ##            deploykf-mysql
   ## --------------------------------------
@@ -954,6 +956,7 @@ deploykf_opt:
     ##
     customDatabases: []
 
+
 ## --------------------------------------------------------------------------------
 ##
 ##                                deploykf-tools
@@ -1036,8 +1039,10 @@ kubeflow_tools:
         repository: docker.io/kubeflowkatib/katib-ui
         tag: ~
 
-    ## NOTE: these values are ignored when `deploykf_opt.deploykf_mysql.enabled` is 'true',
-    ##       as we automatically populate the required settings to use the embedded mysql
+    ## mysql connection configs
+    ##  - NOTE: these values are ignored when `deploykf_opt.deploykf_mysql.enabled` is true,
+    ##          as we automatically populate the required settings to use the embedded mysql
+    ##
     mysql:
       host: "mysql.example.com"
       port: 3306
@@ -1048,7 +1053,10 @@ kubeflow_tools:
         existingSecretUsernameKey: "username"
         existingSecretPasswordKey: "password"
 
+    ## mysql database name
+    ##
     mysqlDatabase: katib
+
 
   ## --------------------------------------
   ##               notebooks
@@ -1383,12 +1391,16 @@ kubeflow_tools:
   pipelines:
     enabled: true
 
+    ## storage bucket configs
+    ##
     bucket:
       name: kubeflow-pipelines
       region: ""
 
-    ## NOTE: these values are ignored when `deploykf_opt.deploykf_minio.enabled` is 'true',
-    ##       as we automatically populate the required settings to use the embedded minio
+    ## object store configs
+    ##  - NOTE: these values are ignored when `deploykf_opt.deploykf_minio.enabled` is true,
+    ##          as we automatically populate the required settings to use the embedded minio
+    ##
     objectStore:
       host: s3.amazonaws.com
       port: ""
@@ -1400,8 +1412,10 @@ kubeflow_tools:
         existingSecretAccessKeyKey: "AWS_ACCESS_KEY_ID"
         existingSecretSecretKeyKey: "AWS_SECRET_ACCESS_KEY"
 
-    ## NOTE: these values are ignored when `deploykf_opt.deploykf_mysql.enabled` is 'true',
-    ##       as we automatically populate the required settings to use the embedded mysql
+    ## mysql connection configs
+    ##  - NOTE: these values are ignored when `deploykf_opt.deploykf_mysql.enabled` is true,
+    ##          as we automatically populate the required settings to use the embedded mysql
+    ##
     mysql:
       host: "mysql.example.com"
       port: 3306
@@ -1412,10 +1426,13 @@ kubeflow_tools:
         existingSecretUsernameKey: "username"
         existingSecretPasswordKey: "password"
 
+    ## mysql database names
+    ##
     mysqlDatabases:
       cacheDatabase: kfp_cache
       metadataDatabase: kfp_metadata
       pipelinesDatabase: kfp_pipelines
+
 
   ## --------------------------------------
   ##          poddefaults-webhook
@@ -1423,17 +1440,20 @@ kubeflow_tools:
   poddefaults_webhook:
     enabled: true
 
+
   ## --------------------------------------
   ##             tensorboards
   ## --------------------------------------
   tensorboards:
     enabled: true
 
+
   ## --------------------------------------
   ##           training-operator
   ## --------------------------------------
   training_operator:
     enabled: true
+
 
   ## --------------------------------------
   ##                volumes
