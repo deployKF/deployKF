@@ -76,7 +76,7 @@ dex:
       clientSecret:
         value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.value | quote >}}
         ## TODO: add automatic restart when secret changes
-        ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+        ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
         existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.existingSecret | quote >}}
         existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.existingSecretKey | quote >}}
 
@@ -89,7 +89,7 @@ dex:
       clientSecret:
         value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.value | quote >}}
         ## TODO: add automatic restart when secret changes
-        ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+        ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
         existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecret | quote >}}
         existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecretKey | quote >}}
 
@@ -102,16 +102,16 @@ dex:
       clientSecret:
         value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.value | quote >}}
         ## TODO: add automatic restart when secret changes
-        ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+        ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
         existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecret | quote >}}
         existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecretKey | quote >}}
 
   ## TODO: add automatic restart when secret changes
-  ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+  ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
   staticPasswords: {{< .Values.deploykf_core.deploykf_auth.dex.staticPasswords | toJSON >}}
 
   ## TODO: add automatic restart when secret changes
-  ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+  ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
   connectors: {{< .Values.deploykf_core.deploykf_auth.dex.connectors | toJSON >}}
 
 
@@ -156,6 +156,6 @@ oauth2Proxy:
     secret:
       value: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.value | quote >}}
       ## TODO: add automatic restart when secret changes
-      ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+      ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
       existingSecret: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.existingSecret | quote >}}
       existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.existingSecretKey | quote >}}

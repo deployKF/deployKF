@@ -95,7 +95,7 @@ minio:
     username: {{< .Values.deploykf_opt.deploykf_minio.rootUser.username | quote >}}
     password: {{< .Values.deploykf_opt.deploykf_minio.rootUser.password | quote >}}
     ## TODO: add automatic restart when secret changes
-    ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+    ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
     existingSecret: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecret | quote >}}
     existingSecretUsernameKey: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretUsernameKey | quote >}}
     existingSecretPasswordKey: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretPasswordKey | quote >}}
@@ -115,7 +115,7 @@ minio:
         value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.value | quote >}}
         {{<- if .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecret >}}
         ## TODO: add automatic restart when secret changes
-        ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+        ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
         existingSecret: "cloned--minio-openid-secret"
         {{<- else >}}
         existingSecret: ""

@@ -50,12 +50,11 @@ configurations:
   - params.yaml
 
 configMapGenerator:
+  ## TODO: add automatic restart when secret changes
+  ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
   - name: pipeline-install-config
     behavior: merge
     literals:
-      ## TODO: using the config-map for configs, will prevent the automatic restart of pods when they change
-      ##       perhaps we should just use gomplate to directly template the values in
-
       ## ================================
       ## UserID Configs
       ## ================================

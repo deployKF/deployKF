@@ -92,7 +92,7 @@ minio:
     username: "minioadmin"
     password: "minioadmin"
     ## TODO: add automatic restart when secret changes
-    ##       https://kyverno.io/policies/other/restart_deployment_on_secret_change/restart_deployment_on_secret_change/
+    ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
     existingSecret: ""
     existingSecretUsernameKey: "username"
     existingSecretPasswordKey: "password"
