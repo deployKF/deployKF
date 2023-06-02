@@ -3,17 +3,17 @@ bases:
 - metadata-writer
 images:
 - name: gcr.io/ml-pipeline/api-server
-  newTag: 2.0.0-alpha.5
+  newTag: 2.0.0-alpha.7
 - name: gcr.io/ml-pipeline/persistenceagent
-  newTag: 2.0.0-alpha.5
+  newTag: 2.0.0-alpha.7
 - name: gcr.io/ml-pipeline/scheduledworkflow
-  newTag: 2.0.0-alpha.5
+  newTag: 2.0.0-alpha.7
 - name: gcr.io/ml-pipeline/frontend
-  newTag: 2.0.0-alpha.5
+  newTag: 2.0.0-alpha.7
 - name: gcr.io/ml-pipeline/viewer-crd-controller
-  newTag: 2.0.0-alpha.5
+  newTag: 2.0.0-alpha.7
 - name: gcr.io/ml-pipeline/visualization-server
-  newTag: 2.0.0-alpha.5
+  newTag: 2.0.0-alpha.7
 kind: Kustomization
 resources:
 - ml-pipeline-apiserver-deployment.yaml

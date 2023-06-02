@@ -1391,6 +1391,50 @@ kubeflow_tools:
   pipelines:
     enabled: true
 
+    ## image overrides
+    ##
+    images:
+      kfpCacheServer:
+        repository: gcr.io/ml-pipeline/cache-server
+        tag: ~
+
+      kfpMetadataEnvoy:
+        repository: gcr.io/ml-pipeline/metadata-envoy
+        tag: ~
+
+      kfpMetadataWriter:
+        repository: gcr.io/ml-pipeline/metadata-writer
+        tag: ~
+
+      kfpApiServer:
+        repository: gcr.io/ml-pipeline/api-server
+        tag: ~
+
+      kfpPersistenceagent:
+        repository: gcr.io/ml-pipeline/persistenceagent
+        tag: ~
+
+      kfpScheduledworkflow:
+        repository: gcr.io/ml-pipeline/scheduledworkflow
+        tag: ~
+
+      kfpFrontend:
+        repository: gcr.io/ml-pipeline/frontend
+        tag: ~
+
+      kfpViewerCrdController:
+        repository: gcr.io/ml-pipeline/viewer-crd-controller
+        tag: ~
+
+      kfpVisualizationServer:
+        repository: gcr.io/ml-pipeline/visualization-server
+        tag: ~
+
+      tfxMlMetadataStoreServer:
+        repository: gcr.io/tfx-oss-public/ml_metadata_store_server
+        ## NOTE: this tag is not aligned to the other KFP images
+        tag: ~
+
     ## storage bucket configs
     ##
     bucket:
@@ -1432,6 +1476,22 @@ kubeflow_tools:
       cacheDatabase: kfp_cache
       metadataDatabase: kfp_metadata
       pipelinesDatabase: kfp_pipelines
+
+    ## profile resource generation configs
+    ##  - we use a kyverno ClusterPolicy to generate resources needed by KFP in each profile namespace
+    ##    these configs provide additional control over the generated resources
+    ##
+    profileResourceGeneration:
+
+      ## if a PodDefault named "kubeflow-pipelines-api-token" should be generated in each profile namespace
+      ##  - the generated PodDefault will mount a serviceAccountToken volume which can be used to authenticate
+      ##    with the Kubeflow Pipelines API on Pods which have a `kubeflow-pipelines-api-token` label with value "true"
+      ##  - for more information, see the "Full Kubeflow (from outside cluster)" section of the following page:
+      ##    https://www.kubeflow.org/docs/components/pipelines/v1/sdk/connect-api/
+      ##  - the PodDefault will NOT be generated if `kubeflow_tools.poddefaults_webhook.enabled` is false,
+      ##    regardless of this setting
+      ##
+      kfpApiTokenPodDefault: false
 
 
   ## --------------------------------------

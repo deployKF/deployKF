@@ -31,6 +31,9 @@ patchesStrategicMerge:
   - patches/removals/mysql-resources.yaml
   - patches/removals/profile-controller-resources.yaml
 
+configurations:
+  - params.yaml
+
 configMapGenerator:
   - name: pipeline-install-config
     behavior: merge
@@ -48,12 +51,20 @@ configMapGenerator:
       ## App Configs
       ## ================================
       - appName="pipeline"
-      #- appVersion="2.0.0-alpha.5"
       - autoUpdatePipelineDefaultVersion="true"
       - cronScheduleTimezone="UTC"
-      ## TODO: ensure this has gomplate values, and is actually used in the manifests
+
+      ## ================================
+      ## Cache Configs
+      ## ================================
+      ## TODO: create value - this is explained in pipeline-install-config
       - cacheImage="gcr.io/google-containers/busybox"
+      ## TODO: create value - this is explained in pipeline-install-config
       - cacheNodeRestrictions="false"
+      ## TODO: create value - this is explained in pipeline-install-config
+      - MAXIMUM_CACHE_STALENESS=""
+      ## TODO: create value - this is explained in pipeline-install-config
+      - DEFAULT_CACHE_STALENESS=""
 
       ## ================================
       ## Bucket Configs
@@ -88,38 +99,25 @@ configMapGenerator:
       - files/viewer-pod-template.json
 
 images:
-  - name: gcr.io/ml-pipeline/cache-deployer
-    newName: gcr.io/ml-pipeline/cache-deployer
-    newTag: 2.0.0-alpha.5
   - name: gcr.io/ml-pipeline/cache-server
-    newName: gcr.io/ml-pipeline/cache-server
-    newTag: 2.0.0-alpha.5
+    newName: "gcr.io/ml-pipeline/cache-server"
   - name: gcr.io/ml-pipeline/metadata-envoy
-    newName: gcr.io/ml-pipeline/metadata-envoy
-    newTag: 2.0.0-alpha.5
+    newName: "gcr.io/ml-pipeline/metadata-envoy"
   - name: gcr.io/ml-pipeline/metadata-writer
-    newName: gcr.io/ml-pipeline/metadata-writer
-    newTag: 2.0.0-alpha.5
+    newName: "gcr.io/ml-pipeline/metadata-writer"
   - name: gcr.io/ml-pipeline/api-server
-    newName: gcr.io/ml-pipeline/api-server
-    newTag: 2.0.0-alpha.5
+    newName: "gcr.io/ml-pipeline/api-server"
   - name: gcr.io/ml-pipeline/persistenceagent
-    newName: gcr.io/ml-pipeline/persistenceagent
-    newTag: 2.0.0-alpha.5
+    newName: "gcr.io/ml-pipeline/persistenceagent"
   - name: gcr.io/ml-pipeline/scheduledworkflow
-    newName: gcr.io/ml-pipeline/scheduledworkflow
-    newTag: 2.0.0-alpha.5
+    newName: "gcr.io/ml-pipeline/scheduledworkflow"
   - name: gcr.io/ml-pipeline/frontend
-    newName: gcr.io/ml-pipeline/frontend
-    newTag: 2.0.0-alpha.5
+    newName: "gcr.io/ml-pipeline/frontend"
   - name: gcr.io/ml-pipeline/viewer-crd-controller
-    newName: gcr.io/ml-pipeline/viewer-crd-controller
-    newTag: 2.0.0-alpha.5
+    newName: "gcr.io/ml-pipeline/viewer-crd-controller"
   - name: gcr.io/ml-pipeline/visualization-server
-    newName: gcr.io/ml-pipeline/visualization-server
-    newTag: 2.0.0-alpha.5
+    newName: "gcr.io/ml-pipeline/visualization-server"
 
-  ## NOTE: this image tag is separate to Kubeflow Pipelines itself
+  ## NOTE: this tag is not aligned to the other KFP images
   - name: gcr.io/tfx-oss-public/ml_metadata_store_server
-    newName: gcr.io/tfx-oss-public/ml_metadata_store_server
-    newTag: 1.5.0
+    newName: "gcr.io/tfx-oss-public/ml_metadata_store_server"

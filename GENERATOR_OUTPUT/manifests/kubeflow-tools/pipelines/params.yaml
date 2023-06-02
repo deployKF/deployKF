@@ -1,0 +1,5 @@
+## allows Kustomize to replace `vars` in the following places
+varReference:
+  ## allow in kyverno ClusterPolicy (for setting default image tag)
+  - path: spec/rules/generate/data/spec/template/spec/containers/image
+    kind: ClusterPolicy

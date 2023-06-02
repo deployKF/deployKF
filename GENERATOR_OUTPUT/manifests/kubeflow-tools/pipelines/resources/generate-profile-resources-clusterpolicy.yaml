@@ -7,9 +7,6 @@ spec:
   ## TODO: kyverno 1.10 made a breaking change without an api version bump https://github.com/kyverno/kyverno/issues/7319
   #generateExistingOnPolicyUpdate: true
   rules:
-    ## TODO: create values to allow users to provide additional custom resources in each namespace
-    ##       (probably put these values in the profile controller app, rather than pipelines, as not all users will deploy pipelines)
-
     ################################################################################
     ## ConfigMap/metadata-grpc-configmap
     ################################################################################
@@ -66,10 +63,10 @@ spec:
               spec:
                 serviceAccountName: default-editor
                 containers:
-                  ## TODO: apply the gomplate image tag values
-                  - image: "gcr.io/ml-pipeline/visualization-server:2.0.0-alpha.5"
+                  - name: ml-pipeline-visualizationserver
+                    ## NOTE: $(kfp-app-version) is a Kustomize variable which is replaced during Kustomize rendering
+                    image: "gcr.io/ml-pipeline/visualization-server:$(kfp-app-version)"
                     imagePullPolicy: IfNotPresent
-                    name: ml-pipeline-visualizationserver
                     ports:
                       - containerPort: 8888
                     resources:
@@ -196,8 +193,8 @@ spec:
                 serviceAccountName: default-editor
                 containers:
                   - name: ml-pipeline-ui-artifact
-                    ## TODO: apply the gomplate image tag values
-                    image: "gcr.io/ml-pipeline/frontend:2.0.0-alpha.5"
+                    ## NOTE: $(kfp-app-version) is a Kustomize variable which is replaced during Kustomize rendering
+                    image: "gcr.io/ml-pipeline/frontend:$(kfp-app-version)"
                     imagePullPolicy: IfNotPresent
                     ports:
                       - containerPort: 3000
@@ -280,45 +277,3 @@ spec:
                 port: 80
                 protocol: TCP
                 targetPort: 3000
-
-    ################################################################################
-    ## PodDefault/access-ml-pipeline
-    ################################################################################
-    ## TODO: make this optional to include (and explain how it works)
-    ##       https://www.kubeflow.org/docs/components/pipelines/v1/sdk/connect-api/#full-kubeflow-subfrom-inside-clustersub
-    - name: PodDefault--access-ml-pipeline
-      match:
-        any:
-          - resources:
-              kinds:
-                - Namespace
-              selector:
-                matchLabels:
-                  pipelines.kubeflow.org/enabled: "true"
-      generate:
-        apiVersion: kubeflow.org/v1alpha1
-        kind: PodDefault
-        name: access-ml-pipeline
-        namespace: "{{ request.object.metadata.name }}"
-        synchronize: true
-        data:
-          spec:
-            desc: "Allow access to Kubeflow Pipelines"
-            env:
-              - name: KF_PIPELINES_SA_TOKEN_PATH
-                value: "/var/run/secrets/ml-pipeline/token"
-            selector:
-              matchLabels:
-                access-ml-pipeline: 'true'
-            volumeMounts:
-              - mountPath: "/var/run/secrets/ml-pipeline"
-                name: volume-ml-pipeline-token
-                readOnly: true
-            volumes:
-              - name: volume-ml-pipeline-token
-                projected:
-                  sources:
-                    - serviceAccountToken:
-                        audience: pipelines.kubeflow.org
-                        expirationSeconds: 7200
-                        path: token

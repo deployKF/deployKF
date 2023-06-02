@@ -7,9 +7,6 @@ spec:
   ## TODO: kyverno 1.10 made a breaking change without an api version bump https://github.com/kyverno/kyverno/issues/7319
   #generateExistingOnPolicyUpdate: true
   rules:
-    ## TODO: create values to allow users to provide additional custom resources in each namespace
-    ##       (probably put these values in the profile controller app, rather than pipelines, as not all users will deploy pipelines)
-
     ################################################################################
     ## ConfigMap/metadata-grpc-configmap
     ################################################################################
@@ -66,10 +63,10 @@ spec:
               spec:
                 serviceAccountName: default-editor
                 containers:
-                  ## TODO: apply the gomplate image tag values
-                  - image: "gcr.io/ml-pipeline/visualization-server:2.0.0-alpha.5"
+                  - name: ml-pipeline-visualizationserver
+                    ## NOTE: $(kfp-app-version) is a Kustomize variable which is replaced during Kustomize rendering
+                    image: {{< printf "%s:%s" .Values.kubeflow_tools.pipelines.images.kfpVisualizationServer.repository (.Values.kubeflow_tools.pipelines.images.kfpVisualizationServer.tag | default "$(kfp-app-version)") | quote >}}
                     imagePullPolicy: IfNotPresent
-                    name: ml-pipeline-visualizationserver
                     ports:
                       - containerPort: 8888
                     resources:
@@ -196,8 +193,8 @@ spec:
                 serviceAccountName: default-editor
                 containers:
                   - name: ml-pipeline-ui-artifact
-                    ## TODO: apply the gomplate image tag values
-                    image: "gcr.io/ml-pipeline/frontend:2.0.0-alpha.5"
+                    ## NOTE: $(kfp-app-version) is a Kustomize variable which is replaced during Kustomize rendering
+                    image: {{< printf "%s:%s" .Values.kubeflow_tools.pipelines.images.kfpFrontend.repository (.Values.kubeflow_tools.pipelines.images.kfpFrontend.tag | default "$(kfp-app-version)") | quote >}}
                     imagePullPolicy: IfNotPresent
                     ports:
                       - containerPort: 3000
@@ -281,12 +278,12 @@ spec:
                 protocol: TCP
                 targetPort: 3000
 
+    {{<- if and .Values.kubeflow_tools.pipelines.profileResourceGeneration.kfpApiTokenPodDefault .Values.kubeflow_tools.poddefaults_webhook.enabled >}}
+    {{<- "\n" >}}
     ################################################################################
-    ## PodDefault/access-ml-pipeline
+    ## PodDefault/kubeflow-pipelines-api-token
     ################################################################################
-    ## TODO: make this optional to include (and explain how it works)
-    ##       https://www.kubeflow.org/docs/components/pipelines/v1/sdk/connect-api/#full-kubeflow-subfrom-inside-clustersub
-    - name: PodDefault--access-ml-pipeline
+    - name: PodDefault--kubeflow-pipelines-api-token
       match:
         any:
           - resources:
@@ -298,18 +295,18 @@ spec:
       generate:
         apiVersion: kubeflow.org/v1alpha1
         kind: PodDefault
-        name: access-ml-pipeline
+        name: kubeflow-pipelines-api-token
         namespace: "{{ request.object.metadata.name }}"
         synchronize: true
         data:
           spec:
-            desc: "Allow access to Kubeflow Pipelines"
+            desc: "Mount a serviceAccountToken volume which can be used to authenticate with the Kubeflow Pipelines API"
             env:
               - name: KF_PIPELINES_SA_TOKEN_PATH
                 value: "/var/run/secrets/ml-pipeline/token"
             selector:
               matchLabels:
-                access-ml-pipeline: 'true'
+                kubeflow-pipelines-api-token: "true"
             volumeMounts:
               - mountPath: "/var/run/secrets/ml-pipeline"
                 name: volume-ml-pipeline-token
@@ -322,3 +319,4 @@ spec:
                         audience: pipelines.kubeflow.org
                         expirationSeconds: 7200
                         path: token
+    {{<- end >}}
