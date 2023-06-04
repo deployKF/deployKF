@@ -10,7 +10,8 @@ generatorOptions:
   disableNameSuffixHash: true
 images:
 - name: docker.io/kubeflownotebookswg/poddefaults-webhook
-  newTag: v1.6.1
+  newName: docker.io/kubeflownotebookswg/poddefaults-webhook
+  newTag: v1.7.0
 kind: Kustomization
 namespace: kubeflow
 resources:

@@ -1549,6 +1549,19 @@ kubeflow_tools:
   poddefaults_webhook:
     enabled: true
 
+    ## extra manifests
+    ##  - a list of strings containing extra Kubernetes resource manifests
+    ##  - strings can include deployKF templates `{{< ... >}}`
+    ##
+    extraManifests: []
+
+    ## image overrides
+    ##
+    images:
+      poddefaultsWebhook:
+        repository: docker.io/kubeflownotebookswg/poddefaults-webhook
+        tag: ~
+
 
   ## --------------------------------------
   ##             tensorboards

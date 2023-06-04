@@ -9,7 +9,14 @@ resources:
   ## upstream
   - upstream/apps/admission-webhook/upstream/overlays/cert-manager
 
+  ## local
+  {{<- if .Values.kubeflow_tools.poddefaults_webhook.extraManifests >}}
+  - resources/extra-manifests.yaml
+  {{<- end >}}
+
 images:
   - name: docker.io/kubeflownotebookswg/poddefaults-webhook
-    newName: docker.io/kubeflownotebookswg/poddefaults-webhook
-    newTag: v1.6.1
+    newName: {{< .Values.kubeflow_tools.poddefaults_webhook.images.poddefaultsWebhook.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.poddefaults_webhook.images.poddefaultsWebhook.tag >}}
+    newTag: {{< .Values.kubeflow_tools.poddefaults_webhook.images.poddefaultsWebhook.tag | quote >}}
+    {{<- end >}}

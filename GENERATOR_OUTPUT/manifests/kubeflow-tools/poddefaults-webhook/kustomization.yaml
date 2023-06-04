@@ -9,7 +9,8 @@ resources:
   ## upstream
   - upstream/apps/admission-webhook/upstream/overlays/cert-manager
 
+  ## local
+
 images:
   - name: docker.io/kubeflownotebookswg/poddefaults-webhook
-    newName: docker.io/kubeflownotebookswg/poddefaults-webhook
-    newTag: v1.6.1
+    newName: "docker.io/kubeflownotebookswg/poddefaults-webhook"
