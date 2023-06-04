@@ -1569,6 +1569,32 @@ kubeflow_tools:
   tensorboards:
     enabled: true
 
+    ## extra manifests
+    ##  - a list of strings containing extra Kubernetes resource manifests
+    ##  - strings can include deployKF templates `{{< ... >}}`
+    ##
+    extraManifests: []
+
+    ## image overrides
+    ##
+    images:
+      tensorboardController:
+        repository: docker.io/kubeflownotebookswg/tensorboard-controller
+        tag: ~
+
+      tensorboardsWebApp:
+        repository: docker.io/kubeflownotebookswg/tensorboards-web-app
+        tag: ~
+
+      kubeRbacProxy:
+        repository: gcr.io/kubebuilder/kube-rbac-proxy
+        tag: ~
+
+    ## the image used for all spawned tensorboard pods
+    ## - sets `TENSORBOARD_IMAGE` environment variable in the tensorboard-controller
+    ##
+    tensorboardImage: "docker.io/tensorflow/tensorflow:2.5.1"
+
 
   ## --------------------------------------
   ##           training-operator

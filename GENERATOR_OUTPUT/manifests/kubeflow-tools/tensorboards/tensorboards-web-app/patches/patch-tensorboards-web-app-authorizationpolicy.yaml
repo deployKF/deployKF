@@ -1,0 +1,16 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: tensorboards-web-app
+  namespace: kubeflow
+spec:
+  rules:
+    ## allow requests from `deploykf-istio-gateway` Pods
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/deploykf-istio-gateway/sa/deploykf-gateway"
+      to:
+        - operation:
+            ports:
+              - "5000"

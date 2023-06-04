@@ -8,7 +8,8 @@ configMapGenerator:
   name: parameters
 images:
 - name: docker.io/kubeflownotebookswg/tensorboards-web-app
-  newTag: v1.6.1
+  newName: docker.io/kubeflownotebookswg/tensorboards-web-app
+  newTag: v1.7.0
 kind: Kustomization
 namePrefix: tensorboards-web-app-
 namespace: kubeflow
@@ -50,6 +51,13 @@ vars:
 - fieldref:
     fieldPath: data.TWA_PREFIX
   name: TWA_PREFIX
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: data.TWA_APP_SECURE_COOKIES
+  name: TWA_APP_SECURE_COOKIES
   objref:
     apiVersion: v1
     kind: ConfigMap
