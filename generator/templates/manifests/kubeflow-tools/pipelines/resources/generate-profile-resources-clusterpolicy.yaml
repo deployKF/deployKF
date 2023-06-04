@@ -278,6 +278,31 @@ spec:
                 protocol: TCP
                 targetPort: 3000
 
+    {{<- if .Values.kubeflow_tools.pipelines.bucket.defaultPipelineRoot >}}
+    {{<- "\n" >}}
+    ################################################################################
+    ## ConfigMap/kfp-launcher
+    ################################################################################
+    - name: ConfigMap--kfp-launcher
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: v1
+        kind: ConfigMap
+        name: kfp-launcher
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          data:
+            defaultPipelineRoot: {{< .Values.kubeflow_tools.pipelines.bucket.defaultPipelineRoot | quote >}}
+    {{<- end >}}
+
     {{<- if and .Values.kubeflow_tools.pipelines.profileResourceGeneration.kfpApiTokenPodDefault .Values.kubeflow_tools.poddefaults_webhook.enabled >}}
     {{<- "\n" >}}
     ################################################################################

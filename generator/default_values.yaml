@@ -1441,6 +1441,14 @@ kubeflow_tools:
       name: kubeflow-pipelines
       region: ""
 
+      ## sets the default `pipeline_root` in KFP v2 compatible mode
+      ##  - https://www.kubeflow.org/docs/components/pipelines/v1/overview/pipeline-root/
+      ##  - if not set, KFP v2 compatible mode may not work as expected because it
+      ##    uses "minio://mlpipeline/v2/artifacts" by default
+      ##  - when set, a `ConfigMap/kfp-launcher` is created in each profile namespace
+      ##
+      defaultPipelineRoot: ""
+
     ## object store configs
     ##  - NOTE: these values are ignored when `deploykf_opt.deploykf_minio.enabled` is true,
     ##          as we automatically populate the required settings to use the embedded minio
@@ -1476,6 +1484,29 @@ kubeflow_tools:
       cacheDatabase: kfp_cache
       metadataDatabase: kfp_metadata
       pipelinesDatabase: kfp_pipelines
+
+    ## pipeline cache configs
+    ##  - NOTE: you can effectively disable caching (for KFP v1 mode) by setting both:
+    ##          `maximumMaxCacheStaleness` and `defaultMaxCacheStaleness` to "P0D"
+    ##
+    cache:
+
+      ## cached steps will have their image replaced with this value
+      ##  - the only requirement is that the image can run an `echo` command
+      ##  - kubeflow pipelines chose this image because it's small, and not subject to rate limiting
+      ##    https://github.com/kubeflow/pipelines/issues/4099
+      ##
+      image: "gcr.io/google-containers/busybox:1.27"
+
+      ## pipeline steps with `max_cache_staleness` larger than this will be reduced to this value
+      ##  - values are in RFC3339 Duration format (e.g. "P30D" for 30 days)
+      ##
+      maximumMaxCacheStaleness: ""
+
+      ## pipeline steps which do not have a `max_cache_staleness` will be set to this value
+      ##  - values are in RFC3339 Duration format (e.g. "P7D" for 7 days)
+      ##
+      defaultMaxCacheStaleness: ""
 
     ## profile resource generation configs
     ##  - we use a kyverno ClusterPolicy to generate resources needed by KFP in each profile namespace

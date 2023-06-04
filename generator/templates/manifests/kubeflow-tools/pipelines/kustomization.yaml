@@ -71,27 +71,25 @@ configMapGenerator:
       ## ================================
       ## Cache Configs
       ## ================================
-      ## TODO: create value - this is explained in pipeline-install-config
-      - cacheImage="gcr.io/google-containers/busybox"
-      ## TODO: create value - this is explained in pipeline-install-config
+      - cacheImage={{< .Values.kubeflow_tools.pipelines.cache.image | quote >}}
       - cacheNodeRestrictions="false"
-      ## TODO: create value - this is explained in pipeline-install-config
-      - MAXIMUM_CACHE_STALENESS=""
-      ## TODO: create value - this is explained in pipeline-install-config
-      - DEFAULT_CACHE_STALENESS=""
+      - MAXIMUM_CACHE_STALENESS={{< .Values.kubeflow_tools.pipelines.cache.maximumMaxCacheStaleness | quote >}}
+      - DEFAULT_CACHE_STALENESS={{< .Values.kubeflow_tools.pipelines.cache.defaultMaxCacheStaleness | quote >}}
 
       ## ================================
       ## Bucket Configs
       ## ================================
       - bucketName="{{< .Values.kubeflow_tools.pipelines.bucket.name >}}"
       - bucketRegion="{{< .Values.kubeflow_tools.pipelines.bucket.region >}}"
+      ## NOTE: this is not actually used in our manifests to create `ConfigMap/kfp-launcher`
+      ##       as we have replaced the "kubeflow-pipelines-profile-controller" with kyverno,
+      ##       specifically our `ClusterPolicy/kubeflow-pipelines--generate-profile-resources`
+      ##       creates/syncs the `ConfigMap/kfp-launcher` in each profile namespace
+      - defaultPipelineRoot={{< .Values.kubeflow_tools.pipelines.bucket.defaultPipelineRoot | quote >}}
 
       ## ================================
       ## Object Store Configs
       ## ================================
-      ## TODO: we have removed ConfigMap/kfp-launcher from profile controller, is `defaultPipelineRoot` needed?
-      ##       (it seems to be related to launcher_v2.go)
-      - defaultPipelineRoot=""
       - bucketSecure="{{< tmpl.Exec "kubeflow_pipelines.object_store.use_ssl" . >}}"
       - bucketHost="{{< tmpl.Exec "kubeflow_pipelines.object_store.hostname" . >}}"
       - bucketPort="{{< tmpl.Exec "kubeflow_pipelines.object_store.port" . >}}"

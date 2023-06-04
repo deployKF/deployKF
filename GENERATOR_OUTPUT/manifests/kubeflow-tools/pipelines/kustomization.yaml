@@ -56,13 +56,9 @@ configMapGenerator:
       ## ================================
       ## Cache Configs
       ## ================================
-      ## TODO: create value - this is explained in pipeline-install-config
-      - cacheImage="gcr.io/google-containers/busybox"
-      ## TODO: create value - this is explained in pipeline-install-config
+      - cacheImage="gcr.io/google-containers/busybox:1.27"
       - cacheNodeRestrictions="false"
-      ## TODO: create value - this is explained in pipeline-install-config
       - MAXIMUM_CACHE_STALENESS=""
-      ## TODO: create value - this is explained in pipeline-install-config
       - DEFAULT_CACHE_STALENESS=""
 
       ## ================================
@@ -70,13 +66,15 @@ configMapGenerator:
       ## ================================
       - bucketName="kubeflow-pipelines"
       - bucketRegion=""
+      ## NOTE: this is not actually used in our manifests to create `ConfigMap/kfp-launcher`
+      ##       as we have replaced the "kubeflow-pipelines-profile-controller" with kyverno,
+      ##       specifically our `ClusterPolicy/kubeflow-pipelines--generate-profile-resources`
+      ##       creates/syncs the `ConfigMap/kfp-launcher` in each profile namespace
+      - defaultPipelineRoot=""
 
       ## ================================
       ## Object Store Configs
       ## ================================
-      ## TODO: we have removed ConfigMap/kfp-launcher from profile controller, is `defaultPipelineRoot` needed?
-      ##       (it seems to be related to launcher_v2.go)
-      - defaultPipelineRoot=""
       - bucketSecure="false"
       - bucketHost="minio-api.deploykf-minio.svc.cluster.local"
       - bucketPort="9000"
