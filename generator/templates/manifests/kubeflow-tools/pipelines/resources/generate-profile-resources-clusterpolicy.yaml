@@ -325,7 +325,7 @@ spec:
         synchronize: true
         data:
           spec:
-            desc: "Mount a serviceAccountToken volume which can be used to authenticate with the Kubeflow Pipelines API"
+            desc: "Mount a serviceAccountToken to authenticate with Kubeflow Pipelines API"
             env:
               - name: KF_PIPELINES_SA_TOKEN_PATH
                 value: "/var/run/secrets/ml-pipeline/token"
