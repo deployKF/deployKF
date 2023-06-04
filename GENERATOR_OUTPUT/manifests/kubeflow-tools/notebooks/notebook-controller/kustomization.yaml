@@ -9,6 +9,8 @@ resources:
   ## upstream
   - upstream/apps/jupyter/notebook-controller/upstream/overlays/kubeflow
 
+  ## local
+
 configMapGenerator:
   - name: config
     behavior: merge

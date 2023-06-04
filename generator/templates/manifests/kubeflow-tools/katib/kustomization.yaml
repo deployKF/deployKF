@@ -13,6 +13,9 @@ resources:
   {{<- if tmpl.Exec "kubeflow_katib.mysql.auth.secret_is_cloned" . >}}
   - resources/clone-mysql-secret-clusterpolicy.yaml
   {{<- end >}}
+  {{<- if .Values.kubeflow_tools.katib.extraManifests >}}
+  - resources/extra-manifests.yaml
+  {{<- end >}}
   
   {{<- if not (tmpl.Exec "kubeflow_katib.use_embedded_mysql" .) >}}
   {{<- if not .Values.kubeflow_tools.katib.mysql.auth.existingSecret >}}

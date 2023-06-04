@@ -9,6 +9,11 @@ resources:
   ## upstream
   - upstream/apps/jupyter/notebook-controller/upstream/overlays/kubeflow
 
+  ## local
+  {{<- if .Values.kubeflow_tools.notebooks.extraManifests >}}
+  - resources/extra-manifests.yaml
+  {{<- end >}}
+
 configMapGenerator:
   - name: config
     behavior: merge
