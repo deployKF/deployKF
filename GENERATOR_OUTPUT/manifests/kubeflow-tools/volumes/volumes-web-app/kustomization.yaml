@@ -9,31 +9,22 @@ resources:
   ## upstream
   - upstream/apps/volumes-web-app/upstream/overlays/istio
 
+  ## local
+
 patchesStrategicMerge:
+  - patches/patch-volumes-web-app-authorizationpolicy.yaml
   - patches/patch-volumes-web-app-virtualservice.yaml
 
 configMapGenerator:
   - name: parameters
     behavior: merge
     literals:
+      - VWA_PREFIX="/volumes"
       - VWA_CLUSTER_DOMAIN="cluster.local"
       - VWA_USERID_HEADER="kubeflow-userid"
       - VWA_USERID_PREFIX=""
-      - VWA_PREFIX="/volumes"
       - VWA_APP_SECURE_COOKIES="true"
 
 images:
   - name: docker.io/kubeflownotebookswg/volumes-web-app
-    newName: docker.io/kubeflownotebookswg/volumes-web-app
-    newTag: v1.6.1
-
-vars:
-  ## NOTE: the upstream v1.6.1 manifests forgot to set VWA_APP_SECURE_COOKIES as a variable,
-  ##       so we fix it temporarily here (fixed in https://github.com/kubeflow/kubeflow/pull/6688)
-  - name: VWA_APP_SECURE_COOKIES
-    objref:
-      apiVersion: v1
-      kind: ConfigMap
-      name: parameters
-    fieldref:
-      fieldpath: data.VWA_APP_SECURE_COOKIES
+    newName: "docker.io/kubeflownotebookswg/volumes-web-app"

@@ -174,7 +174,7 @@ deploykf_dependencies:
         repository: https://istio-release.storage.googleapis.com/charts
 
     ## image overrides
-    ##  - when tag is unset, default is: "{charts.istioDaemon.version}-{images.defaultImageVariant}"
+    ##  - when tag is unset, default is: "{charts.istioDaemon.version}-{defaultImageVariant}"
     ##
     images:
       istioProxy:
@@ -1608,3 +1608,16 @@ kubeflow_tools:
   ## --------------------------------------
   volumes:
     enabled: true
+
+    ## extra manifests
+    ##  - a list of strings containing extra Kubernetes resource manifests
+    ##  - strings can include deployKF templates `{{< ... >}}`
+    ##
+    extraManifests: []
+
+    ## image overrides
+    ##
+    images:
+      volumesWebApp:
+        repository: docker.io/kubeflownotebookswg/volumes-web-app
+        tag: ~
