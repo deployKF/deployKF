@@ -9,12 +9,8 @@ resources:
   ## upstream
   - upstream/apps/training-operator/upstream/overlays/kubeflow
 
-patchesStrategicMerge:
-  ## NOTE: the upstream v1.6.1 manifests will crashloop due to OOM
-  ##       (fixed in https://github.com/kubeflow/training-operator/pull/1668)
-  - patches/patch-training-operator-deployment.yaml
+  ## local
 
 images:
   - name: kubeflow/training-operator
-    newName: kubeflow/training-operator
-    newTag: v1-e1434f6
+    newName: "docker.io/kubeflow/training-operator"

@@ -1602,6 +1602,19 @@ kubeflow_tools:
   training_operator:
     enabled: true
 
+    ## extra manifests
+    ##  - a list of strings containing extra Kubernetes resource manifests
+    ##  - strings can include deployKF templates `{{< ... >}}`
+    ##
+    extraManifests: []
+
+    ## image overrides
+    ##
+    images:
+      trainingOperator:
+        repository: docker.io/kubeflow/training-operator
+        tag: ~
+
 
   ## --------------------------------------
   ##                volumes

@@ -1,0 +1,4 @@
+{{<- range $manifest := .Values.kubeflow_tools.training_operator.extraManifests ->}}
+---
+{{< (tpl $manifest $) | data.YAML | data.ToYAML >}}
+{{<- end >}}
