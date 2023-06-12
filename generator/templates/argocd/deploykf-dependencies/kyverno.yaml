@@ -16,9 +16,6 @@ spec:
     targetRevision: {{< .Values.argocd.source.repo.revision | quote >}}
     path: {{< path.Join .Values.argocd.source.repo.path "manifests/deploykf-dependencies/kyverno" | quote >}}
     helm:
-      ## TODO: until kyverno chart is patched, release name should be "kyverno" to prevent crazy role names:
-      ##       https://github.com/kyverno/kyverno/issues/7246
-      releaseName: kyverno
       ignoreMissingValueFiles: true
       valueFiles:
         - values-overrides.yaml

@@ -16,9 +16,6 @@ spec:
     targetRevision: "dev"
     path: "GENERATOR_OUTPUT/manifests/deploykf-dependencies/kyverno"
     helm:
-      ## TODO: until kyverno chart is patched, release name should be "kyverno" to prevent crazy role names:
-      ##       https://github.com/kyverno/kyverno/issues/7246
-      releaseName: kyverno
       ignoreMissingValueFiles: true
       valueFiles:
         - values-overrides.yaml

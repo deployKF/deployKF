@@ -26,9 +26,6 @@ deployKF:
 ## as we reference the "kyverno" chart (https://kyverno.github.io/kyverno) in `dependencies` of Chart.yaml,
 ## we must indent our values under `kyverno:` in this file
 kyverno:
-  ## TODO: until Kyverno chart is patched, `nameOverride` must be the name of the outer ArgoCD application:
-  ##       https://github.com/kyverno/kyverno/issues/7245
-  nameOverride: dkf-dep--kyverno
   fullnameOverride: kyverno
 
   ## Cleanup cronjobs to prevent internal resources from stacking up in the cluster

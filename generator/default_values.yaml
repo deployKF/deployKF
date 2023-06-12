@@ -234,7 +234,7 @@ deploykf_dependencies:
         name: kyverno
         ## NOTE: kyverno's chart versions are NOT aligned to the kyverno app version, see:
         ##       https://artifacthub.io/packages/helm/kyverno/kyverno
-        version: 3.0.0-rc.1
+        version: 3.0.1
         repository: https://kyverno.github.io/kyverno
 
     ## image overrides
