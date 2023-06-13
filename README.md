@@ -8,7 +8,7 @@
 
 <div align="center">
   <a href="https://www.deploykf.org/" target="_blank" rel="noopener">
-    <img src="https://www.deploykf.org/assets/images/logo.svg" width="100">
+    <img src="https://www.deploykf.org/assets/images/logo_1/logo.svg" width="100">
   </a>
 </div>
 
