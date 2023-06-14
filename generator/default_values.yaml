@@ -1469,10 +1469,11 @@ kubeflow_tools:
       defaultPipelineRoot: ""
 
     ## object store configs
-    ##  - NOTE: these values are ignored when `deploykf_opt.deploykf_minio.enabled` is true,
-    ##          as we automatically populate the required settings to use the embedded minio
+    ##  - if `useExternal` is true, pipelines will use the specified external object store
+    ##  - if `useExternal` is false, pipelines will use the embedded `deploykf_opt.deploykf_minio` object store
     ##
     objectStore:
+      useExternal: false
       host: s3.amazonaws.com
       port: ""
       useSSL: true

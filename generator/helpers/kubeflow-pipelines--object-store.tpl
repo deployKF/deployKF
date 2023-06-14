@@ -3,8 +3,12 @@
 ## - NOTE: empty means false, non-empty means true
 ##
 {{<- define "kubeflow_pipelines.use_embedded_minio" ->}}
+{{<- if not .Values.kubeflow_tools.pipelines.objectStore.useExternal ->}}
 {{<- if .Values.deploykf_opt.deploykf_minio.enabled ->}}
 true
+{{<- else if .Values.kubeflow_tools.pipelines.enabled ->}}
+{{< fail "`deploykf_opt.deploykf_minio.enabled` must be true if `kubeflow_tools.pipelines.objectStore.useExternal` is false" >}}
+{{<- end ->}}
 {{<- end ->}}
 {{<- end ->}}
 
