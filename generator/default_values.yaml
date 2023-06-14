@@ -1484,10 +1484,11 @@ kubeflow_tools:
         existingSecretSecretKeyKey: "AWS_SECRET_ACCESS_KEY"
 
     ## mysql connection configs
-    ##  - NOTE: these values are ignored when `deploykf_opt.deploykf_mysql.enabled` is true,
-    ##          as we automatically populate the required settings to use the embedded mysql
+    ##  - if `useExternal` is true, pipelines will use the specified external mysql database
+    ##  - if `useExternal` is false, pipelines will use the embedded `deploykf_opt.deploykf_mysql` database
     ##
     mysql:
+      useExternal: false
       host: "mysql.example.com"
       port: 3306
       auth:
