@@ -1,3 +1,6 @@
+{{<- /* as gomplate lazily evaluates templates, we reference our check templates here so they are always run */ ->}}
+{{<- $_ := tmpl.Exec "helpers/check-values--required-components.tpl" ->}}
+
 ## JetBrains
 .idea/
 *.iml
