@@ -1046,10 +1046,11 @@ kubeflow_tools:
         tag: ~
 
     ## mysql connection configs
-    ##  - NOTE: these values are ignored when `deploykf_opt.deploykf_mysql.enabled` is true,
-    ##          as we automatically populate the required settings to use the embedded mysql
+    ##  - if `useExternal` is true, katib will use the specified external mysql database
+    ##  - if `useExternal` is false, katib will use the embedded `deploykf_opt.deploykf_mysql` database
     ##
     mysql:
+      useExternal: false
       host: "mysql.example.com"
       port: 3306
       auth:

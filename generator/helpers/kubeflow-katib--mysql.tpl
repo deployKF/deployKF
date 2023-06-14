@@ -3,8 +3,12 @@
 ## - NOTE: empty means false, non-empty means true
 ##
 {{<- define "kubeflow_katib.use_embedded_mysql" ->}}
+{{<- if not .Values.kubeflow_tools.katib.mysql.useExternal ->}}
 {{<- if .Values.deploykf_opt.deploykf_mysql.enabled ->}}
 true
+{{<- else if .Values.kubeflow_tools.katib.enabled ->}}
+{{< fail "`deploykf_opt.deploykf_mysql.enabled` must be true if `kubeflow_tools.katib.mysql.useExternal` is false" >}}
+{{<- end ->}}
 {{<- end ->}}
 {{<- end ->}}
 

@@ -65,7 +65,7 @@ false
 {{<- else if eq (tmpl.Exec "kubeflow_pipelines.object_store.use_ssl" . | conv.ToString | toLower) "false" ->}}
 true
 {{<- else ->}}
-{{< test.Fail "invalid `kubeflow_tools.pipelines.objectStore.useSSL`, must be 'true' or 'false'" >}}
+{{< fail "invalid `kubeflow_tools.pipelines.objectStore.useSSL`, must be 'true' or 'false'" >}}
 {{<- end >}}
 {{<- end ->}}
 
