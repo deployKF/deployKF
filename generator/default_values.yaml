@@ -122,6 +122,9 @@ deploykf_dependencies:
         - --enable-certificate-owner-ref=true
 
     ## istio gateway certificate issuer configs
+    ##  - if you wish to use your own ClusterIssuer, set `clusterIssuer.enabled` to false
+    ##    and set `clusterIssuer.issuerName` to the name of your issuer
+    ##    (this also works when you bring your own cert-manager deployment)
     ##
     clusterIssuer:
       enabled: true
@@ -323,7 +326,7 @@ deploykf_core:
     ##
     dex:
 
-      ## static passwords
+      ## dex static passwords
       ##  - a list of users to create in dex's built-in password database
       ##  - each element is a map with keys `email` and `password`,
       ##    the `password` is a map with the following keys:
@@ -348,7 +351,7 @@ deploykf_core:
           password:
             value: "user2"
 
-      ## connectors
+      ## dex connectors
       ##  - dex connectors which allow bridging trust to external identity providers
       ##    https://dexidp.io/docs/connectors/
       ##  - not all connector types support refresh tokens, notably "SAML 2.0" and "OAUTH 2.0" do not
@@ -361,7 +364,7 @@ deploykf_core:
       ##
       connectors: []
 
-      ## token expiry configs
+      ## dex token expiry configs
       ##  - times are in Go duration format: https://golang.org/pkg/time/#ParseDuration
       ##
       expiry:
@@ -378,7 +381,7 @@ deploykf_core:
           ## max total lifetime of a refresh token
           total: "2160h" # 90d
 
-      ## OpenID Connect clients
+      ## dex OpenID Connect clients
       ##  - [WARNING] it is strongly recommended to use custom `clientSecret` values
       ##  - a random `clientSecret` can be generated with one of the following:
       ##     - echo $(head -c32 /dev/urandom | base64 | tr -d '\n')
@@ -417,7 +420,11 @@ deploykf_core:
     ##
     oauth2Proxy:
 
-      ## cookie configs
+      ## oauth2-proxy cookie configs
+      ##  - [WARNING] it is strongly recommended to use a custom `cookie.secret` value
+      ##  - a random `cookie.secret` can be generated with one of the following:
+      ##     - echo $(head -c32 /dev/urandom | base64 | tr -d '\n')
+      ##     - python -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())'
       ##
       cookie:
         ## sets oauth2-proxy config `--cookie-name`
@@ -430,9 +437,6 @@ deploykf_core:
         refresh: "60m"
 
         ## sets oauth2-proxy config `--cookie-secret`
-        ## [WARNING] it is strongly recommended to override this value, generate using one of:
-        ##  - echo $(head -c32 /dev/urandom | base64 | tr -d '\n')
-        ##  - python -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())'
         secret:
           value: "cccccccccccccccc"
           existingSecret: ""
@@ -623,7 +627,7 @@ deploykf_core:
 
       ## the default email to set as the OWNER of profiles
       ##  - [WARNING] treat this as a super-admin service account,
-      ##              that is, people should not use this account day-to-day
+      ##              that is, people should NOT use this account day-to-day
       ##  - [WARNING] changing the owner of an existing profile is currently a manual process
       ##              https://github.com/kubeflow/kubeflow/issues/6576
       ##
@@ -639,7 +643,7 @@ deploykf_core:
         ##
         role: view
 
-        ## if the user can ~connect~ to notebooks in the profile
+        ## if the user can ~connect~ to notebooks in the profile by default
         notebooksAccess: false
 
       ## the default plugins for profiles
@@ -688,6 +692,7 @@ deploykf_core:
         ##  - `user`: the `id` of the user from the `users` list
         ##  - `role`: the RBAC role to bind to the user ("edit" or "view")
         ##  - `notebooksAccess`: if the user can ~connect~ to notebooks in the profile
+        ##
         members:
           - user: user-1
             role: edit
@@ -726,7 +731,7 @@ deploykf_opt:
   ##            deploykf-minio
   ## --------------------------------------
   deploykf_minio:
-    enabled: true
+    enabled: false
     namespace: deploykf-minio
 
     ## values overrides
@@ -786,9 +791,9 @@ deploykf_opt:
       size: 5Gi
 
     ## root user configs for minio
-    ##  - [WARNING] it is strongly recommended to override these values
-    ##  - [WARNING] the root account is used in post-install jobs to create buckets and policies
-    ##              however, it remains active and usable after install
+    ##  - [WARNING] it is strongly recommended to override these credentials
+    ##  - if Kubeflow Pipelines is not configured to use an external object-store,
+    ##    all services and jobs will access minio using this account
     ##
     rootUser:
       username: minioadmin
@@ -831,6 +836,7 @@ deploykf_opt:
     ##    https://min.io/docs/minio/container/administration/identity-access-management/policy-based-access-control.html
     ##
     policies:
+      ## TODO: consider what the default should be, and if the sample values should be different
       ## TODO: explain why this policy is called "minio-console"
       ##       (because `identity.openid.policyClaim` is set to "aud")
       - name: minio-console
@@ -856,7 +862,7 @@ deploykf_opt:
   ##            deploykf-mysql
   ## --------------------------------------
   deploykf_mysql:
-    enabled: true
+    enabled: false
     namespace: deploykf-mysql
 
     ## values overrides
@@ -911,6 +917,8 @@ deploykf_opt:
       size: 5Gi
 
     ## configs for the "root@localhost" mysql user
+    ##  - [WARNING] it is strongly recommended to override these credentials
+    ##  - as this is "root@localhost", these credentials can only be used from within the pod
     ##  - these credentials are used by the liveness probes
     ##
     rootUser:
@@ -919,7 +927,9 @@ deploykf_opt:
       existingSecretPasswordKey: "password"
 
     ## configs for the kubeflow mysql user
-    ##  - these credentials are used by the kubeflow apps
+    ##  - [WARNING] it is strongly recommended to override these credentials
+    ##  - if a Kubeflow app requires MySQL and is not configured to use an external database,
+    ##    it will use these credentials
     ##
     kubeflowUser:
       username: kubeflow
@@ -976,7 +986,7 @@ kubeflow_dependencies:
   ##        kubeflow-argo-workflows
   ## --------------------------------------
   kubeflow_argo_workflows:
-    enabled: true
+    enabled: false
     namespace: kubeflow-argo-workflows
 
     ## values overrides
@@ -1022,7 +1032,7 @@ kubeflow_tools:
   ##                 katib
   ## --------------------------------------
   katib:
-    enabled: true
+    enabled: false
 
     ## extra manifests
     ##  - a list of strings containing extra Kubernetes resource manifests
@@ -1047,7 +1057,8 @@ kubeflow_tools:
 
     ## mysql connection configs
     ##  - if `useExternal` is true, katib will use the specified external mysql database
-    ##  - if `useExternal` is false, katib will use the embedded `deploykf_opt.deploykf_mysql` database
+    ##  - if `useExternal` is false, katib will use the embedded `deploykf_opt.deploykf_mysql` database,
+    ##    and all other configs will be ignored
     ##
     mysql:
       useExternal: false
@@ -1069,7 +1080,7 @@ kubeflow_tools:
   ##               notebooks
   ## --------------------------------------
   notebooks:
-    enabled: true
+    enabled: false
 
     ## extra manifests
     ##  - a list of strings containing extra Kubernetes resource manifests
@@ -1402,7 +1413,7 @@ kubeflow_tools:
   ##               pipelines
   ## --------------------------------------
   pipelines:
-    enabled: true
+    enabled: false
 
     ## extra manifests
     ##  - a list of strings containing extra Kubernetes resource manifests
@@ -1470,7 +1481,8 @@ kubeflow_tools:
 
     ## object store configs
     ##  - if `useExternal` is true, pipelines will use the specified external object store
-    ##  - if `useExternal` is false, pipelines will use the embedded `deploykf_opt.deploykf_minio` object store
+    ##  - if `useExternal` is false, pipelines will use the embedded `deploykf_opt.deploykf_minio` object store,
+    ##    and all other configs will be ignored
     ##
     objectStore:
       useExternal: false
@@ -1478,15 +1490,16 @@ kubeflow_tools:
       port: ""
       useSSL: true
       auth:
-        accessKey: minioadmin
-        secretKey: minioadmin
+        accessKey: my-access-key
+        secretKey: my-secret-key
         existingSecret: ""
         existingSecretAccessKeyKey: "AWS_ACCESS_KEY_ID"
         existingSecretSecretKeyKey: "AWS_SECRET_ACCESS_KEY"
 
     ## mysql connection configs
     ##  - if `useExternal` is true, pipelines will use the specified external mysql database
-    ##  - if `useExternal` is false, pipelines will use the embedded `deploykf_opt.deploykf_mysql` database
+    ##  - if `useExternal` is false, pipelines will use the embedded `deploykf_opt.deploykf_mysql` database,
+    ##    and all other configs will be ignored
     ##
     mysql:
       useExternal: false
@@ -1507,8 +1520,8 @@ kubeflow_tools:
       pipelinesDatabase: kfp_pipelines
 
     ## pipeline cache configs
-    ##  - NOTE: you can effectively disable caching (for KFP v1 mode) by setting both:
-    ##          `maximumMaxCacheStaleness` and `defaultMaxCacheStaleness` to "P0D"
+    ##  - note, you can effectively disable caching (for KFP v1 mode) by setting both
+    ##    `maximumMaxCacheStaleness` and `defaultMaxCacheStaleness` to "P0D"
     ##
     cache:
 
@@ -1538,7 +1551,7 @@ kubeflow_tools:
       ## if a PodDefault named "kubeflow-pipelines-api-token" should be generated in each profile namespace
       ##  - the generated PodDefault will mount a serviceAccountToken volume which can be used to authenticate
       ##    with the Kubeflow Pipelines API on Pods which have a `kubeflow-pipelines-api-token` label with value "true"
-      ##  - for more information, see the "Full Kubeflow (from outside cluster)" section of the following page:
+      ##  - for more information, see the "Full Kubeflow (from inside cluster)" section of the following page:
       ##    https://www.kubeflow.org/docs/components/pipelines/v1/sdk/connect-api/
       ##  - the PodDefault will NOT be generated if `kubeflow_tools.poddefaults_webhook.enabled` is false,
       ##    regardless of this setting
@@ -1550,7 +1563,7 @@ kubeflow_tools:
   ##          poddefaults-webhook
   ## --------------------------------------
   poddefaults_webhook:
-    enabled: true
+    enabled: false
 
     ## extra manifests
     ##  - a list of strings containing extra Kubernetes resource manifests
@@ -1570,7 +1583,7 @@ kubeflow_tools:
   ##             tensorboards
   ## --------------------------------------
   tensorboards:
-    enabled: true
+    enabled: false
 
     ## extra manifests
     ##  - a list of strings containing extra Kubernetes resource manifests
@@ -1603,7 +1616,7 @@ kubeflow_tools:
   ##           training-operator
   ## --------------------------------------
   training_operator:
-    enabled: true
+    enabled: false
 
     ## extra manifests
     ##  - a list of strings containing extra Kubernetes resource manifests
@@ -1623,7 +1636,7 @@ kubeflow_tools:
   ##                volumes
   ## --------------------------------------
   volumes:
-    enabled: true
+    enabled: false
 
     ## extra manifests
     ##  - a list of strings containing extra Kubernetes resource manifests

@@ -28,6 +28,13 @@
 {{< fail "`deploykf_core.deploykf_istio_gateway.enabled` must be true, 'deploykf-istio-gateway' is a required component" >}}
 {{<- end ->}}
 
+## --------------------------------------
+##      deploykf-profiles-generator
+## --------------------------------------
+{{<- if not .Values.deploykf_core.deploykf_profiles_generator.enabled ->}}
+{{< fail "`deploykf_core.deploykf_profiles_generator.enabled` must be true, 'deploykf-profiles-generator' is a required component" >}}
+{{<- end ->}}
+
 ## --------------------------------------------------------------------------------
 ##
 ##                              kubeflow-dependencies

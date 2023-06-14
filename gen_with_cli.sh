@@ -7,5 +7,5 @@ cd "$THIS_SCRIPT_PATH"
 
 deploykf generate \
   --source-path ./generator \
-  --values ./values.yaml \
+  --values ./sample-values.yaml \
   --output-dir ./GENERATOR_OUTPUT

@@ -7,7 +7,7 @@ cd "$THIS_SCRIPT_PATH"
 
 GENERATOR_SOURCE_PATH="./generator"
 GENERATOR_OUTPUT_PATH="./GENERATOR_OUTPUT"
-CUSTOM_VALUES_PATH="./values.yaml"
+CUSTOM_VALUES_PATH="./sample-values.yaml"
 
 # clean the generator output directory
 rm -rf "$GENERATOR_OUTPUT_PATH"
