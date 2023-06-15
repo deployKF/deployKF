@@ -18,3 +18,15 @@ spec:
   destination:
     server: "https://kubernetes.default.svc"
     namespace: kubeflow
+  ignoreDifferences:
+    ## `caBundle` is injected by cert-manager
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      jqPathExpressions:
+        - ".webhooks[]?.clientConfig.caBundle"
+
+    ## `rules` are aggregated when `aggregationRule.clusterRoleSelectors` is set
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+      jqPathExpressions:
+        - "select(.aggregationRule.clusterRoleSelectors | length > 0) | .rules"

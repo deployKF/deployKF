@@ -28,4 +28,4 @@ spec:
       kind: ValidatingWebhookConfiguration
       name: istiod-default-validator
       jqPathExpressions:
-        - ".webhooks[].failurePolicy"
+        - ".webhooks[]?.failurePolicy"

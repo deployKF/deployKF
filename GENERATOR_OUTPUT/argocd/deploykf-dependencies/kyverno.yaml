@@ -24,6 +24,6 @@ spec:
     namespace: "kyverno"
   syncPolicy:
     syncOptions:
-      ## kyverno will fail to sync if `Replace` or `ServerSideApply` is not true
-      ## https://kyverno.io/docs/installation/#notes-for-argocd-users
+      ## kyverno will fail to sync if not using one of `Replace` or `ServerSideApply`
+      ## https://kyverno.io/docs/installation/platform-notes/#notes-for-argocd-users
       - ServerSideApply=true
