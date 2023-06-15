@@ -4,8 +4,6 @@ metadata:
   name: kubeflow-pipelines--generate-profile-resources
 spec:
   generateExisting: true
-  ## TODO: kyverno 1.10 made a breaking change without an api version bump https://github.com/kyverno/kyverno/issues/7319
-  #generateExistingOnPolicyUpdate: true
   rules:
     ################################################################################
     ## ConfigMap/metadata-grpc-configmap
