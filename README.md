@@ -51,13 +51,20 @@
 
 Get started with deployKF by following these steps:
 
-1. clone your private manifest repo, and make the following changes:
-    1. create an initial `custom-values.yaml` file ~~with the interactive `deploykf init-values --source-version "v0.1.0-alpha.0"` command~~ _(not yet implemented)_
-        - _TIP: for now, use the [`values.yaml`](values.yaml) and [`generator/default_values.yaml`](generator/default_values.yaml) files in this repo as a starting point_
-    2. make further customizations to your `custom-values.yaml` file
-        - _TIP: make sure you set `argocd.source.repo.url` and `argocd.source.repo.revision` to the correct values for your git repo_
-    3. generate your manifests using the `deploykf generate` command:
-        - `deploykf generate --source-version "v0.1.0-alpha.0" --values ./custom-values.yaml --output-dir ./GENERATOR_OUTPUT`
+1. prepare your private git repo:
+    1. create an initial `custom-values.yaml` file:
+        - ~~start by using the interactive `deploykf init-values --source-version "X.X.X"` command~~ _(not yet implemented)_
+        - start by copying the [`sample-values.yaml`](sample-values.yaml) file, which includes a reasonable set of default values with all tools enabled
+    2. customize your `custom-values.yaml` file:
+        - _TIP: refer to [`generator/default_values.yaml`](generator/default_values.yaml) for the full list of available values_
+        - _TIP: set `argocd.source.repo.url` and `argocd.source.repo.revision` to the correct values for your git repo_
+        - _TIP: change which of the [supported tools](https://www.deploykf.org/reference/tools/) are deployed by changing their `enabled` values_
+    3. generate your manifests:
+        - _TIP: you may specify `--values` multiple times, they will be merged with later ones taking precedence_
+        - from an official release version:
+            - `deploykf generate --source-version "X.X.X" --values ./custom-values.yaml --output-dir ./GENERATOR_OUTPUT`
+        - from a local development folder:
+            - `deploykf generate --source-path "./generator" --values ./custom-values.yaml --output-dir ./GENERATOR_OUTPUT`
     4. commit the generated files (and any other files you may want) to your private git repo: 
         - `git add GENERATOR_OUTPUT`
         - `git commit -m "my commit message"`
@@ -65,8 +72,9 @@ Get started with deployKF by following these steps:
 2. manually apply the generated ArgoCD ["app of apps"](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/#app-of-apps-pattern) to your Kubernetes cluster:
     - `kubectl apply --filename GENERATOR_OUTPUT/app-of-apps.yaml`
 3. go to your ArgoCD web interface, and sync the ArgoCD applications:
-    1. _WARNING: you __MUST SYNC THE APPLICATIONS IN THE ORDER LISTED BELOW__, as some applications depend on others_
-    2. `deploykf-app-of-apps`
+    1. (_WARNING: you __MUST SYNC THE APPLICATIONS IN THE ORDER LISTED BELOW__, as some applications depend on others_)
+    2. __app-of-apps__
+        1. `deploykf-app-of-apps`
     3. __deploykf-dependencies__ _(label: `app.kubernetes.io/component: deploykf-dependencies`)_
         1. `dkf-dep--kyverno`
         2. `dkf-dep--cert-manager`
