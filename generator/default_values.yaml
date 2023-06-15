@@ -966,6 +966,17 @@ deploykf_opt:
     ##
     customDatabases: []
 
+    ## mysql configuration file
+    ##  - `disable_log_bin` is set to avoid excessive disk usage by Kubeflow Pipelines:
+    ##    https://github.com/kubeflow/manifests/issues/2402
+    ##  - `default_authentication_plugin` must be `mysql_native_password` due to an issue in Kubeflow Pipelines:
+    ##    https://github.com/kubeflow/pipelines/issues/9549
+    ##
+    configuration: |
+      [mysqld]
+      disable_log_bin
+      default_authentication_plugin=mysql_native_password
+
 
 ## --------------------------------------------------------------------------------
 ##

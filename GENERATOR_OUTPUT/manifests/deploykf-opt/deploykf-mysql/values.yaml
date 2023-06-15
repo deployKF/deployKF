@@ -59,11 +59,7 @@ mysql:
 
   ## the string content of a config file mounted at `/etc/mysql/conf.d/custom.cnf`
   ##
-  ## TODO: test setting `default_authentication_plugin` as `caching_sha2_password`
-  ##       ensure that kubeflow pipelines still works (e.g. uses 8.0 compatible client)
-  configuration: |
-    [mysqld]
-    default_authentication_plugin=mysql_native_password
+  configuration: "[mysqld]\ndisable_log_bin\ndefault_authentication_plugin=mysql_native_password\n"
 
   ## configs for the "root@localhost" mysql user
   ##
