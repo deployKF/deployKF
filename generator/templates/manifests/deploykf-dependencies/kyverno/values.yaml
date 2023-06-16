@@ -1,6 +1,6 @@
 {{<- define "default_extra_resources" >}}
-## we must give extra permissions so that kyverno can generate resources within profile namespaces
 rules:
+  ## these permissions are so that kyverno can generate resources within profile namespaces
   - apiGroups: [ "" ]
     resources: [ "services" ]
   - apiGroups: [ "apps" ]
@@ -9,6 +9,9 @@ rules:
     resources: [ "authorizationpolicies" ]
   - apiGroups: [ "networking.istio.io" ]
     resources: [ "destinationrules" ]
+  ## there permissions are so that kyverno can mutate these resources for automatic restarts on secret changes
+  - apiGroups: [ "apps" ]
+    resources: [ "statefulsets" ]
 {{<- end >}}
 {{<- $extra_resources := ((tmpl.Exec "default_extra_resources" .) | yaml).rules >}}
 {{<- range $rule := .Values.deploykf_dependencies.kyverno.extraResourceRules >}}

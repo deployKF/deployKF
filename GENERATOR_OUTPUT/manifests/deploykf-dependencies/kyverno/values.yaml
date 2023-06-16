@@ -55,7 +55,7 @@ kyverno:
       pullPolicy: "IfNotPresent"
     rbac:
       clusterRole:
-        extraResources: [{"apiGroups":[""],"resources":["services"]},{"apiGroups":["apps"],"resources":["deployments"]},{"apiGroups":["security.istio.io"],"resources":["authorizationpolicies"]},{"apiGroups":["networking.istio.io"],"resources":["destinationrules"]},{"apiGroups":["kubeflow.org"],"resources":["poddefaults"]}]
+        extraResources: [{"apiGroups":[""],"resources":["services"]},{"apiGroups":["apps"],"resources":["deployments"]},{"apiGroups":["security.istio.io"],"resources":["authorizationpolicies"]},{"apiGroups":["networking.istio.io"],"resources":["destinationrules"]},{"apiGroups":["apps"],"resources":["statefulsets"]},{"apiGroups":["kubeflow.org"],"resources":["poddefaults"]}]
 
   ## Cleanup controller configuration
   cleanupController:
@@ -67,7 +67,7 @@ kyverno:
       pullPolicy: "IfNotPresent"
     rbac:
       clusterRole:
-        extraResources: [{"apiGroups":[""],"resources":["services"]},{"apiGroups":["apps"],"resources":["deployments"]},{"apiGroups":["security.istio.io"],"resources":["authorizationpolicies"]},{"apiGroups":["networking.istio.io"],"resources":["destinationrules"]},{"apiGroups":["kubeflow.org"],"resources":["poddefaults"]}]
+        extraResources: [{"apiGroups":[""],"resources":["services"]},{"apiGroups":["apps"],"resources":["deployments"]},{"apiGroups":["security.istio.io"],"resources":["authorizationpolicies"]},{"apiGroups":["networking.istio.io"],"resources":["destinationrules"]},{"apiGroups":["apps"],"resources":["statefulsets"]},{"apiGroups":["kubeflow.org"],"resources":["poddefaults"]}]
 
   ## Reports controller configuration
   reportsController:
