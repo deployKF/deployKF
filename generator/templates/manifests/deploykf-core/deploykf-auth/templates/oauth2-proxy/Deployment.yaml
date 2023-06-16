@@ -102,6 +102,7 @@ spec:
           secret:
             secretName: oauth2-proxy-config
         {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
+        ## TODO: check if oauth2-proxy needs to restart when CA cert changes
         - name: gateway-root-ca-cert
           configMap:
             name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}

@@ -72,8 +72,6 @@ dex:
       clientId: "oauth2-proxy"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
-        ## TODO: add automatic restart when secret changes
-        ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
         existingSecret: ""
         existingSecretKey: "client_secret"
 
@@ -85,8 +83,6 @@ dex:
       clientId: "minio-console"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
-        ## TODO: add automatic restart when secret changes
-        ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
         existingSecret: ""
         existingSecretKey: "client_secret"
 
@@ -98,17 +94,15 @@ dex:
       clientId: "argo-server"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
-        ## TODO: add automatic restart when secret changes
-        ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
         existingSecret: ""
         existingSecretKey: "client_secret"
 
-  ## TODO: add automatic restart when secret changes
-  ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
+  ## dex static passwords
+  ##
   staticPasswords: [{"email":"admin@example.com","password":{"value":"admin"}},{"email":"user1@example.com","password":{"value":"user1"}},{"email":"user2@example.com","password":{"value":"user2"}}]
 
-  ## TODO: add automatic restart when secret changes
-  ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
+  ## dex connectors
+  ##
   connectors: []
 
 
@@ -152,7 +146,5 @@ oauth2Proxy:
       perRequest: true
     secret:
       value: "cccccccccccccccc"
-      ## TODO: add automatic restart when secret changes
-      ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
       existingSecret: ""
       existingSecretKey: "cookie_secret"

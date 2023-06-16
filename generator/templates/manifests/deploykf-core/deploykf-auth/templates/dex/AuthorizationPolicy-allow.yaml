@@ -27,7 +27,7 @@ spec:
             ports:
               - "5556"
 
-    ## TODO: we only need this if we use `EnvoyFilter/deploykf-auth--jwt-validate`
+    ## TODO: we only need this if services begin verifying the JWTs via the Kubernetes Service
     ## allow requests to the JWKS endpoint from anywhere
     #- to:
     #    - operation:
