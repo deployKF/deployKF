@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: minio-create-policies
+  name: deploykf-minio-create-policies
   namespace: {{ .Release.Namespace | quote }}
   labels:
     helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
@@ -30,7 +30,7 @@ spec:
       nodeSelector: {}
       affinity: {}
       tolerations: []
-      serviceAccountName: minio
+      serviceAccountName: deploykf-minio
       securityContext: {}
       initContainers: []
       containers:
@@ -73,7 +73,7 @@ spec:
                   name: {{ .Values.minio.rootUser.existingSecret | quote }}
                   key: {{ .Values.minio.rootUser.existingSecretUsernameKey | quote }}
                   {{- else }}
-                  name: minio-root-user
+                  name: deploykf-minio-root-user
                   key: username
                   {{- end }}
             - name: MINIO_ROOT_PASSWORD
@@ -83,7 +83,7 @@ spec:
                   name: {{ .Values.minio.rootUser.existingSecret | quote }}
                   key: {{ .Values.minio.rootUser.existingSecretPasswordKey | quote }}
                   {{- else }}
-                  name: minio-root-user
+                  name: deploykf-minio-root-user
                   key: password
                   {{- end }}
           volumeMounts:
@@ -102,7 +102,7 @@ spec:
           emptyDir: {}
         - name: minio-policies
           configMap:
-            name: minio-policies
+            name: deploykf-minio-policies
         {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
         - name: gateway-root-ca-cert
           configMap:

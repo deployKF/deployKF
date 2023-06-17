@@ -76,9 +76,9 @@ configMapGenerator:
       ## Object Store Configs
       ## ================================
       - bucketSecure="false"
-      - bucketHost="minio-api.deploykf-minio.svc.cluster.local"
+      - bucketHost="deploykf-minio-api.deploykf-minio.svc.cluster.local"
       - bucketPort="9000"
-      - bucketEndpoint="minio-api.deploykf-minio.svc.cluster.local:9000"
+      - bucketEndpoint="deploykf-minio-api.deploykf-minio.svc.cluster.local:9000"
 
       ## ================================
       ## MySQL Configs

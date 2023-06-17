@@ -211,7 +211,7 @@ spec:
                         ## must be empty, or kubeflow pipelines will attempt to append the namespace to MINIO_HOST
                         value: ""
                       - name: MINIO_HOST
-                        value: "minio-api.deploykf-minio.svc.cluster.local"
+                        value: "deploykf-minio-api.deploykf-minio.svc.cluster.local"
                       - name: MINIO_PORT
                         value: "9000"
                       - name: MINIO_SSL
@@ -233,7 +233,7 @@ spec:
                       - name: AWS_REGION
                         value: ""
                       - name: AWS_S3_ENDPOINT
-                        value: "minio-api.deploykf-minio.svc.cluster.local:9000"
+                        value: "deploykf-minio-api.deploykf-minio.svc.cluster.local:9000"
                       - name: AWS_ACCESS_KEY_ID
                         valueFrom:
                           secretKeyRef:

@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: minio-create-buckets
+  name: deploykf-minio-create-buckets
   namespace: {{ .Release.Namespace | quote }}
   labels:
     helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
@@ -30,7 +30,7 @@ spec:
       nodeSelector: {}
       affinity: {}
       tolerations: []
-      serviceAccountName: minio
+      serviceAccountName: deploykf-minio
       securityContext: {}
       initContainers: []
       containers:
@@ -78,7 +78,7 @@ spec:
                   name: {{ .Values.minio.rootUser.existingSecret | quote }}
                   key: {{ .Values.minio.rootUser.existingSecretUsernameKey | quote }}
                   {{- else }}
-                  name: minio-root-user
+                  name: deploykf-minio-root-user
                   key: username
                   {{- end }}
             - name: MINIO_ROOT_PASSWORD
@@ -88,7 +88,7 @@ spec:
                   name: {{ .Values.minio.rootUser.existingSecret | quote }}
                   key: {{ .Values.minio.rootUser.existingSecretPasswordKey | quote }}
                   {{- else }}
-                  name: minio-root-user
+                  name: deploykf-minio-root-user
                   key: password
                   {{- end }}
           volumeMounts:

@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: minio
+  name: deploykf-minio
   labels:
     helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
     app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
@@ -43,7 +43,7 @@ spec:
       nodeSelector: {}
       affinity: {}
       tolerations: []
-      serviceAccountName: minio
+      serviceAccountName: deploykf-minio
       securityContext: {}
       initContainers: []
       containers:
@@ -66,7 +66,7 @@ spec:
                   name: {{ .Values.minio.rootUser.existingSecret | quote }}
                   key: {{ .Values.minio.rootUser.existingSecretUsernameKey | quote }}
                   {{- else }}
-                  name: minio-root-user
+                  name: deploykf-minio-root-user
                   key: username
                   {{- end }}
             - name: MINIO_ROOT_PASSWORD
@@ -76,7 +76,7 @@ spec:
                   name: {{ .Values.minio.rootUser.existingSecret | quote }}
                   key: {{ .Values.minio.rootUser.existingSecretPasswordKey | quote }}
                   {{- else }}
-                  name: minio-root-user
+                  name: deploykf-minio-root-user
                   key: password
                   {{- end }}
 
@@ -106,7 +106,7 @@ spec:
                   name: {{ .Values.minio.identity.openid.clientSecret.existingSecret | quote }}
                   key: {{ .Values.minio.identity.openid.clientSecret.existingSecretKey | quote }}
                   {{- else }}
-                  name: minio-openid
+                  name: deploykf-minio-openid
                   key: client_secret
                   {{- end }}
             - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
@@ -199,7 +199,7 @@ spec:
             {{- if .Values.minio.persistence.existingClaim }}
             claimName: {{ .Values.minio.persistence.existingClaim | quote }}
             {{- else }}
-            claimName: minio-data
+            claimName: deploykf-minio-data
             {{- end }}
         {{- else }}
         - name: minio-data

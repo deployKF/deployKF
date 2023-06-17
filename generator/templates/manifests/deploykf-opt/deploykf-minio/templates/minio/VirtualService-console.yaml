@@ -1,7 +1,7 @@
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: minio-console
+  name: deploykf-minio-console
   labels:
     helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
     app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
@@ -17,6 +17,6 @@ spec:
     - name: minio-console-route
       route:
         - destination:
-            host: minio-console.{{ .Release.Namespace }}.svc.{{ .Values.deployKF.clusterDomain }}
+            host: deploykf-minio-console.{{ .Release.Namespace }}.svc.{{ .Values.deployKF.clusterDomain }}
             port:
               number: 9001

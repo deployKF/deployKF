@@ -7,12 +7,12 @@ deployKF_helpers:
   kubeflow_pipelines:
     use_embedded_minio: "true"
     object_store:
-      hostname: "minio-api.deploykf-minio.svc.cluster.local"
+      hostname: "deploykf-minio-api.deploykf-minio.svc.cluster.local"
       port: "9000"
-      endpoint: "minio-api.deploykf-minio.svc.cluster.local:9000"
+      endpoint: "deploykf-minio-api.deploykf-minio.svc.cluster.local:9000"
       not_use_ssl: "true"
       auth:
-        source_secret_name: "minio-root-user"
+        source_secret_name: "deploykf-minio-root-user"
         source_secret_namespace: "deploykf-minio"
         secret_name: "cloned--pipelines-bucket-secret"
         access_key_key: "username"

@@ -1,7 +1,7 @@
 apiVersion: security.istio.io/v1beta1
 kind: PeerAuthentication
 metadata:
-  name: minio-mtls
+  name: deploykf-minio-mtls
   labels:
     helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
     app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
