@@ -752,12 +752,12 @@ deploykf_opt:
     images:
       minio:
         repository: docker.io/minio/minio
-        tag: RELEASE.2023-05-18T00-05-36Z
+        tag: RELEASE.2023-06-16T02-41-06Z
         pullPolicy: IfNotPresent
 
       minioMc:
         repository: docker.io/minio/mc
-        tag: RELEASE.2023-05-18T16-59-00Z
+        tag: RELEASE.2023-06-15T15-08-26Z
         pullPolicy: IfNotPresent
 
     ## persistence configs
