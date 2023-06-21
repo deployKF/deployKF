@@ -9,4 +9,5 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: mysql
 data:
-  custom.cnf: {{ .Values.mysql.configuration | quote }}
+  custom.cnf: |
+    {{- .Values.mysql.configuration | nindent 4 }}
