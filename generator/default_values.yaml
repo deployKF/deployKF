@@ -760,6 +760,11 @@ deploykf_opt:
         tag: RELEASE.2023-06-15T15-08-26Z
         pullPolicy: IfNotPresent
 
+      kubectl:
+        repository: docker.io/bitnami/kubectl
+        tag: 1.26.6-debian-11-r1
+        pullPolicy: IfNotPresent
+
     ## persistence configs
     ##
     persistence:
@@ -802,6 +807,26 @@ deploykf_opt:
       existingSecretUsernameKey: "username"
       existingSecretPasswordKey: "password"
 
+      ## service accounts for the root user
+      ##  - these service accounts are created and/or updated by a post-install job
+      ##  - each element in the list is a map with the following fields:
+      ##     - `accessKey`: the access-key for the service account
+      ##     - `secretKey`: the secret-key for the service account
+      ##     - `existingSecret`: the name of an existing secret containing the access & secret keys
+      ##     - `existingSecretAccessKeyKey`: the key in the secret containing the access-key (default: "access_key")
+      ##     - `existingSecretSecretKeyKey`: the key in the secret containing the secret-key (default: "secret_key")
+      ##     - `generateSecret`: if true, random keys are generated and stored in `existingSecret` (default: false)
+      ##                         note, `existingSecret` must be set to a unique value for each service account
+      ##                         note, the job will fail if the secret already exists in the cluster
+      ##     - `policy`: the minio policy document as a YAML map, ~not a string~ (default: empty/root-access)
+      ##                 https://min.io/docs/minio/container/administration/identity-access-management/policy-based-access-control.html
+      ##  - WARNING: if a `policy` is not specified, the service account will have root access
+      ##  - WARNING: unlisted minio service accounts will be removed from minio
+      ##  - WARNING: unlisted kubernetes secrets with the label "deploykf-minio/generated-root-sa: true"
+      ##             will be removed from the cluster
+      ##
+      serviceAccounts: []
+
     ## identity configs
     ##
     identity:
@@ -828,12 +853,11 @@ deploykf_opt:
     buckets: []
 
     ## minio access policies
-    ##  - these policies are created and/or updated by a post-install job,
+    ##  - these policies are created and/or updated by a post-install job
     ##  - each element is a map with the following keys:
     ##     - `name`: the name of the policy
-    ##     - `policy`: the policy document (as a YAML map)
-    ##  - minio policies are explained here:
-    ##    https://min.io/docs/minio/container/administration/identity-access-management/policy-based-access-control.html
+    ##     - `policy`: the minio policy document as a YAML map, ~not a string~
+    ##                 https://min.io/docs/minio/container/administration/identity-access-management/policy-based-access-control.html
     ##
     policies:
       ## TODO: consider what the default should be, and if the sample values should be different

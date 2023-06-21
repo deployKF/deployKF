@@ -53,6 +53,16 @@ minio:
     uid: 1000
     gid: 1000
 
+  ## configs for the kubectl container image
+  ##
+  kubectlImage:
+    repository: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.repository | quote >}}
+    tag: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
+
   ## resource requests/limits for the minio Pods
   ## - spec for ResourceRequirements:
   ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
@@ -98,6 +108,11 @@ minio:
     existingSecretUsernameKey: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretUsernameKey | quote >}}
     existingSecretPasswordKey: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretPasswordKey | quote >}}
 
+    ## service accounts for the root user
+    ##  - these service accounts are created and/or updated by a post-install job
+    ##
+    serviceAccounts: {{< .Values.deploykf_opt.deploykf_minio.rootUser.serviceAccounts | toJSON >}}
+
   ## identity configs for minio
   ##
   identity:
@@ -131,6 +146,3 @@ minio:
   ##  - these policies are created and/or updated by a post-install job
   ##
   policies: {{< .Values.deploykf_opt.deploykf_minio.policies | toJSON >}}
-
-  ## TODO: consider supporting programmatic creation of access keys
-  #accessKeys: []

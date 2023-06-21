@@ -38,7 +38,7 @@ spec:
     spec:
       {{- if .Values.minio.image.pullSecret }}
       imagePullSecrets:
-        - name: {{ .Values.minio.image.pullSecret }}
+        - name: {{ .Values.minio.image.pullSecret | quote }}
       {{- end }}
       nodeSelector: {}
       affinity: {}

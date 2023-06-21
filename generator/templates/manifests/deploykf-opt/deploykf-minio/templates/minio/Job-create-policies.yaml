@@ -25,12 +25,12 @@ spec:
       restartPolicy: OnFailure
       {{- if .Values.minio.mcImage.pullSecret }}
       imagePullSecrets:
-        - name: {{ .Values.minio.mcImage.pullSecret }}
+        - name: {{ .Values.minio.mcImage.pullSecret | quote }}
       {{- end }}
       nodeSelector: {}
       affinity: {}
       tolerations: []
-      serviceAccountName: deploykf-minio
+      serviceAccountName: deploykf-minio-jobs
       securityContext: {}
       initContainers: []
       containers:

@@ -50,6 +50,16 @@ minio:
     uid: 1000
     gid: 1000
 
+  ## configs for the kubectl container image
+  ##
+  kubectlImage:
+    repository: "docker.io/bitnami/kubectl"
+    tag: "1.26.6-debian-11-r1"
+    pullPolicy: "IfNotPresent"
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
+
   ## resource requests/limits for the minio Pods
   ## - spec for ResourceRequirements:
   ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
@@ -95,6 +105,11 @@ minio:
     existingSecretUsernameKey: "username"
     existingSecretPasswordKey: "password"
 
+    ## service accounts for the root user
+    ##  - these service accounts are created and/or updated by a post-install job
+    ##
+    serviceAccounts: []
+
   ## identity configs for minio
   ##
   identity:
@@ -120,6 +135,3 @@ minio:
   ##  - these policies are created and/or updated by a post-install job
   ##
   policies: [{"name":"minio-console","policy":{"statement":[{"action":["admin:*"],"effect":"Allow"},{"action":["kms:*"],"effect":"Allow"},{"action":["s3:*"],"effect":"Allow","resource":["arn:aws:s3:::*"]}],"version":"2012-10-17"}}]
-
-  ## TODO: consider supporting programmatic creation of access keys
-  #accessKeys: []
