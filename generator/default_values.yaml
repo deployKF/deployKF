@@ -820,10 +820,10 @@ deploykf_opt:
       ##                         note, the job will fail if the secret already exists in the cluster
       ##     - `policy`: the minio policy document as a YAML map, ~not a string~ (default: empty/root-access)
       ##                 https://min.io/docs/minio/container/administration/identity-access-management/policy-based-access-control.html
-      ##  - WARNING: if a `policy` is not specified, the service account will have root access
-      ##  - WARNING: unlisted minio service accounts will be removed from minio
-      ##  - WARNING: unlisted kubernetes secrets with the label "deploykf-minio/generated-root-sa: true"
-      ##             will be removed from the cluster
+      ##  - [WARNING] if a `policy` is not specified, the service account will have root access
+      ##  - [WARNING] unlisted minio service accounts will be removed from minio
+      ##  - [WARNING] unlisted kubernetes secrets with the label "deploykf-minio/generated-root-sa: true"
+      ##              will be removed from the cluster
       ##
       serviceAccounts: []
 
