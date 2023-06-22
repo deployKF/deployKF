@@ -1,4 +1,4 @@
-{{- if or .Values.minio.buckets .Values.minio.rootUser.serviceAccounts }}
+{{- if or .Values.minio.buckets .Values.minio.policies .Values.minio.rootUser.serviceAccounts }}
 {{- $minio_endpoint := "" }}
 {{- if .Values.deployKF.gateway.tls.enabled }}
 {{- $minio_endpoint = printf "https://minio-api.%s" .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}
@@ -56,6 +56,49 @@ data:
     {{- else }}
     mc version suspend {{ $escaped__bucket_ref | squote }}
     {{- end }}
+
+    {{- end }}
+
+    ## we were successful, send quit command to istio-proxy sidecar
+    curl -sf -XPOST "http://127.0.0.1:15020/quitquitquit"
+  {{- end }}
+
+  {{- if .Values.minio.policies }}
+  create_policies.sh: |
+    #!/usr/bin/env bash
+
+    set -eou pipefail
+
+    #######################################
+    ## Main
+    #######################################
+
+    ## add an alias for the local minio server
+    mc alias set "myminio" \
+      {{ $minio_endpoint | replace `'` `'\''` | squote }} \
+      "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+
+    {{- $found_policyNames := dict }}
+
+    {{- range $index, $policy := .Values.minio.policies }}
+
+    {{- /* ensure this policy has a unique `name` */ -}}
+    {{- if $policy.name }}
+    {{- if hasKey $found_policyNames $policy.name }}
+    {{- fail (printf "elements of `minio.policies` must have unique `name`, but '%s' appears more than once" $policy.name) }}
+    {{- else }}
+    {{- $_ := set $found_policyNames $policy.name true }}
+    {{- end }}
+    {{- else }}
+    {{- fail (printf "elements of `minio.policies` must have non-empty `name`, but element %d does not" $index) }}
+    {{- end }}
+
+    {{- "\n" }}
+    ## policy #{{ $index }}
+    echo {{ (printf `INFO: processing policy #%d (name: '%s')...` $index $policy.name) | replace `'` `'\''` | squote }}
+    mc admin policy create "myminio" \
+      {{ $policy.name | replace `'` `'\''` | squote }} \
+      {{ (printf "/minio-policies/%d.json" $index) | replace `'` `'\''` | squote }}
 
     {{- end }}
 

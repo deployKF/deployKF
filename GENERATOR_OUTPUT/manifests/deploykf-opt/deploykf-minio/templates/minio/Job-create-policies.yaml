@@ -41,29 +41,8 @@ spec:
             runAsUser: {{ .Values.minio.mcImage.uid }}
             runAsGroup: {{ .Values.minio.mcImage.gid }}
           command:
-            - "/bin/bash"
-            - "-c"
-          args:
-            - |
-              ## fail fast on error
-              set -e;
-
-              ## add an alias for the local minio server
-              mc alias set "myminio" \
-                {{- if .Values.deployKF.gateway.tls.enabled }}
-                {{ printf "https://minio-api.%s" .Values.deployKF_helpers.deploykf_gateway.https_endpoint | quote }} \
-                {{- else }}
-                {{ printf "http://minio-api.%s" .Values.deployKF_helpers.deploykf_gateway.http_endpoint | quote }} \
-                {{- end }}
-                "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD";
-
-              ## create or update the defined access policies
-              {{- range $policy := .Values.minio.policies }}
-              mc admin policy create "myminio" {{ $policy.name | squote }} {{ printf "/minio-policies/%s.json" $policy.name | squote }};
-              {{- end }}
-
-              ## we were successful, send quit command to istio-proxy sidecar
-              curl -sf -XPOST "http://127.0.0.1:15020/quitquitquit";
+            - "/job-scripts/create_policies.sh"
+          args: []
           env:
             ## minio - root credentials
             - name: MINIO_ROOT_USER
@@ -87,6 +66,8 @@ spec:
                   key: password
                   {{- end }}
           volumeMounts:
+            - name: job-scripts
+              mountPath: "/job-scripts/"
             - name: mc-config
               ## we must mount a writable volume at the `/.mc/` path so that the `mc` command can store its configs
               mountPath: "/.mc/"
@@ -98,6 +79,13 @@ spec:
               readOnly: true
             {{- end }}
       volumes:
+        - name: job-scripts
+          configMap:
+            name: deploykf-minio-scripts
+            items:
+              - key: create_policies.sh
+                path: create_policies.sh
+                mode: 0755
         - name: mc-config
           emptyDir: {}
         - name: minio-policies

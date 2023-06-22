@@ -10,8 +10,8 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: minio
 data:
-  {{- range $policy := .Values.minio.policies }}
-  {{ printf "%s.json" $policy.name | quote }}: |-
+  {{- range $index, $policy := .Values.minio.policies }}
+  {{ printf "%d.json" $index | quote }}: |-
     {{- $policy.policy | default dict | toJson | nindent 4 }}
   {{- end }}
 {{- end }}
