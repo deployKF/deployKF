@@ -68,5 +68,5 @@ users:
 ## profile definitions
 ##
 profiles:
-  "team-1": {"members":[{"notebooksAccess":true,"role":"edit","user":"user-1"},{"notebooksAccess":true,"role":"edit","user":"user-2"}],"plugins":[]}
+  "team-1": {"members":[{"notebooksAccess":true,"role":"edit","user":"user-1"},{"notebooksAccess":true,"role":"edit","user":"user-2"}]}
   "team-1-prod": {"members":[{"user":"user-1"},{"user":"user-2"}]}
