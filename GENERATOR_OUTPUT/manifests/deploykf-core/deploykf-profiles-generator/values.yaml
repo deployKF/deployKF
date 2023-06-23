@@ -26,47 +26,45 @@ profileDefaults:
   ##
   profileNamePrefix: ""
 
-  ## the default email to set as the OWNER of profiles
+  ## the default email to set as the owner of profiles
   ##
   ownerEmail: "admin@example.com"
 
-  ## the default access for members of profiles
+  ## the default access for members of profiles, when not explicitly specified
   ##
   memberAccess:
 
-    ## the default RBAC role to bind to members
-    ##  - "edit" -> `ClusterRole/kubeflow-edit` -> can view/create/delete resources
-    ##  - "view" -> `ClusterRole/kubeflow-view` -> can only view resources
+    ## the Kubernetes RBAC role to bind to users in the profile namespace
+    ##  - "edit": binds "ClusterRole/kubeflow-edit" (can view/create/delete resources)
+    ##  - "view": binds "ClusterRole/kubeflow-view" (cam view resources)
     ##
     role: "view"
 
-    ## if the user can ~connect~ to notebooks in the profile
+    ## if the user can ~connect~ to kubeflow notebooks in the profile
+    ##
     notebooksAccess: false
 
-  ## the default plugins for profiles
-  ##  - available plugin "kinds":
-  ##     - "AwsIamForServiceAccount":
-  ##        https://github.com/kubeflow/kubeflow/blob/v1.7.0/components/profile-controller/controllers/plugin_iam.go#L30
-  ##     - "WorkloadIdentity":
-  ##        https://github.com/kubeflow/kubeflow/blob/v1.7.0/components/profile-controller/controllers/plugin_workload_identity.go#L39
+  ## the default plugins for profiles, when not explicitly specified
   ##
   plugins: []
 
-  ## the resource quota for this profile
+  ## the default resource quota for profiles, when not explicitly specified
   ##  - spec for ResourceQuotaSpec:
   ##    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#resourcequotaspec-v1-core
   ##
   resourceQuotaSpec: {}
 
-
 ## user entities
+##  - a list of users that can be referenced when defining profile members
 ##
-users:
-  "user-1": {"email":"user1@example.com"}
-  "user-2": {"email":"user2@example.com"}
+users: [{"email":"user1@example.com","id":"user-1"},{"email":"user2@example.com","id":"user-2"}]
+
+## group entities
+##  - a list of groups that can be referenced when defining profile members
+##
+groups: [{"id":"team-1","users":["user-1","user-2"]}]
 
 ## profile definitions
+##  - a list of profile definitions to be generated
 ##
-profiles:
-  "team-1": {"members":[{"notebooksAccess":true,"role":"edit","user":"user-1"},{"notebooksAccess":true,"role":"edit","user":"user-2"}]}
-  "team-1-prod": {"members":[{"user":"user-1"},{"user":"user-2"}]}
+profiles: [{"members":[{"access":{"notebooksAccess":true,"role":"edit"},"group":"team-1"}],"name":"team-1"},{"members":[{"access":{"notebooksAccess":false,"role":"view"},"group":"team-1"},{"access":{"notebooksAccess":true,"role":"edit"},"user":"user-1"}],"name":"team-1-prod"}]

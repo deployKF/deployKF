@@ -1,16 +1,33 @@
-{{- range $profile_name, $profile := .Values.profiles }}
-{{- $profile_name := printf "%s%s" $.Values.profileDefaults.profileNamePrefix $profile_name }}
+{{- $found_profileNames := dict }}
+{{- range $index, $profile := .Values.profiles }}
 
+{{- /* ensure this profile has a unique `name` */ -}}
+{{- if $profile.name }}
+  {{- if hasKey $found_profileNames $profile.name }}
+    {{- fail (printf "elements of `profiles` must have unique `name`, but '%s' appears more than once" $profile.name) }}
+  {{- else }}
+    {{- $_ := set $found_profileNames $profile.name true }}
+  {{- end }}
+{{- else }}
+  {{- fail (printf "elements of `profiles` must have non-empty `name`, but element %d does not" $index) }}
+{{- end }}
+
+{{- /* get the profile's name */ -}}
+{{- $profile_name := printf "%s%s" $.Values.profileDefaults.profileNamePrefix $profile.name }}
+
+{{- /* get the profile's owner */ -}}
 {{- $profile_ownerEmail := $profile.ownerEmail | default $.Values.profileDefaults.ownerEmail }}
 {{- if not $profile_ownerEmail }}
-{{- fail (printf "failed to generate profile '%s', ownerEmail must be non-empty" $profile_name) }}
+  {{- fail (printf "failed to generate profile '%s', ownerEmail must be non-empty" $profile_name) }}
 {{- end }}
 {{- if $.Values.deployKF.gateway.emailToLowercase }}
-{{- $profile_ownerEmail = $profile_ownerEmail | lower }}
+  {{- $profile_ownerEmail = $profile_ownerEmail | lower }}
 {{- end }}
 
+{{- /* get the profile's plugins */ -}}
 {{- $profile_plugins := $profile.plugins | default $.Values.profileDefaults.plugins }}
 
+{{- /* get the profile's resourceQuotaSpec */ -}}
 {{- $profile_resourceQuotaSpec := $profile.resourceQuotaSpec | default $.Values.profileDefaults.resourceQuotaSpec }}
 ---
 apiVersion: kubeflow.org/v1

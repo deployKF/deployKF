@@ -244,7 +244,7 @@ deploykf_core:
     ## user entities
     ##  - a list of users that can be referenced when defining profile members
     ##  - each element is a map with the following keys:
-    ##     - `id`: a unique identifier for the user (used in profile `members` list)
+    ##     - `id`: a unique identifier for the user
     ##     - `email`: the email of the user (must exactly match the email from your identity provider)
     ##
     users:
@@ -253,34 +253,54 @@ deploykf_core:
       - id: user-2
         email: "user2@example.com"
 
+    ## group entities
+    ##  - a list of groups that can be referenced when defining profile members
+    ##  - each element is a map with the following keys:
+    ##     - `id`: a unique identifier for the group
+    ##     - `users`: a list of user IDs that are members of the group
+    ##
+    groups:
+      - id: team-1
+        users:
+          - user-1
+          - user-2
+
     ## profile definitions
     ##  - a list of profile definitions to be generated
     ##  - each element is a map with the following keys:
     ##     - `name`: the name of the profile (must be unique)
     ##               note, the name of a profile is also its namespace name
     ##     - `members`: a list of members and their access to this profile (default: [])
-    ##                  each element is a map with the following keys:
-    ##                   - `user`: the `id` of the user (from `users` list)
-    ##                   - `role`: the Kubernetes RBAC role to bind to the user (default: `profileDefaults.memberAccess.role`)
-    ##                   - `notebooksAccess`: if the user can ~connect~ to kubeflow notebooks (default: `profileDefaults.memberAccess.notebooksAccess`)
+    ##          each element is a map with the following keys:
+    ##           - `user`: the ID of a user (mutually exclusive with `group`)
+    ##           - `group`: the ID of a group (mutually exclusive with `user`)
+    ##           - `access`: s map with the following keys:
+    ##               - `role`: the Kubernetes RBAC role to bind to the user (default: `profileDefaults.memberAccess.role`)
+    ##               - `notebooksAccess`: if the user can ~connect~ to kubeflow notebooks (default: `profileDefaults.memberAccess.notebooksAccess`)
     ##     - `ownerEmail`: the email to set as the owner of the profile (default: `profileDefaults.ownerEmail`)
     ##                     [WARNING] changing the owner of a profile requires ~manual~ steps
     ##     - `plugins`: the plugins for this profile (default: `profileDefaults.plugins`)
     ##     - `resourceQuotaSpec`: the resource quota for this profile (default: `profileDefaults.resourceQuotaSpec`)
+    ##  - if a user has multiple memberships for a profile, the most permissive access is used
     ##
     profiles:
       - name: team-1
         members:
-          - user: user-1
-            role: edit
-            notebooksAccess: true
-          - user: user-2
-            role: edit
-            notebooksAccess: true
+          - group: team-1
+            access:
+              role: edit
+              notebooksAccess: true
+
       - name: team-1-prod
         members:
+          - group: team-1
+            access:
+              role: view
+              notebooksAccess: false
           - user: user-1
-          - user: user-2
+            access:
+              role: edit
+              notebooksAccess: true
 
 
 ## --------------------------------------------------------------------------------
