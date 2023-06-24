@@ -674,6 +674,40 @@ deploykf_core:
       ##
       resourceQuotaSpec: {}
 
+      ## the default tool configs for profiles, when not explicitly specified
+      ##
+      tools:
+
+        ## the default Kubeflow Pipelines configs for profiles
+        ##
+        kubeflowPipelines:
+
+          ## the default Kubeflow Pipelines object store auth configs for profiles
+          ##  - the behaviour of these configs depends on `kubeflow_tools.kubeflow_pipelines.objectStore`
+          ##  - if `kubeflow_tools.kubeflow_pipelines.objectStore.useExternal` is false:
+          ##     - minio is automatically configured to generate unique service-account credentials for each
+          ##       profile and store them in a secret named `existingSecret` within the minio namespace
+          ##     - the credentials will only have access to the `kubeflow_tools.pipelines.bucket`
+          ##       under the prefix "artifacts/{profile_name}/"
+          ##     - if a profile specifies `objectStore.auth` then no credentials will be generated for that profile
+          ##       and the specified auth will be used instead
+          ##     - the value of `existingSecret` MUST contain "{profile_name}"
+          ##     - the value of `existingSecretNamespace` is ignored
+          ##  - if `kubeflow_tools.kubeflow_pipelines.objectStore.useExternal` is true:
+          ##     - a secret named `existingSecret` must exist the namespace `existingSecretNamespace`
+          ##     - the secret must contain the keys `existingSecretAccessKeyKey` and `existingSecretSecretKeyKey`
+          ##     - the secret will be cloned into the profile's namespace and kept in sync with the original
+          ##     - if `existingSecret` contains "{profile_name}" then it will be replaced with the profile name
+          ##  - if `kubeflow_tools.kubeflow_pipelines.objectStore.auth.useEnv` is true:
+          ##     - these configs will be ignored to allow for environment-based authentication like
+          ##       "AWS IRSA" or "GCP WorkloadIdentity"
+          ##
+          objectStoreAuth:
+            existingSecret: "kubeflow-pipelines--object-store-auth--{profile_name}"
+            existingSecretNamespace: ""
+            existingSecretAccessKeyKey: "access_key"
+            existingSecretSecretKeyKey: "secret_key"
+
     ## user entities
     ##  - a list of users that can be referenced when defining profile members
     ##  - each element is a map with the following keys:
@@ -714,6 +748,7 @@ deploykf_core:
     ##                     [WARNING] changing the owner of a profile requires ~manual~ steps
     ##     - `plugins`: the plugins for this profile (default: `profileDefaults.plugins`)
     ##     - `resourceQuotaSpec`: the resource quota for this profile (default: `profileDefaults.resourceQuotaSpec`)
+    ##     - `tools`: configs for the tools in this profile (default: `profileDefaults.tools`)
     ##  - if a user has multiple memberships for a profile, the most permissive access is used
     ##
     profiles:
@@ -723,6 +758,7 @@ deploykf_core:
             access:
               role: edit
               notebooksAccess: true
+
       - name: team-1-prod
         members:
           - group: team-1
@@ -1539,6 +1575,9 @@ kubeflow_tools:
       host: s3.amazonaws.com
       port: ""
       useSSL: true
+
+      ## object store auth configs
+      ##
       auth:
         accessKey: my-access-key
         secretKey: my-secret-key

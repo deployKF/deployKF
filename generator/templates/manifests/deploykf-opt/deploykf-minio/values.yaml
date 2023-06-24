@@ -111,7 +111,23 @@ minio:
     ## service accounts for the root user
     ##  - these service accounts are created and/or updated by a post-install job
     ##
-    serviceAccounts: {{< .Values.deploykf_opt.deploykf_minio.rootUser.serviceAccounts | toJSON >}}
+    {{<- $service_accounts := .Values.deploykf_opt.deploykf_minio.rootUser.serviceAccounts | default coll.Slice >}}
+    {{<- if and .Values.kubeflow_tools.pipelines.enabled (not .Values.kubeflow_tools.pipelines.objectStore.useExternal) >}}
+      {{<- $secret_name_template := .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret >}}
+      {{<- $secret_access_key_key := .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretAccessKeyKey >}}
+      {{<- $secret_secret_key_key := .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretSecretKeyKey >}}
+      {{<- if not ($secret_name_template | strings.Contains "{profile_name}") >}}
+        {{<- fail (printf "if `kubeflow_tools.pipelines.objectStore.useExternal` is false, then `deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret` must contain '{profile_name}', but got '%s'" $secret_name_template) >}} 
+      {{<- end >}}
+      {{<- range $profile := .Values.deploykf_core.deploykf_profiles_generator.profiles >}}
+        {{<- if not (and (has $profile "tools") (has $profile.tools "kubeflowPipelines") (has $profile.tools.kubeflowPipelines "objectStoreAuth")) >}}
+          {{<- $secret_name := $secret_name_template | strings.ReplaceAll "{profile_name}" $profile.name >}}
+          {{<- $policy := tmpl.Exec "kubeflow_pipelines.object_store.minio_profile_policy" (dict "profile_name" $profile.name "bucket_name" $.Values.kubeflow_tools.pipelines.bucket.name) | json >}}
+          {{<- $service_accounts = $service_accounts | append (dict "generateSecret" true "existingSecret" $secret_name "existingSecretAccessKeyKey" $secret_access_key_key "existingSecretSecretKeyKey" $secret_secret_key_key "policy" $policy) >}}
+        {{<- end >}}
+      {{<- end >}}
+    {{<- end >}}
+    serviceAccounts: {{< $service_accounts | toJSON >}}
 
   ## identity configs for minio
   ##
@@ -138,7 +154,7 @@ minio:
   ##
   {{<- $buckets := .Values.deploykf_opt.deploykf_minio.buckets | default coll.Slice >}}
   {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
-  {{<- $buckets = $buckets | append (dict "name" .Values.kubeflow_tools.pipelines.bucket.name "versioning" false) >}}
+    {{<- $buckets = $buckets | append (dict "name" .Values.kubeflow_tools.pipelines.bucket.name "versioning" false) >}}
   {{<- end >}}
   buckets: {{< $buckets | toJSON >}}
 

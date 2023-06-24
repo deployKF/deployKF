@@ -150,3 +150,42 @@ SECRET_KEY
 {{<- end ->}}
 {{<- end ->}}
 {{<- end ->}}
+
+##
+## A template for a MinIO policy JSON that grants bucket read/write access for a specific profile.
+## - USAGE: {{<- template "kubeflow_pipelines.object_store.minio_profile_policy" (dict "profile_name" "my_profile" "bucket_name" "my_bucket") >}}
+##
+{{<- define "kubeflow_pipelines.object_store.minio_profile_policy" ->}}
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::{{< .bucket_name >}}/artifacts/{{< .profile_name >}}/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::{{< .bucket_name >}}"
+      ],
+      "Condition": {
+        "StringLike": {
+          "s3:prefix": [
+            "artifacts/{{< .profile_name >}}/*"
+          ]
+        }
+      }
+    }
+  ]
+}
+{{<- end ->}}
