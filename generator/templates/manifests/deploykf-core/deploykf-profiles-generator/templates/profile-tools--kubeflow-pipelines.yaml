@@ -1,0 +1,63 @@
+{{- if .Values.deployKF.kubeflow.pipelines.enabled }}
+{{- range $index, $profile := .Values.profiles }}
+{{- $objectStoreAuth_existingSecret := "" }}
+{{- $objectStoreAuth_existingSecretNamespace := "" }}
+{{- $objectStoreAuth_existingSecretAccessKeyKey := "" }}
+{{- $objectStoreAuth_existingSecretSecretKeyKey := "" }}
+
+{{- /* CASE 1: the profile specifies `objectStoreAuth` */ -}}
+{{- $profile_objectStoreAuth := $profile | dig "tools" "kubeflowPipelines" "objectStoreAuth" false }}
+{{- if $profile_objectStoreAuth }}
+  {{- $objectStoreAuth_existingSecret = $profile_objectStoreAuth.existingSecret | default "" }}
+  {{- $objectStoreAuth_existingSecretNamespace = $profile_objectStoreAuth.existingSecretNamespace | default $profile.name }}
+  {{- $objectStoreAuth_existingSecretAccessKeyKey = $profile_objectStoreAuth.existingSecretAccessKeyKey | default "access_key" }}
+  {{- $objectStoreAuth_existingSecretSecretKeyKey = $profile_objectStoreAuth.existingSecretSecretKeyKey | default "secret_key" }}
+  {{- if not $objectStoreAuth_existingSecret }}
+  {{- fail (printf "profiles which set `tools.kubeflowPipelines.objectStoreAuth` must have non-empty `objectStoreAuth.existingSecret`, but profile '%s' does not" $profile.name) }}
+  {{- end }}
+
+{{- /* CASE 2: the profile does not specify `objectStoreAuth` */ -}}
+{{- else }}
+
+  {{- /* CASE 2a: external object store */ -}}
+  {{- if $.Values.deployKF.kubeflow.pipelines.objectStore.useExternal }}
+    {{- $objectStoreAuth_existingSecret = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret | default "" | replace "{profile_name}" $profile.name }}
+    {{- $objectStoreAuth_existingSecretNamespace = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretNamespace | default $.Values.deployKF.kubeflow.pipelines.namespace }}
+    {{- $objectStoreAuth_existingSecretAccessKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretAccessKeyKey }}
+    {{- $objectStoreAuth_existingSecretSecretKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretSecretKeyKey }}
+
+  {{- /* CASE 2b: minio */ -}}
+  {{- else }}
+    {{- $objectStoreAuth_existingSecret_template := $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret | default "" }}
+    {{- if not ($objectStoreAuth_existingSecret_template | contains "{profile_name}") }}
+      {{- fail (printf "when using minio, the `profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret` must contain '{profile_name}', but got '%s'" $objectStoreAuth_existingSecret_template) }}
+    {{- end }}
+    {{- $objectStoreAuth_existingSecret = $objectStoreAuth_existingSecret_template | replace "{profile_name}" $profile.name }}
+    {{- $objectStoreAuth_existingSecretNamespace = $.Values.deployKF.minio.namespace }}
+    {{- $objectStoreAuth_existingSecretAccessKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretAccessKeyKey }}
+    {{- $objectStoreAuth_existingSecretSecretKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretSecretKeyKey }}
+  {{- end }}
+{{- end }}
+---
+{{- /*
+This configmap stores profile-specific configurations for Kubeflow Pipelines.
+Our Kyverno policies which generate each profile's Kubeflow Pipelines resources use this for their `context`.
+https://kyverno.io/docs/writing-policies/external-data-sources/
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: profile-tools--kubeflow-pipelines
+  namespace: {{ $profile.name | quote }}
+  labels:
+    helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
+    app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+data:
+  objectStoreAuth_existingSecret: {{ $objectStoreAuth_existingSecret | quote }}
+  objectStoreAuth_existingSecretNamespace: {{ $objectStoreAuth_existingSecretNamespace | quote }}
+  objectStoreAuth_existingSecretAccessKeyKey: {{ $objectStoreAuth_existingSecretAccessKeyKey | quote }}
+  objectStoreAuth_existingSecretSecretKeyKey: {{ $objectStoreAuth_existingSecretSecretKeyKey | quote }}
+{{- end }}
+{{- end }}

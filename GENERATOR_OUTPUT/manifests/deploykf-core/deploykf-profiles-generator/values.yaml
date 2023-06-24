@@ -3,14 +3,20 @@ deployKF:
 
   clusterDomain: cluster.local
 
+  minio:
+    namespace: "deploykf-minio"
+
   kubeflow:
     useridHeader: kubeflow-userid
 
     pipelines:
       enabled: true
+      namespace: kubeflow
       pipelineUI:
         namespace: kubeflow
         serviceAccount: ml-pipeline-ui
+      objectStore:
+        useExternal: false
 
   gateway:
     namespace: "deploykf-istio-gateway"
@@ -44,7 +50,7 @@ profileDefaults:
     ##
     notebooksAccess: false
 
-  ## the default plugins for profiles, when not explicitly specified
+  ## the default list of plugins for profiles, when not explicitly specified
   ##
   plugins: []
 
@@ -53,6 +59,22 @@ profileDefaults:
   ##    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#resourcequotaspec-v1-core
   ##
   resourceQuotaSpec: {}
+
+  ## the default tool configs for profiles
+  ##
+  tools:
+
+    ## the default Kubeflow Pipelines configs for profiles
+    ##
+    kubeflowPipelines:
+
+      ## the default Kubeflow Pipelines object store auth configs for profiles
+      ##
+      objectStoreAuth:
+        existingSecret: "kubeflow-pipelines--object-store-auth--{profile_name}"
+        existingSecretNamespace: ""
+        existingSecretAccessKeyKey: "access_key"
+        existingSecretSecretKeyKey: "secret_key"
 
 ## user entities
 ##  - a list of users that can be referenced when defining profile members
