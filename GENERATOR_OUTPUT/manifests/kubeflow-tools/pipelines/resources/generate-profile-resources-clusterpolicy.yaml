@@ -275,3 +275,46 @@ spec:
                 port: 80
                 protocol: TCP
                 targetPort: 3000
+
+    ################################################################################
+    ## ConfigMap/artifact-repositories
+    ################################################################################
+    - name: ConfigMap--artifact-repositories
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      context:
+        - name: tool_config
+          configMap:
+            name: profile-tools--kubeflow-pipelines
+            namespace: "{{ request.object.metadata.name }}"
+      generate:
+        apiVersion: v1
+        kind: ConfigMap
+        name: artifact-repositories
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            annotations:
+              workflows.argoproj.io/default-artifact-repository: default-v1
+          data:
+            default-v1: |
+              s3:
+                endpoint: "deploykf-minio-api.deploykf-minio.svc.cluster.local:9000"
+                insecure: "true"
+                bucket: "kubeflow-pipelines"
+                region: ""
+                ## TODO: confirm if this is needed, or if the default is used
+                #keyFormat: "artifacts/\{{ workflow.namespace }}/\{{ workflow.name }}/\{{ workflow.creationTimestamp.Y }}/\{{ workflow.creationTimestamp.m }}/\{{ workflow.creationTimestamp.d }}/\{{ pod.name }}"
+                accessKeySecret:
+                  name: "{{ tool_config.data.objectStoreAuth_existingSecret }}"
+                  key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
+                secretKeySecret:
+                  name: "{{ tool_config.data.objectStoreAuth_existingSecret }}"
+                  key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
