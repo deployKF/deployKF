@@ -162,6 +162,15 @@ SECRET_KEY
     {
       "Effect": "Allow",
       "Action": [
+        "s3:GetBucketLocation",
+      ],
+      "Resource": [
+        "arn:aws:s3:::{{< .bucket_name >}}"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
         "s3:GetObject",
         "s3:PutObject",
         "s3:DeleteObject"

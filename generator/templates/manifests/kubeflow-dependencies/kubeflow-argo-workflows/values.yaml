@@ -81,7 +81,7 @@ controller:
 
     ## a format pattern to define how artifacts will be organized in the bucket
     ##
-    keyFormat: "artifacts/{{ workflow.namespace }}/{{ workflow.name }}/{{ workflow.creationTimestamp.Y }}/{{ workflow.creationTimestamp.m }}/{{ workflow.creationTimestamp.d }}/{{ pod.name }}"
+    keyFormat: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.artifactRepository.keyFormat | quote >}}
 
   ## configs which restrict aspects of argo workflows
   ##

@@ -169,6 +169,11 @@ spec:
               selector:
                 matchLabels:
                   pipelines.kubeflow.org/enabled: "true"
+      context:
+        - name: tool_config
+          configMap:
+            name: profile-tools--kubeflow-pipelines
+            namespace: "{{ request.object.metadata.name }}"
       generate:
         apiVersion: apps/v1
         kind: Deployment
@@ -219,13 +224,13 @@ spec:
                       - name: MINIO_ACCESS_KEY
                         valueFrom:
                           secretKeyRef:
-                            name: "cloned--pipelines-bucket-secret"
-                            key: "username"
+                            name: cloned--pipelines-object-store-auth
+                            key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
                       - name: MINIO_SECRET_KEY
                         valueFrom:
                           secretKeyRef:
-                            name: "cloned--pipelines-bucket-secret"
-                            key: "password"
+                            name: cloned--pipelines-object-store-auth
+                            key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
 
                       ## ================================
                       ## S3 - Object Store Configs
@@ -237,13 +242,13 @@ spec:
                       - name: AWS_ACCESS_KEY_ID
                         valueFrom:
                           secretKeyRef:
-                            name: "cloned--pipelines-bucket-secret"
-                            key: "username"
+                            name: cloned--pipelines-object-store-auth
+                            key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
                       - name: AWS_SECRET_ACCESS_KEY
                         valueFrom:
                           secretKeyRef:
-                            name: "cloned--pipelines-bucket-secret"
-                            key: "password"
+                            name: cloned--pipelines-object-store-auth
+                            key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
 
     ################################################################################
     ## Service/ml-pipeline-ui-artifact
@@ -305,16 +310,17 @@ spec:
               workflows.argoproj.io/default-artifact-repository: default-v1
           data:
             default-v1: |
+              archiveLogs: true
               s3:
                 endpoint: "deploykf-minio-api.deploykf-minio.svc.cluster.local:9000"
-                insecure: "true"
+                insecure: true
                 bucket: "kubeflow-pipelines"
                 region: ""
-                ## TODO: confirm if this is needed, or if the default is used
-                #keyFormat: "artifacts/\{{ workflow.namespace }}/\{{ workflow.name }}/\{{ workflow.creationTimestamp.Y }}/\{{ workflow.creationTimestamp.m }}/\{{ workflow.creationTimestamp.d }}/\{{ pod.name }}"
+                ## NOTE: we must escape with "\{{" because Kyverno uses the same template delimiters as argo
+                keyFormat: "artifacts/\{{ workflow.namespace }}/\{{ workflow.name }}/\{{ workflow.creationTimestamp.Y }}/\{{ workflow.creationTimestamp.m }}/\{{ workflow.creationTimestamp.d }}/\{{ pod.name }}"
                 accessKeySecret:
-                  name: "{{ tool_config.data.objectStoreAuth_existingSecret }}"
+                  name: cloned--pipelines-object-store-auth
                   key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
                 secretKeySecret:
-                  name: "{{ tool_config.data.objectStoreAuth_existingSecret }}"
+                  name: cloned--pipelines-object-store-auth
                   key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"

@@ -1119,6 +1119,15 @@ kubeflow_dependencies:
         tag: v3.3.10
         pullPolicy: IfNotPresent
 
+    ## configs for the default artifact repository
+    ##
+    artifactRepository:
+
+      ## a format pattern to define how artifacts will be organized in the bucket
+      ##  - [WARNING] this should not be changed when using the embedded 'deploykf-minio', as non-default values
+      ##              may break the automatically generated IAM policies for profile service accounts
+      ##
+      keyFormat: "artifacts/{{ workflow.namespace }}/{{ workflow.name }}/{{ workflow.creationTimestamp.Y }}/{{ workflow.creationTimestamp.m }}/{{ workflow.creationTimestamp.d }}/{{ pod.name }}"
 
 ## --------------------------------------------------------------------------------
 ##
