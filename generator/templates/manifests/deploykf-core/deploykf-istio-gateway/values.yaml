@@ -9,6 +9,8 @@ deployKF:
   kubeflow:
     namespace: kubeflow
     useridHeader: kubeflow-userid
+    pipelines:
+      enabled: {{< .Values.kubeflow_tools.pipelines.enabled | conv.ToBool >}}
 
   certManager:
     clusterIssuer:
@@ -17,6 +19,8 @@ deployKF:
   argoWorkflows:
     enabled: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled >}}
     namespace: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.namespace | quote >}}
+    artifactRepository:
+      keyFormat: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.artifactRepository.keyFormat | quote >}}
 
   auth:
     namespace: {{< .Values.deploykf_core.deploykf_auth.namespace | quote >}}

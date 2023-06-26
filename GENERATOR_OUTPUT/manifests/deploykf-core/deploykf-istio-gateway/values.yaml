@@ -6,6 +6,8 @@ deployKF:
   kubeflow:
     namespace: kubeflow
     useridHeader: kubeflow-userid
+    pipelines:
+      enabled: true
 
   certManager:
     clusterIssuer:
@@ -14,6 +16,8 @@ deployKF:
   argoWorkflows:
     enabled: true
     namespace: "kubeflow-argo-workflows"
+    artifactRepository:
+      keyFormat: "artifacts/{{ workflow.namespace }}/{{ workflow.name }}/{{ workflow.creationTimestamp.Y }}/{{ workflow.creationTimestamp.m }}/{{ workflow.creationTimestamp.d }}/{{ pod.name }}"
 
   auth:
     namespace: "deploykf-auth"

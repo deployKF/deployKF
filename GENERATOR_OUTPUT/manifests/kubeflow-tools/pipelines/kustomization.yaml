@@ -10,8 +10,8 @@ resources:
   - upstream/apps/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user
 
   ## local
-  - resources/generate-profile-resources-clusterpolicy.yaml
   - resources/clone-bucket-secret-clusterpolicy.yaml
+  - resources/generate-profile-resources-clusterpolicy.yaml
   - resources/clone-mysql-secret-clusterpolicy.yaml
 
 patchesStrategicMerge:

@@ -42,8 +42,8 @@ spec:
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
-            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua"
-            envoy.filters.http.lua:
+            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
+            envoy.filters.http.lua.set_userid_header:
               ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
 
@@ -74,8 +74,8 @@ spec:
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
-            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua"
-            envoy.filters.http.lua:
+            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
+            envoy.filters.http.lua.set_userid_header:
               ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
 
@@ -105,8 +105,8 @@ spec:
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
-            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua"
-            envoy.filters.http.lua:
+            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
+            envoy.filters.http.lua.set_userid_header:
               ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
 
@@ -137,8 +137,8 @@ spec:
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
-            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua"
-            envoy.filters.http.lua:
+            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
+            envoy.filters.http.lua.set_userid_header:
               ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
 
@@ -170,8 +170,8 @@ spec:
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
-            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua"
-            envoy.filters.http.lua:
+            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
+            envoy.filters.http.lua.set_userid_header:
               ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
 
@@ -201,8 +201,8 @@ spec:
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
-            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua"
-            envoy.filters.http.lua:
+            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
+            envoy.filters.http.lua.set_userid_header:
               ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
 

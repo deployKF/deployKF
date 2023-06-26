@@ -103,7 +103,7 @@ spec:
         ## insert our filter just AFTER our `envoy.filters.http.ext_authz` filter
         operation: INSERT_AFTER
         value:
-          name: envoy.filters.http.lua
+          name: envoy.filters.http.lua.set_userid_header
           typed_config:
             ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto
             "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
