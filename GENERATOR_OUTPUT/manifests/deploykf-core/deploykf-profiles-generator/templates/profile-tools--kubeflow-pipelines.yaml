@@ -26,6 +26,11 @@ This allows us to loop over these configs multiple times:
 
 {{- /* CASE 2: the profile does not specify `objectStoreAuth` */ -}}
 {{- else }}
+  {{- /* SKIP: there is no default if `auth.fromEnv` is true */ -}}
+  {{- if $.Values.deployKF.kubeflow.pipelines.objectStore.auth.fromEnv }}
+  {{- continue }}
+  {{- end }}
+
   {{- /* CASE 2a: external object store */ -}}
   {{- if $.Values.deployKF.kubeflow.pipelines.objectStore.useExternal }}
     {{- $objectStoreAuth_existingSecret = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret | default "" | replace "{profile_name}" $profile.name }}

@@ -20,6 +20,8 @@ deployKF:
         serviceAccount: ml-pipeline-ui
       objectStore:
         useExternal: {{< .Values.kubeflow_tools.pipelines.objectStore.useExternal | conv.ToBool >}}
+        auth:
+          fromEnv: {{< .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv | conv.ToBool >}}
 
   gateway:
     namespace: {{< .Values.deploykf_core.deploykf_istio_gateway.namespace | quote >}}

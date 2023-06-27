@@ -1,6 +1,5 @@
 {
   "spec": {
-    "serviceAccountName": "default-editor",
     "containers": [
       {
         "env": [
@@ -16,8 +15,8 @@
             "name": "AWS_ACCESS_KEY_ID",
             "valueFrom": {
               "secretKeyRef": {
-                "name": "cloned--pipelines-bucket-secret",
-                "key": "username"
+                "key": "username",
+                "name": "cloned--pipelines-bucket-secret"
               }
             }
           },
@@ -25,13 +24,14 @@
             "name": "AWS_SECRET_ACCESS_KEY",
             "valueFrom": {
               "secretKeyRef": {
-                "name": "cloned--pipelines-bucket-secret",
-                "key": "password"
+                "key": "password",
+                "name": "cloned--pipelines-bucket-secret"
               }
             }
           }
         ]
       }
-    ]
+    ],
+    "serviceAccountName": "default-editor"
   }
 }

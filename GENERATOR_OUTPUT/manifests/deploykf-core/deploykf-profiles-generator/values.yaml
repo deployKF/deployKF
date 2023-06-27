@@ -17,6 +17,8 @@ deployKF:
         serviceAccount: ml-pipeline-ui
       objectStore:
         useExternal: false
+        auth:
+          fromEnv: false
 
   gateway:
     namespace: "deploykf-istio-gateway"

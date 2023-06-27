@@ -10,8 +10,11 @@ resources:
   - upstream/apps/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user
 
   ## local
-  - resources/clone-bucket-secret-clusterpolicy.yaml
   - resources/generate-profile-resources-clusterpolicy.yaml
+
+  {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+  - resources/clone-bucket-secret-clusterpolicy.yaml
+  {{<- end >}}
 
   {{<- if .Values.kubeflow_tools.pipelines.extraManifests >}}
   - resources/extra-manifests.yaml
@@ -21,9 +24,11 @@ resources:
   - resources/clone-mysql-secret-clusterpolicy.yaml
   {{<- end >}}
 
+  {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
   {{<- if not (tmpl.Exec "kubeflow_pipelines.use_embedded_minio" .) >}}
   {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecret >}}
   - resources/pipelines-bucket-secret.yaml
+  {{<- end >}}
   {{<- end >}}
   {{<- end >}}
 
@@ -39,8 +44,10 @@ patchesStrategicMerge:
   - patches/patch-metadata-grpc-virtualservice.yaml
   - patches/patch-ml-pipeline-deployment.yaml
   - patches/patch-ml-pipeline-persistenceagent-deployment.yaml
+  - patches/patch-ml-pipeline-serviceaccount.yaml
   - patches/patch-ml-pipeline-ui-authorizationpolicy.yaml
   - patches/patch-ml-pipeline-ui-deployment.yaml
+  - patches/patch-ml-pipeline-ui-serviceaccount.yaml
   - patches/patch-ml-pipeline-ui-virtualservice.yaml
 
   ## removals

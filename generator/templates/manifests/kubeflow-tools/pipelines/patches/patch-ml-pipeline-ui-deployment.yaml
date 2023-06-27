@@ -5,6 +5,9 @@ metadata:
 spec:
   template:
     spec:
+      securityContext:
+        ## NOTE: this is important for AWS IRSA
+        fsGroup: 65534
       containers:
         - name: ml-pipeline-ui
           readinessProbe:
@@ -78,15 +81,23 @@ spec:
                   name: pipeline-install-config
                   key: bucketSecure
             - name: MINIO_ACCESS_KEY
+              {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+              $patch: delete
+              {{<- else >}}
               valueFrom:
                 secretKeyRef:
                   name: {{< tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_name" . | quote >}}
                   key: {{< tmpl.Exec "kubeflow_pipelines.object_store.auth.access_key_key" . | quote >}}
+              {{<- end >}}
             - name: MINIO_SECRET_KEY
+              {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+              $patch: delete
+              {{<- else >}}
               valueFrom:
                 secretKeyRef:
                   name: {{< tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_name" . | quote >}}
                   key: {{< tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_key_key" . | quote >}}
+              {{<- end >}}
 
             ## ================================
             ## S3 - Object Store Configs
@@ -102,15 +113,23 @@ spec:
                   name: pipeline-install-config
                   key: bucketEndpoint
             - name: AWS_ACCESS_KEY_ID
+              {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+              $patch: delete
+              {{<- else >}}
               valueFrom:
                 secretKeyRef:
                   name: {{< tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_name" . | quote >}}
                   key: {{< tmpl.Exec "kubeflow_pipelines.object_store.auth.access_key_key" . | quote >}}
+              {{<- end >}}
             - name: AWS_SECRET_ACCESS_KEY
+              {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+              $patch: delete
+              {{<- else >}}
               valueFrom:
                 secretKeyRef:
                   name: {{< tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_name" . | quote >}}
                   key: {{< tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_key_key" . | quote >}}
+              {{<- end >}}
 
             ## ================================
             ## Other Configs

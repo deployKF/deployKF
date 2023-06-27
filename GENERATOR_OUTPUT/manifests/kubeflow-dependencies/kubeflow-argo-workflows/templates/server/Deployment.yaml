@@ -36,8 +36,10 @@ spec:
       nodeSelector: {}
       affinity: {}
       tolerations: []
-      serviceAccountName: argo-server
-      securityContext: {}
+      serviceAccountName: {{ .Values.server.serviceAccount.name | quote }}
+      securityContext:
+        ## NOTE: this is important for AWS IRSA
+        fsGroup: {{ .Values.server.image.gid }}
       containers:
         - name: argo-server
           image: {{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}

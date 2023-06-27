@@ -268,12 +268,13 @@ deploykf_core:
           ##        - this secret will be cloned into the profile's namespace and kept in sync with the original
           ##        - note, all occurances of "{profile_name}" in `existingSecret` are replaced with the profile name
           ##        - note, the default value of `existingSecretNamespace` is the kubeflow-pipelines namespace
-          ##  - when `kubeflow_tools.kubeflow_pipelines.objectStore.auth.useEnv`:
+          ##  - when `kubeflow_tools.kubeflow_pipelines.objectStore.auth.fromEnv`:
           ##     - is false (default):
           ##        - normal behaviour
           ##     - is true:
-          ##        - these configs are ignored to allow for environment-based authentication like
+          ##        - default configs are ignored to allow for environment-based authentication like
           ##          "AWS IRSA" or "GCP WorkloadIdentity"
+          ##        - if a profile explicitly sets `objectStoreAuth` then it will still be used
           ##
           objectStoreAuth:
             existingSecret: "kubeflow-pipelines--object-store-auth--{profile_name}"
@@ -523,8 +524,22 @@ kubeflow_tools:
       useSSL: true
 
       ## object store auth configs
+      ##  - if `fromEnv` is true, all other configs are ignored to allow for environment-based authentication like
+      ##     - AWS IRSA: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
+      ##     - GCP WorkloadIdentity: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
+      ##  - if `fromEnv` is true, you will likely need to set appropriate Pod ServiceAccount annotations:
+      ##     - annotations for Kubeflow Pipelines backend are set with these values:
+      ##        - `kubeflow_tools.pipelines.serviceAccounts.apiServer.annotations`
+      ##        - `kubeflow_tools.pipelines.serviceAccounts.frontend.annotations`
+      ##     - annotations for Argo Workflows backend are set with these values:
+      ##        - `kubeflow_dependencies.kubeflow_argo_workflows.controller.serviceAccount.annotations`
+      ##        - `kubeflow_dependencies.kubeflow_argo_workflows.workflow.serviceAccount.annotations`
+      ##     - annotations for Pods in Profiles are set using profile plugins, which are configured with these values:
+      ##        - `deploykf_core.deploykf_profiles_generator.profileDefaults.plugins`
+      ##        - `deploykf_core.deploykf_profiles_generator.profiles[].plugins`
       ##
       auth:
+        fromEnv: false
         accessKey: my-access-key
         secretKey: my-secret-key
         existingSecret: ""

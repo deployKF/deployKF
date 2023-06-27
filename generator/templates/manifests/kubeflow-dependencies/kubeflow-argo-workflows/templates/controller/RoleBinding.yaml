@@ -15,5 +15,5 @@ roleRef:
   name: argo-workflow-controller
 subjects:
   - kind: ServiceAccount
-    name: argo-workflow-controller
+    name: {{ .Values.controller.serviceAccount.name | quote }}
     namespace: {{ .Release.Namespace | quote }}

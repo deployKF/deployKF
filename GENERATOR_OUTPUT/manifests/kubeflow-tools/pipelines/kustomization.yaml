@@ -10,8 +10,8 @@ resources:
   - upstream/apps/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user
 
   ## local
-  - resources/clone-bucket-secret-clusterpolicy.yaml
   - resources/generate-profile-resources-clusterpolicy.yaml
+  - resources/clone-bucket-secret-clusterpolicy.yaml
   - resources/clone-mysql-secret-clusterpolicy.yaml
 
 patchesStrategicMerge:
@@ -20,8 +20,10 @@ patchesStrategicMerge:
   - patches/patch-metadata-grpc-virtualservice.yaml
   - patches/patch-ml-pipeline-deployment.yaml
   - patches/patch-ml-pipeline-persistenceagent-deployment.yaml
+  - patches/patch-ml-pipeline-serviceaccount.yaml
   - patches/patch-ml-pipeline-ui-authorizationpolicy.yaml
   - patches/patch-ml-pipeline-ui-deployment.yaml
+  - patches/patch-ml-pipeline-ui-serviceaccount.yaml
   - patches/patch-ml-pipeline-ui-virtualservice.yaml
 
   ## removals

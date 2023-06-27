@@ -193,7 +193,11 @@ spec:
                 labels:
                   app: ml-pipeline-ui-artifact
               spec:
+                ## NOTE: we use 'default-editor' so this pod has the same access as workflow pods when using "AWS IRSA" or "GCP Workload Identity" plugins
                 serviceAccountName: default-editor
+                securityContext:
+                  ## NOTE: this is important for AWS IRSA
+                  fsGroup: 65534
                 containers:
                   - name: ml-pipeline-ui-artifact
                     ## NOTE: $(kfp-app-version) is a Kustomize variable which is replaced during Kustomize rendering

@@ -193,7 +193,11 @@ spec:
                 labels:
                   app: ml-pipeline-ui-artifact
               spec:
+                ## NOTE: we use 'default-editor' so this pod has the same access as workflow pods when using "AWS IRSA" or "GCP Workload Identity" plugins
                 serviceAccountName: default-editor
+                securityContext:
+                  ## NOTE: this is important for AWS IRSA
+                  fsGroup: 65534
                 containers:
                   - name: ml-pipeline-ui-artifact
                     ## NOTE: $(kfp-app-version) is a Kustomize variable which is replaced during Kustomize rendering
@@ -221,6 +225,7 @@ spec:
                         value: {{< tmpl.Exec "kubeflow_pipelines.object_store.port" . | quote >}}
                       - name: MINIO_SSL
                         value: {{< tmpl.Exec "kubeflow_pipelines.object_store.use_ssl" . | quote >}}
+                      {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
                       - name: MINIO_ACCESS_KEY
                         valueFrom:
                           secretKeyRef:
@@ -231,6 +236,7 @@ spec:
                           secretKeyRef:
                             name: cloned--pipelines-object-store-auth
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
+                      {{<- end >}}
 
                       ## ================================
                       ## S3 - Object Store Configs
@@ -239,6 +245,7 @@ spec:
                         value: {{< .Values.kubeflow_tools.pipelines.bucket.region | quote >}}
                       - name: AWS_S3_ENDPOINT
                         value: {{< tmpl.Exec "kubeflow_pipelines.object_store.endpoint" . | quote >}}
+                      {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
                       - name: AWS_ACCESS_KEY_ID
                         valueFrom:
                           secretKeyRef:
@@ -249,6 +256,7 @@ spec:
                           secretKeyRef:
                             name: cloned--pipelines-object-store-auth
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
+                      {{<- end >}}
 
     ################################################################################
     ## Service/ml-pipeline-ui-artifact
@@ -318,12 +326,16 @@ spec:
                 region: {{< .Values.kubeflow_tools.pipelines.bucket.region | quote >}}
                 ## NOTE: we must escape with "\{{" because Kyverno uses the same template delimiters as argo
                 keyFormat: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.artifactRepository.keyFormat | quote | replaceAll `{{` `\{{` >}}
+                {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+                useSDKCreds: true
+                {{<- else >}}
                 accessKeySecret:
                   name: cloned--pipelines-object-store-auth
                   key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
                 secretKeySecret:
                   name: cloned--pipelines-object-store-auth
                   key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
+                {{<- end >}}
 
     {{<- if .Values.kubeflow_tools.pipelines.bucket.defaultPipelineRoot >}}
     {{<- "\n" >}}

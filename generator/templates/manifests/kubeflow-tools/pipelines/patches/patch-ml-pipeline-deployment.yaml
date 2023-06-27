@@ -5,6 +5,9 @@ metadata:
 spec:
   template:
     spec:
+      securityContext:
+        ## NOTE: this is important for AWS IRSA
+        fsGroup: 65534
       containers:
         - name: ml-pipeline-api-server
           readinessProbe:
@@ -90,12 +93,20 @@ spec:
                   name: pipeline-install-config
                   key: bucketPort
             - name: OBJECTSTORECONFIG_ACCESSKEY
+              {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+              $patch: delete
+              {{<- else >}}
               valueFrom:
                 secretKeyRef:
                   name: {{< tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_name" . | quote >}}
                   key: {{< tmpl.Exec "kubeflow_pipelines.object_store.auth.access_key_key" . | quote >}}
+              {{<- end >}}
             - name: OBJECTSTORECONFIG_SECRETACCESSKEY
+              {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+              $patch: delete
+              {{<- else >}}
               valueFrom:
                 secretKeyRef:
                   name: {{< tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_name" . | quote >}}
                   key: {{< tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_key_key" . | quote >}}
+              {{<- end >}}

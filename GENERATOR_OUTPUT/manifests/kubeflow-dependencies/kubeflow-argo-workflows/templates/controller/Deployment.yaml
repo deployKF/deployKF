@@ -37,8 +37,10 @@ spec:
       nodeSelector: {}
       affinity: {}
       tolerations: []
-      serviceAccountName: argo-workflow-controller
-      securityContext: {}
+      serviceAccountName: {{ .Values.controller.serviceAccount.name | quote }}
+      securityContext:
+        ## NOTE: this is important for AWS IRSA
+        fsGroup: {{ .Values.controller.image.gid }}
       containers:
         - name: workflow-controller
           image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}

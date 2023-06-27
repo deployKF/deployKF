@@ -46,6 +46,9 @@ deployKF:
     bucket:
       name: {{< .Values.kubeflow_tools.pipelines.bucket.name | quote >}}
       region: {{< .Values.kubeflow_tools.pipelines.bucket.region | quote >}}
+    objectStore:
+      auth:
+        fromEnv: {{< .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv | conv.ToBool >}}
 
 
 ########################################
@@ -74,6 +77,13 @@ controller:
   ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
   ##
   resources: {}
+
+  ## configs for the service account used by argo workflow controller
+  ##
+  serviceAccount:
+    create: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.controller.serviceAccount.create | conv.ToBool >}}
+    name: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.controller.serviceAccount.name | quote >}}
+    annotations: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.controller.serviceAccount.annotations | toJSON >}}
 
   ## configs for the default artifact repository
   ##
@@ -113,6 +123,13 @@ server:
   ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
   ##
   resources: {}
+
+  ## configs for the service account used by argo server
+  ##
+  serviceAccount:
+    create: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.server.serviceAccount.create | conv.ToBool >}}
+    name: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.server.serviceAccount.name | quote >}}
+    annotations: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.server.serviceAccount.annotations | toJSON >}}
 
   ## identity configs for argo-server
   ##

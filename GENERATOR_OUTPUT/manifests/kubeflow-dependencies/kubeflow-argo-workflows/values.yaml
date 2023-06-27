@@ -43,6 +43,9 @@ deployKF:
     bucket:
       name: "kubeflow-pipelines"
       region: ""
+    objectStore:
+      auth:
+        fromEnv: false
 
 
 ########################################
@@ -71,6 +74,13 @@ controller:
   ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
   ##
   resources: {}
+
+  ## configs for the service account used by argo workflow controller
+  ##
+  serviceAccount:
+    create: true
+    name: "argo-workflow-controller"
+    annotations: {}
 
   ## configs for the default artifact repository
   ##
@@ -110,6 +120,13 @@ server:
   ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
   ##
   resources: {}
+
+  ## configs for the service account used by argo server
+  ##
+  serviceAccount:
+    create: true
+    name: "argo-server"
+    annotations: {}
 
   ## identity configs for argo-server
   ##

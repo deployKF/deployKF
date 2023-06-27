@@ -4,6 +4,13 @@ $patch: delete
 apiVersion: v1
 kind: ConfigMap
 metadata:
+  name: kfp-launcher
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: v1
+kind: ConfigMap
+metadata:
   name: kubeflow-pipelines-profile-controller-code
   namespace: kubeflow
 ---

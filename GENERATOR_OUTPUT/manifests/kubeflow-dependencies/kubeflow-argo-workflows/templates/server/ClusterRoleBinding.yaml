@@ -15,5 +15,5 @@ roleRef:
   name: argo-server
 subjects:
   - kind: ServiceAccount
-    name: argo-server
+    name: {{ .Values.server.serviceAccount.name | quote }}
     namespace: {{ .Release.Namespace | quote }}

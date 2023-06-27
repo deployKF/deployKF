@@ -5,6 +5,9 @@ metadata:
 spec:
   template:
     spec:
+      securityContext:
+        ## NOTE: this is important for AWS IRSA
+        fsGroup: 65534
       containers:
         - name: ml-pipeline-api-server
           readinessProbe:

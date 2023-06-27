@@ -28,12 +28,16 @@ data:
       bucket: {{ .Values.deployKF.pipelines.bucket.name | quote }}
       region: {{ .Values.deployKF.pipelines.bucket.region | quote }}
       keyFormat: {{ .Values.controller.artifactRepository.keyFormat | quote }}
+      {{- if .Values.deployKF.pipelines.objectStore.auth.fromEnv }}
+      useSDKCreds: true
+      {{- else }}
       accessKeySecret:
         name: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_name | quote }}
         key: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.access_key_key | quote }}
       secretKeySecret:
         name: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_name | quote }}
         key: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_key_key | quote }}
+      {{- end }}
 
   sso: |
     ## the issuer of the OIDC provider
