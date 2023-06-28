@@ -1,3 +1,5 @@
+## this ClusterPolicy replaces the `pipelines-profile-controller` from the upstream manifests
+## https://github.com/kubeflow/pipelines/tree/2.0.0-alpha.7/manifests/kustomize/base/installs/multi-user/pipelines-profile-controller
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
@@ -228,12 +230,12 @@ spec:
                       - name: MINIO_ACCESS_KEY
                         valueFrom:
                           secretKeyRef:
-                            name: cloned--pipelines-object-store-auth
+                            name: "mlpipeline-minio-artifact"
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
                       - name: MINIO_SECRET_KEY
                         valueFrom:
                           secretKeyRef:
-                            name: cloned--pipelines-object-store-auth
+                            name: "mlpipeline-minio-artifact"
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
 
                       ## ================================
@@ -246,12 +248,12 @@ spec:
                       - name: AWS_ACCESS_KEY_ID
                         valueFrom:
                           secretKeyRef:
-                            name: cloned--pipelines-object-store-auth
+                            name: "mlpipeline-minio-artifact"
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
                       - name: AWS_SECRET_ACCESS_KEY
                         valueFrom:
                           secretKeyRef:
-                            name: cloned--pipelines-object-store-auth
+                            name: "mlpipeline-minio-artifact"
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
 
     ################################################################################
@@ -323,8 +325,30 @@ spec:
                 ## NOTE: we must escape with "\{{" because Kyverno uses the same template delimiters as argo
                 keyFormat: "artifacts/\{{ workflow.namespace }}/\{{ workflow.name }}/\{{ workflow.creationTimestamp.Y }}/\{{ workflow.creationTimestamp.m }}/\{{ workflow.creationTimestamp.d }}/\{{ pod.name }}"
                 accessKeySecret:
-                  name: cloned--pipelines-object-store-auth
+                  name: "mlpipeline-minio-artifact"
                   key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
                 secretKeySecret:
-                  name: cloned--pipelines-object-store-auth
+                  name: "mlpipeline-minio-artifact"
                   key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
+
+    ################################################################################
+    ## ConfigMap/kfp-launcher
+    ################################################################################
+    - name: ConfigMap--kfp-launcher
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: v1
+        kind: ConfigMap
+        name: kfp-launcher
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          data:
+            defaultPipelineRoot: "minio://kubeflow-pipelines/v2/artifacts/{{ request.object.metadata.name }}"

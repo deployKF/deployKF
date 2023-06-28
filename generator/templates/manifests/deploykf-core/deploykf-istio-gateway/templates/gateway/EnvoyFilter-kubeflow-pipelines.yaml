@@ -1,4 +1,6 @@
-{{- if and .Values.deployKF.kubeflow.pipelines.enabled (.Values.deployKF.argoWorkflows.artifactRepository.keyFormat | hasPrefix "artifacts/{{ workflow.namespace }}/") }}
+{{- $compatible_v1_keyFormat := .Values.deployKF.argoWorkflows.artifactRepository.keyFormat | hasPrefix "artifacts/{{ workflow.namespace }}/" }}
+{{- $compatible_v2_defaultPipelineRoot := .Values.deployKF.kubeflow.pipelines.kfpV2.defaultPipelineRoot | regexMatch `^[a-zA-Z0-9]+://(?:[^/]+)/v2/artifacts/{profile_name}.*` }}
+{{- if and .Values.deployKF.kubeflow.pipelines.enabled $compatible_v1_keyFormat }}
 ################
 ## This EnvoyFilter redirects artifact requests that use an incorrect `?namespace=` query parameter for an artifact.
 ## This is required because bucket IAM policies restrict bucket access based on the namespace prefix.
@@ -74,9 +76,25 @@ spec:
                       if url_path:match("^/pipeline/artifacts/get") then
                           -- FORMAT: "/pipeline/artifacts/get...&key=artifacts%2F<key_namespace>%2F..."
                           key_namespace = url_path:match("[?&]key=artifacts%%2F([^%%]+)%%2F")
+
+                          {{- if $compatible_v2_defaultPipelineRoot }}
+                          -- try v2 format, if v1 format did not match
+                          if not key_namespace then
+                            -- FORMAT: "/pipeline/artifacts/get...&key=v2%2Fartifacts%2F<key_namespace>%2F..."
+                            key_namespace = url_path:match("[?&]key=v2%%2Fartifacts%%2F([^%%]+)%%2F")
+                          end
+                          {{- end }}
                       else
                           -- FORMAT: "/pipeline/artifacts/<object_store>/<bucket>/artifacts/<key_namespace>/..."
                           key_namespace = url_path:match("^/pipeline/artifacts/[^/?&]+/[^/?&]+/artifacts/([^/?&]+)/")
+
+                          {{- if $compatible_v2_defaultPipelineRoot }}
+                          -- try v2 format, if v1 format did not match
+                          if not key_namespace then
+                            -- FORMAT: "/pipeline/artifacts/<object_store>/<bucket>/v2/artifacts/<key_namespace>/..."
+                            key_namespace = url_path:match("^/pipeline/artifacts/[^/?&]+/[^/?&]+/v2/artifacts/([^/?&]+)/")
+                          end
+                          {{- end }}
                       end
 
                       -- extract namespace from query, if key_namespace is not nil
@@ -93,15 +111,35 @@ spec:
                       local url_path = request_handle:headers():get(":path")
                       local key_namespace, query_namespace = extract_url_namespaces(url_path)
 
-                      -- if key and query namespaces do not match, redirect with updated query_namespace
-                      if key_namespace and query_namespace and key_namespace ~= query_namespace then
-                          local match_str = "([?&])namespace=[^?&]*"
-                          local replace_str = "%1namespace=" .. key_namespace
-                          local new_url_path = url_path:gsub(match_str, replace_str)
-                          request_handle:respond(
+                      if key_namespace then
+                          local new_url_path
+
+                          -- CASE 1: query_namespace is set and does not match key_namespace
+                          if query_namespace and key_namespace ~= query_namespace then
+                              local match_str = "([?&])namespace=[^?&]*"
+                              local replace_str = "%1namespace=" .. key_namespace
+                              new_url_path = url_path:gsub(match_str, replace_str)
+
+                          -- CASE 2: query_namespace is unset
+                          elseif not query_namespace then
+
+                              -- CASE 2a: path already has a query parameter
+                              if url_path:match("[?]") then
+                                  new_url_path = url_path .. "&namespace=" .. key_namespace
+
+                              -- CASE 2b: path does not have a query parameter
+                              else
+                                  new_url_path = url_path .. "?namespace=" .. key_namespace
+                              end
+                          end
+
+                          -- redirect to new_url_path, if it was set
+                          if new_url_path then
+                              request_handle:respond(
                                   { [":status"] = "302", ["location"] = new_url_path },
-                                  "Redirecting to correct namespace..."
-                          )
+                                    "Redirecting to correct namespace..."
+                              )
+                          end
                       end
                   end
 {{- end }}

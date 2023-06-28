@@ -38,7 +38,7 @@ This allows us to loop over these configs multiple times:
     {{- $objectStoreAuth_existingSecretAccessKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretAccessKeyKey }}
     {{- $objectStoreAuth_existingSecretSecretKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretSecretKeyKey }}
 
-  {{- /* CASE 2b: minio */ -}}
+  {{- /* CASE 2b: minio (generated secret) */ -}}
   {{- else }}
     {{- $objectStoreAuth_existingSecret_template := $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret | default "" }}
     {{- if not ($objectStoreAuth_existingSecret_template | contains "{profile_name}") }}
@@ -46,8 +46,8 @@ This allows us to loop over these configs multiple times:
     {{- end }}
     {{- $objectStoreAuth_existingSecret = $objectStoreAuth_existingSecret_template | replace "{profile_name}" $profile.name }}
     {{- $objectStoreAuth_existingSecretNamespace = $.Values.deployKF.minio.namespace }}
-    {{- $objectStoreAuth_existingSecretAccessKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretAccessKeyKey }}
-    {{- $objectStoreAuth_existingSecretSecretKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretSecretKeyKey }}
+    {{- $objectStoreAuth_existingSecretAccessKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.generatedAccessKeyKey }}
+    {{- $objectStoreAuth_existingSecretSecretKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.generatedSecretKeyKey }}
   {{- end }}
 {{- end }}
 
@@ -103,8 +103,9 @@ spec:
   generateExisting: true
   rules:
     {{- range $profile_name, $profile_configs := $profile_mapping }}
+    {{- $rule_hash := (cat $profile_name $profile_configs.objectStoreAuth_existingSecret $profile_configs.objectStoreAuth_existingSecretNamespace $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.clonedSecretName) | sha1sum }}
     ## clone the objectStoreAuth secret into the profile namespace
-    - name: clone-bucket-secret--{{ $profile_name }}
+    - name: clone-secret--{{ $rule_hash }}
       match:
         any:
           - resources:
@@ -115,7 +116,7 @@ spec:
       generate:
         apiVersion: v1
         kind: Secret
-        name: cloned--pipelines-object-store-auth
+        name: {{ $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.clonedSecretName | quote }}
         namespace: {{ `"{{ request.object.metadata.name }}"` }}
         synchronize: true
         clone:
@@ -123,15 +124,14 @@ spec:
           name: {{ $profile_configs.objectStoreAuth_existingSecret | quote }}
 
     ## annotate the cloned resources so that ArgoCD ignores them
-    - name: annotate-cloned-bucket-secret--{{ $profile_name }}
+    - name: annotate-secret--{{ $rule_hash }}
       match:
         any:
-          ## annotate in the "kubeflow" namespace
           - resources:
               kinds:
                 - Secret
               names:
-                - cloned--pipelines-object-store-auth
+                - {{ $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.clonedSecretName | quote }}
               namespaces:
                 - {{ $profile_name | quote }}
               selector:

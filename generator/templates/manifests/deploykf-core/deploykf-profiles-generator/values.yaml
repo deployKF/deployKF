@@ -81,6 +81,11 @@ profileDefaults:
         existingSecretAccessKeyKey: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretAccessKeyKey | quote >}}
         existingSecretSecretKeyKey: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretSecretKeyKey | quote >}}
 
+        ## special configs
+        clonedSecretName: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
+        generatedAccessKeyKey: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_access_key_key" . | quote >}}
+        generatedSecretKeyKey: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_secret_key_key" . | quote >}}
+
 ## user entities
 ##  - a list of users that can be referenced when defining profile members
 ##

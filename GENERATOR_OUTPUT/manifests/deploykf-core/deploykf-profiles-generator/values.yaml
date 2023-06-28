@@ -78,6 +78,11 @@ profileDefaults:
         existingSecretAccessKeyKey: "access_key"
         existingSecretSecretKeyKey: "secret_key"
 
+        ## special configs
+        clonedSecretName: "mlpipeline-minio-artifact"
+        generatedAccessKeyKey: "accesskey"
+        generatedSecretKeyKey: "secretkey"
+
 ## user entities
 ##  - a list of users that can be referenced when defining profile members
 ##

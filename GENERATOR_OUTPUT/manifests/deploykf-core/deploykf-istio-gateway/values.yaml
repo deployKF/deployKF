@@ -8,6 +8,8 @@ deployKF:
     useridHeader: kubeflow-userid
     pipelines:
       enabled: true
+      kfpV2:
+        defaultPipelineRoot: "minio://{bucket_name}/v2/artifacts/{profile_name}"
 
   certManager:
     clusterIssuer:

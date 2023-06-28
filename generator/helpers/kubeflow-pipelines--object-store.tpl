@@ -76,7 +76,7 @@ true
 ##
 ## The NAME of the Kubernetes Secret that contains the object store access/secret keys.
 ##  - NOTE: this is the SOURCE secret, the manifests actually use "kubeflow_pipelines.object_store.auth.secret_name"
-##    as we clone the secret (with Kyverno) into the kubeflow and profile namespaces
+##    as we clone the secret (with Kyverno) into the kubeflow namespace
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.source_secret_name" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
@@ -107,7 +107,7 @@ kubeflow
 {{<- end ->}}
 
 ##
-## The NAME of the Kubernetes Secret that contains object store access/secret keys (in kubeflow and profile namespaces).
+## The NAME of the Kubernetes Secret that contains object store access/secret keys (in kubeflow namespace).
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.secret_name" ->}}
 cloned--pipelines-bucket-secret
@@ -152,10 +152,44 @@ SECRET_KEY
 {{<- end ->}}
 
 ##
-## A template for a MinIO policy JSON that grants bucket read/write access for a specific profile.
-## - USAGE: {{<- template "kubeflow_pipelines.object_store.minio_profile_policy" (dict "profile_name" "my_profile" "bucket_name" "my_bucket") >}}
+## The NAME of the CLONED Kubernetes Secret that contains object store access/secret keys (in profile namespaces).
+## - NOTE: this value is used regardless of the "source" secret name, and is shared across all profiles
 ##
-{{<- define "kubeflow_pipelines.object_store.minio_profile_policy" ->}}
+{{<- define "kubeflow_pipelines.object_store.profile.cloned_secret_name" ->}}
+{{<- if .Values.kubeflow_tools.pipelines.kfpV2.minioFix ->}}
+mlpipeline-minio-artifact
+{{<- else ->}}
+cloned--pipelines-object-store-auth
+{{<- end ->}}
+{{<- end ->}}
+
+##
+## The KEY containing the object store ACCESS_KEY in the GENERATED Kubernetes Secrets (in profile namespaces).
+##
+{{<- define "kubeflow_pipelines.object_store.profile.generated_access_key_key" ->}}
+{{<- if .Values.kubeflow_tools.pipelines.kfpV2.minioFix ->}}
+accesskey
+{{<- else ->}}
+{{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretAccessKeyKey >}}
+{{<- end ->}}
+{{<- end ->}}
+
+##
+## The KEY containing the object store SECRET_KEY in the GENERATED Kubernetes Secrets (in profile namespaces).
+##
+{{<- define "kubeflow_pipelines.object_store.profile.generated_secret_key_key" ->}}
+{{<- if .Values.kubeflow_tools.pipelines.kfpV2.minioFix ->}}
+secretkey
+{{<- else ->}}
+{{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretSecretKeyKey >}}
+{{<- end ->}}
+{{<- end ->}}
+
+##
+## A template for a MinIO policy JSON that grants bucket read/write access for a specific profile.
+## - USAGE: {{<- template "kubeflow_pipelines.object_store.profile.minio_policy" (dict "profile_name" "my_profile" "bucket_name" "my_bucket") >}}
+##
+{{<- define "kubeflow_pipelines.object_store.profile.minio_policy" ->}}
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -176,7 +210,8 @@ SECRET_KEY
         "s3:DeleteObject"
       ],
       "Resource": [
-        "arn:aws:s3:::{{< .bucket_name >}}/artifacts/{{< .profile_name >}}/*"
+        "arn:aws:s3:::{{< .bucket_name >}}/artifacts/{{< .profile_name >}}/*",
+        "arn:aws:s3:::{{< .bucket_name >}}/v2/artifacts/{{< .profile_name >}}/*"
       ]
     },
     {
@@ -190,7 +225,8 @@ SECRET_KEY
       "Condition": {
         "StringLike": {
           "s3:prefix": [
-            "artifacts/{{< .profile_name >}}/*"
+            "artifacts/{{< .profile_name >}}/*",
+            "v2/artifacts/{{< .profile_name >}}/*"
           ]
         }
       }

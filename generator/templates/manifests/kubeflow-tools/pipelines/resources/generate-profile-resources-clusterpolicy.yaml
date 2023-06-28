@@ -1,3 +1,5 @@
+## this ClusterPolicy replaces the `pipelines-profile-controller` from the upstream manifests
+## https://github.com/kubeflow/pipelines/tree/2.0.0-alpha.7/manifests/kustomize/base/installs/multi-user/pipelines-profile-controller
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
@@ -229,12 +231,12 @@ spec:
                       - name: MINIO_ACCESS_KEY
                         valueFrom:
                           secretKeyRef:
-                            name: cloned--pipelines-object-store-auth
+                            name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
                       - name: MINIO_SECRET_KEY
                         valueFrom:
                           secretKeyRef:
-                            name: cloned--pipelines-object-store-auth
+                            name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
                       {{<- end >}}
 
@@ -249,12 +251,12 @@ spec:
                       - name: AWS_ACCESS_KEY_ID
                         valueFrom:
                           secretKeyRef:
-                            name: cloned--pipelines-object-store-auth
+                            name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
                       - name: AWS_SECRET_ACCESS_KEY
                         valueFrom:
                           secretKeyRef:
-                            name: cloned--pipelines-object-store-auth
+                            name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
                       {{<- end >}}
 
@@ -330,15 +332,13 @@ spec:
                 useSDKCreds: true
                 {{<- else >}}
                 accessKeySecret:
-                  name: cloned--pipelines-object-store-auth
+                  name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
                   key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
                 secretKeySecret:
-                  name: cloned--pipelines-object-store-auth
+                  name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
                   key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
                 {{<- end >}}
 
-    {{<- if .Values.kubeflow_tools.pipelines.bucket.defaultPipelineRoot >}}
-    {{<- "\n" >}}
     ################################################################################
     ## ConfigMap/kfp-launcher
     ################################################################################
@@ -359,8 +359,10 @@ spec:
         synchronize: true
         data:
           data:
-            defaultPipelineRoot: {{< .Values.kubeflow_tools.pipelines.bucket.defaultPipelineRoot | quote >}}
-    {{<- end >}}
+            {{<- $defaultPipelineRoot := .Values.kubeflow_tools.pipelines.kfpV2.defaultPipelineRoot >}}
+            {{<- $defaultPipelineRoot := $defaultPipelineRoot | strings.ReplaceAll "{bucket_name}" .Values.kubeflow_tools.pipelines.bucket.name >}}
+            {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{profile_name}" "{{ request.object.metadata.name }}" >}}
+            defaultPipelineRoot: {{< $defaultPipelineRoot | quote >}}
 
     {{<- if and .Values.kubeflow_tools.pipelines.profileResourceGeneration.kfpApiTokenPodDefault .Values.kubeflow_tools.poddefaults_webhook.enabled >}}
     {{<- "\n" >}}

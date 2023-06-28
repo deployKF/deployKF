@@ -37,6 +37,10 @@ resources:
   - resources/pipelines-mysql-secret.yaml
   {{<- end >}}
   {{<- end >}}
+  
+  {{<- if or .Values.kubeflow_tools.pipelines.kfpV2.minioFix .Values.kubeflow_tools.pipelines.kfpV2.launcherImage >}}
+  - resources/patch-v2-workflow-pods-clusterpolicy.yaml
+  {{<- end >}}
 
 patchesStrategicMerge:
   - patches/patch-cache-server-deployment.yaml
@@ -96,7 +100,7 @@ configMapGenerator:
       ##       as we have replaced the "kubeflow-pipelines-profile-controller" with kyverno,
       ##       specifically our `ClusterPolicy/kubeflow-pipelines--generate-profile-resources`
       ##       creates/syncs the `ConfigMap/kfp-launcher` in each profile namespace
-      - defaultPipelineRoot={{< .Values.kubeflow_tools.pipelines.bucket.defaultPipelineRoot | quote >}}
+      - defaultPipelineRoot=""
 
       ## ================================
       ## Object Store Configs
