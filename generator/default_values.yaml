@@ -817,12 +817,12 @@ deploykf_opt:
     images:
       minio:
         repository: docker.io/minio/minio
-        tag: RELEASE.2023-06-16T02-41-06Z
+        tag: RELEASE.2023-06-29T05-12-28Z
         pullPolicy: IfNotPresent
 
       minioMc:
         repository: docker.io/minio/mc
-        tag: RELEASE.2023-06-15T15-08-26Z
+        tag: RELEASE.2023-06-28T21-54-17Z
         pullPolicy: IfNotPresent
 
       kubectl:

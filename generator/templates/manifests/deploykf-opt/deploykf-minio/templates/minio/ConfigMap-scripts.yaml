@@ -150,6 +150,13 @@ data:
       if [[ $_cmd_exit_code -ne 0 ]]; then
         echo "ERROR: failed to list current service accounts"
         echo "OUTPUT: $_cmd_output"
+
+        ## TODO: remove once minio fixes: https://github.com/minio/minio/issues/17545
+        if [[ "$_cmd_output" =~ "XMinioAdminNoSuchUser" ]]; then
+          echo "WARNING: ignoring previous error because it is a known issue with minio on first run"
+          return
+        fi
+
         exit 1
       fi
 

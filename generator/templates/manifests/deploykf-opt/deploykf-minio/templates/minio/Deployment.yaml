@@ -173,7 +173,7 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 5
             httpGet:
-              path: /minio/health/live
+              path: /minio/health/ready
               port: http-api
           volumeMounts:
             {{- if .Values.minio.persistence.enabled }}
