@@ -13,6 +13,8 @@ deployKF:
       enabled: {{< .Values.kubeflow_tools.pipelines.enabled | conv.ToBool >}}
       kfpV2:
         defaultPipelineRoot: {{< .Values.kubeflow_tools.pipelines.kfpV2.defaultPipelineRoot | quote >}}
+      cache:
+        namespaceRedirect: {{< .Values.kubeflow_tools.pipelines.cache.namespaceRedirect | conv.ToBool >}}
 
   certManager:
     clusterIssuer:

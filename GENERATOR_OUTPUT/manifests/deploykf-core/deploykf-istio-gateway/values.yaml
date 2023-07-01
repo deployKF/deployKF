@@ -10,6 +10,8 @@ deployKF:
       enabled: true
       kfpV2:
         defaultPipelineRoot: "minio://{bucket_name}/v2/artifacts/{profile_name}"
+      cache:
+        namespaceRedirect: true
 
   certManager:
     clusterIssuer:
