@@ -272,8 +272,7 @@ deploykf_core:
           ##     - is false (default):
           ##        - normal behaviour
           ##     - is true:
-          ##        - default configs are ignored to allow for environment-based authentication like
-          ##          "AWS IRSA" or "GCP WorkloadIdentity"
+          ##        - default configs are ignored to allow for environment-based authentication (e.g. AWS IRSA)
           ##        - if a profile explicitly sets `objectStoreAuth` then it will still be used
           ##
           objectStoreAuth:
@@ -526,7 +525,10 @@ kubeflow_tools:
       ## object store auth configs
       ##  - if `fromEnv` is true, all other configs are ignored to allow for environment-based authentication like
       ##     - AWS IRSA: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-      ##     - GCP WorkloadIdentity: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
+      ##     - GCP Workload Identity: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
+      ##       [WARNING] GCP Workload Identity is not currently supported by Kubeflow Pipelines, this is because
+      ##                 the api-server uses an S3 client to access the object store (even GCS), until a native
+      ##                 GCS client is used, GCS can only be used via its S3 API with HMAC keys for authentication
       ##  - if `fromEnv` is true, you will likely need to set appropriate Pod ServiceAccount annotations:
       ##     - annotations for Kubeflow Pipelines backend are set with these values:
       ##        - `kubeflow_tools.pipelines.serviceAccounts.apiServer.annotations`
