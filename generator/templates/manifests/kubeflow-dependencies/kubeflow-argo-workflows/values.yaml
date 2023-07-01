@@ -2,15 +2,15 @@ deployKF_helpers:
   deploykf_gateway:
     http_endpoint: {{< (tmpl.Exec "deploykf_gateway.http_endpoint" .) | quote >}}
     https_endpoint: {{< (tmpl.Exec "deploykf_gateway.https_endpoint" .) | quote >}}
-    is_self_signed_cert: {{< (tmpl.Exec "deploykf_gateway.is_self_signed_cert" .) | quote >}}
+    is_self_signed_cert: {{< (tmpl.Exec "deploykf_gateway.is_self_signed_cert" .) | conv.ToBool >}}
 
   kubeflow_pipelines:
-    use_embedded_minio: {{< (tmpl.Exec "kubeflow_pipelines.use_embedded_minio" .) | quote >}}
+    use_embedded_minio: {{< (tmpl.Exec "kubeflow_pipelines.use_embedded_minio" .) | conv.ToBool >}}
     object_store:
       hostname: {{< (tmpl.Exec "kubeflow_pipelines.object_store.hostname" .) | quote >}}
       port: {{< (tmpl.Exec "kubeflow_pipelines.object_store.port" .) | quote >}}
       endpoint: {{< (tmpl.Exec "kubeflow_pipelines.object_store.endpoint" .) | quote >}}
-      not_use_ssl: {{< (tmpl.Exec "kubeflow_pipelines.object_store.not_use_ssl" .) | quote >}}
+      not_use_ssl: {{< (tmpl.Exec "kubeflow_pipelines.object_store.not_use_ssl" .) | conv.ToBool >}}
       auth:
         source_secret_name: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.source_secret_name" .) | quote >}}
         source_secret_namespace: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.source_secret_namespace" .) | quote >}}
@@ -40,7 +40,7 @@ deployKF:
     name: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name | quote >}}
     hostname: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
     tls:
-      enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled >}}
+      enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
 
   pipelines:
     bucket:

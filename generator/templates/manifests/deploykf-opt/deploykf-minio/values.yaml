@@ -2,7 +2,7 @@ deployKF_helpers:
   deploykf_gateway:
     http_endpoint: {{< (tmpl.Exec "deploykf_gateway.http_endpoint" .) | quote >}}
     https_endpoint: {{< (tmpl.Exec "deploykf_gateway.https_endpoint" .) | quote >}}
-    is_self_signed_cert: {{< (tmpl.Exec "deploykf_gateway.is_self_signed_cert" .) | quote >}}
+    is_self_signed_cert: {{< (tmpl.Exec "deploykf_gateway.is_self_signed_cert" .) | conv.ToBool >}}
 
 deployKF:
   extraManifests:
@@ -26,7 +26,7 @@ deployKF:
     name: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name | quote >}}
     hostname: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
     tls:
-      enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled >}}
+      enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
 
 
 ########################################

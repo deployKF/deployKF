@@ -6,7 +6,7 @@ deployKF:
 
   certManager:
     clusterIssuer:
-      enabled: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.enabled >}}
+      enabled: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.enabled | conv.ToBool >}}
       issuerName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.issuerName | quote >}}
       type: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.type | quote >}}
       selfSigned:

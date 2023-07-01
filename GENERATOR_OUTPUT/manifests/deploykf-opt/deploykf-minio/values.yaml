@@ -2,7 +2,7 @@ deployKF_helpers:
   deploykf_gateway:
     http_endpoint: "deploykf.example.com:8080"
     https_endpoint: "deploykf.example.com:8443"
-    is_self_signed_cert: "true"
+    is_self_signed_cert: true
 
 deployKF:
   extraManifests:

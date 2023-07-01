@@ -19,7 +19,7 @@ deployKF:
       issuerName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.issuerName | quote >}}
 
   argoWorkflows:
-    enabled: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled >}}
+    enabled: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled | conv.ToBool >}}
     namespace: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.namespace | quote >}}
     artifactRepository:
       keyFormat: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.artifactRepository.keyFormat | quote >}}
@@ -35,13 +35,13 @@ deployKF:
       http: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
       https: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
     tls:
-      enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled >}}
+      enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
     enableProxyProtocol: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.enableProxyProtocol >}}
     xffNumTrustedHops: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.xffNumTrustedHops >}}
     emailToLowercase: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.emailToLowercase | conv.ToBool >}}
 
   minio:
-    enabled: {{< .Values.deploykf_opt.deploykf_minio.enabled >}}
+    enabled: {{< .Values.deploykf_opt.deploykf_minio.enabled | conv.ToBool >}}
     namespace: {{< .Values.deploykf_opt.deploykf_minio.namespace | quote >}}
 
 
@@ -53,7 +53,7 @@ gateway:
 
   replicaCount: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.replicaCount >}}
   autoscaling:
-    enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.enabled >}}
+    enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.enabled | conv.ToBool >}}
     minReplicas: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.minReplicas >}}
     maxReplicas: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.maxReplicas >}}
     targetCPUUtilizationPercentage: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.targetCPUUtilizationPercentage >}}

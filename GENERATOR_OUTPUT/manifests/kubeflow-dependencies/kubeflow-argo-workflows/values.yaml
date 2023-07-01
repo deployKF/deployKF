@@ -2,15 +2,15 @@ deployKF_helpers:
   deploykf_gateway:
     http_endpoint: "deploykf.example.com:8080"
     https_endpoint: "deploykf.example.com:8443"
-    is_self_signed_cert: "true"
+    is_self_signed_cert: true
 
   kubeflow_pipelines:
-    use_embedded_minio: "true"
+    use_embedded_minio: true
     object_store:
       hostname: "deploykf-minio-api.deploykf-minio.svc.cluster.local"
       port: "9000"
       endpoint: "deploykf-minio-api.deploykf-minio.svc.cluster.local:9000"
-      not_use_ssl: "true"
+      not_use_ssl: true
       auth:
         source_secret_name: "deploykf-minio-root-user"
         source_secret_namespace: "deploykf-minio"
