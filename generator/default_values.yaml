@@ -322,6 +322,11 @@ deploykf_core:
         tag: v7.4.0
         pullPolicy: IfNotPresent
 
+      kubectl:
+        repository: docker.io/bitnami/kubectl
+        tag: 1.26.6-debian-11-r1
+        pullPolicy: IfNotPresent
+
     ## dex configs
     ##
     dex:
@@ -382,14 +387,11 @@ deploykf_core:
           total: "2160h" # 90d
 
       ## dex OpenID Connect clients
-      ##  - [WARNING] it is strongly recommended to use custom `clientSecret` values
-      ##  - a random `clientSecret` can be generated with one of the following:
-      ##     - echo $(head -c32 /dev/urandom | base64 | tr -d '\n')
-      ##     - python -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())'
       ##
       clients:
 
         ## OpenID client for oauth2-proxy (deployKF Dashboard)
+        ##  - [WARNING] it is strongly recommended to enable `generateSecret` or use a custom value
         ##
         oauth2Proxy:
           clientId: "oauth2-proxy"
@@ -397,8 +399,10 @@ deploykf_core:
             value: "bbbbbbbbbbbbbbbb"
             existingSecret: ""
             existingSecretKey: "client_secret"
+            generateSecret: false
 
         ## OpenID client for Minio Console
+        ##  - [WARNING] it is strongly recommended to enable `generateSecret` or use a custom value
         ##
         minioConsole:
           clientId: "minio-console"
@@ -406,8 +410,10 @@ deploykf_core:
             value: "bbbbbbbbbbbbbbbb"
             existingSecret: ""
             existingSecretKey: "client_secret"
+            generateSecret: false
 
         ## OpenID client for Argo Server
+        ##  - [WARNING] it is strongly recommended to enable `generateSecret` or use a custom value
         ##
         argoServer:
           clientId: "argo-server"
@@ -415,16 +421,13 @@ deploykf_core:
             value: "bbbbbbbbbbbbbbbb"
             existingSecret: ""
             existingSecretKey: "client_secret"
+            generateSecret: false
 
     ## oauth2-proxy configs
     ##
     oauth2Proxy:
 
       ## oauth2-proxy cookie configs
-      ##  - [WARNING] it is strongly recommended to use a custom `cookie.secret` value
-      ##  - a random `cookie.secret` can be generated with one of the following:
-      ##     - echo $(head -c32 /dev/urandom | base64 | tr -d '\n')
-      ##     - python -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())'
       ##
       cookie:
         ## sets oauth2-proxy config `--cookie-name`
@@ -437,10 +440,13 @@ deploykf_core:
         refresh: "60m"
 
         ## sets oauth2-proxy config `--cookie-secret`
+        ##  - [WARNING] it is strongly recommended to enable `generateSecret` or use a custom value
+        ##
         secret:
           value: "cccccccccccccccc"
           existingSecret: ""
           existingSecretKey: "cookie_secret"
+          generateSecret: false
 
 
   ## --------------------------------------

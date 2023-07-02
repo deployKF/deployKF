@@ -4,6 +4,9 @@ deployKF_helpers:
     https_endpoint: {{< (tmpl.Exec "deploykf_gateway.https_endpoint" .) | quote >}}
     is_self_signed_cert: {{< (tmpl.Exec "deploykf_gateway.is_self_signed_cert" .) | conv.ToBool >}}
 
+  scripts:
+    generate_kubernetes_secret__sh: {{< (tmpl.Exec "helpers/generate_kubernetes_secret.sh" .) | quote >}}
+
 deployKF:
   extraManifests:
     {{<- range $manifest := .Values.deploykf_core.deploykf_auth.extraManifests >}}
@@ -27,6 +30,21 @@ deployKF:
     hostname: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
     tls:
       enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
+
+
+########################################
+## COMPONENT | jobs
+########################################
+jobs:
+  ## configs for the kubectl container image
+  ##
+  kubectlImage:
+    repository: {{< .Values.deploykf_core.deploykf_auth.images.kubectl.repository | quote >}}
+    tag: {{< .Values.deploykf_core.deploykf_auth.images.kubectl.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_core.deploykf_auth.images.kubectl.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
 
 
 ########################################
@@ -77,6 +95,10 @@ dex:
         value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.value | quote >}}
         existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.existingSecret | quote >}}
         existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.existingSecretKey | quote >}}
+        generateSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.generateSecret | conv.ToBool >}}
+        {{<- if and (.Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.generateSecret) (not .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.existingSecret) >}}
+        {{< fail "`deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.existingSecret` must be non-empty if `deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.generateSecret` is true" >}}
+        {{<- end >}}
 
     ## OpenID client for Minio Console
     ##
@@ -88,6 +110,10 @@ dex:
         value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.value | quote >}}
         existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecret | quote >}}
         existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecretKey | quote >}}
+        generateSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.generateSecret | conv.ToBool >}}
+        {{<- if and (.Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.generateSecret) (not .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecret) >}}
+        {{< fail "`deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecret` must be non-empty if `deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.generateSecret` is true" >}}
+        {{<- end >}}
 
     ## OpenID client for Argo Server
     ##
@@ -99,6 +125,10 @@ dex:
         value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.value | quote >}}
         existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecret | quote >}}
         existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecretKey | quote >}}
+        generateSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.generateSecret | conv.ToBool >}}
+        {{<- if and (.Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.generateSecret) (not .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecret) >}}
+        {{< fail "`deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecret` must be non-empty if `deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.generateSecret` is true" >}}
+        {{<- end >}}
 
   ## dex static passwords
   ##
@@ -151,3 +181,7 @@ oauth2Proxy:
       value: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.value | quote >}}
       existingSecret: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.existingSecret | quote >}}
       existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.existingSecretKey | quote >}}
+      generateSecret: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.generateSecret | conv.ToBool >}}
+      {{<- if and (.Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.generateSecret) (not .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.existingSecret) >}}
+      {{< fail "`deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.existingSecret` must be non-empty if `deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.generateSecret` is true" >}}
+      {{<- end >}}

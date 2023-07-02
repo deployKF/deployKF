@@ -123,7 +123,7 @@ minio:
       clientId: "minio-console"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
-        existingSecret: ""
+        existingSecret: "cloned--minio-openid-secret"
         existingSecretKey: "client_secret"
 
   ## minio buckets

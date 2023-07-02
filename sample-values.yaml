@@ -113,10 +113,6 @@ deploykf_core:
       connectors: []
 
       ## dex OpenID Connect clients
-      ##  - [WARNING] it is strongly recommended to use custom `clientSecret` values
-      ##  - a random `clientSecret` can be generated with one of the following:
-      ##     - echo $(head -c32 /dev/urandom | base64 | tr -d '\n')
-      ##     - python -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())'
       ##
       clients:
 
@@ -124,41 +120,37 @@ deploykf_core:
         oauth2Proxy:
           clientId: "oauth2-proxy"
           clientSecret:
-            value: "bbbbbbbbbbbbbbbb"
-            existingSecret: ""
+            existingSecret: "generated--dex-oauth2-proxy-client"
             existingSecretKey: "client_secret"
+            generateSecret: true
 
         ## OpenID client for Minio Console
         minioConsole:
           clientId: "minio-console"
           clientSecret:
-            value: "bbbbbbbbbbbbbbbb"
-            existingSecret: ""
+            existingSecret: "generated--dex-minio-console-client"
             existingSecretKey: "client_secret"
+            generateSecret: true
 
         ## OpenID client for Argo Server
         argoServer:
           clientId: "argo-server"
           clientSecret:
-            value: "bbbbbbbbbbbbbbbb"
-            existingSecret: ""
+            existingSecret: "generated--dex-argo-server-client"
             existingSecretKey: "client_secret"
+            generateSecret: true
 
     ## oauth2-proxy configs
     ##
     oauth2Proxy:
 
       ## oauth2-proxy cookie configs
-      ##  - [WARNING] it is strongly recommended to use a custom `cookie.secret` value
-      ##  - a random `cookie.secret` can be generated with one of the following:
-      ##     - echo $(head -c32 /dev/urandom | base64 | tr -d '\n')
-      ##     - python -c 'import os,base64; print(base64.urlsafe_b64encode(os.urandom(32)).decode())'
       ##
       cookie:
         secret:
-          value: "cccccccccccccccc"
-          existingSecret: ""
+          existingSecret: "generated--oauth2-proxy-cookie-secret"
           existingSecretKey: "cookie_secret"
+          generateSecret: true
 
 
   ## --------------------------------------
