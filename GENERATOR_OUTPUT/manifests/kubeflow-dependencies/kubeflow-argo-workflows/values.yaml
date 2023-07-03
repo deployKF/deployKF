@@ -12,7 +12,7 @@ deployKF_helpers:
       endpoint: "deploykf-minio-api.deploykf-minio.svc.cluster.local:9000"
       not_use_ssl: true
       auth:
-        source_secret_name: "deploykf-minio-root-user"
+        source_secret_name: "generated--deploykf-minio-root-user"
         source_secret_namespace: "deploykf-minio"
         secret_name: "cloned--pipelines-bucket-secret"
         access_key_key: "username"

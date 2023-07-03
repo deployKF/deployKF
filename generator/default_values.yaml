@@ -866,7 +866,7 @@ deploykf_opt:
       size: 5Gi
 
     ## root user configs for minio
-    ##  - [WARNING] it is strongly recommended to override these credentials
+    ##  - [WARNING] it is strongly recommended to enable `generateSecret` or use a custom value
     ##  - if Kubeflow Pipelines is not configured to use an external object-store,
     ##    all services and jobs will access minio using this account
     ##
@@ -876,6 +876,7 @@ deploykf_opt:
       existingSecret: ""
       existingSecretUsernameKey: "username"
       existingSecretPasswordKey: "password"
+      generateSecret: false
 
       ## service accounts for the root user
       ##  - these service accounts are created and/or updated by a post-install job

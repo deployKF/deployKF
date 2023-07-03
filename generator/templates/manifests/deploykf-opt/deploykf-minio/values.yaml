@@ -4,6 +4,9 @@ deployKF_helpers:
     https_endpoint: {{< (tmpl.Exec "deploykf_gateway.https_endpoint" .) | quote >}}
     is_self_signed_cert: {{< (tmpl.Exec "deploykf_gateway.is_self_signed_cert" .) | conv.ToBool >}}
 
+  scripts:
+    generate_kubernetes_secret__sh: {{< (tmpl.Exec "helpers/generate_kubernetes_secret.sh" .) | quote >}}
+
 deployKF:
   extraManifests:
     {{<- range $manifest := .Values.deploykf_opt.deploykf_minio.extraManifests >}}
@@ -27,6 +30,21 @@ deployKF:
     hostname: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
     tls:
       enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
+
+
+########################################
+## COMPONENT | generate
+########################################
+generate:
+  ## configs for the kubectl container image
+  ##
+  kubectlImage:
+    repository: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.repository | quote >}}
+    tag: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
 
 
 ########################################
@@ -107,6 +125,10 @@ minio:
     existingSecret: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecret | quote >}}
     existingSecretUsernameKey: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretUsernameKey | quote >}}
     existingSecretPasswordKey: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretPasswordKey | quote >}}
+    generateSecret: {{< .Values.deploykf_opt.deploykf_minio.rootUser.generateSecret | conv.ToBool >}}
+    {{<- if and (.Values.deploykf_opt.deploykf_minio.rootUser.generateSecret) (not .Values.deploykf_opt.deploykf_minio.rootUser.existingSecret) >}}
+    {{< fail "`deploykf_opt.deploykf_minio.rootUser.existingSecret` must be non-empty if `deploykf_opt.deploykf_minio.rootUser.generateSecret` is true" >}}
+    {{<- end >}}
 
     ## service accounts for the root user
     ##  - these service accounts are created and/or updated by a post-install job

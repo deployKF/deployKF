@@ -1,0 +1,18 @@
+{{- if or .Values.minio.rootUser.generateSecret }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deploykf-minio-generate-scripts
+  labels:
+    helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: generate
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+data:
+  generate_kubernetes_secret.sh: |
+    {{- .Values.deployKF_helpers.scripts.generate_kubernetes_secret__sh | nindent 4 }}
+{{- end }}

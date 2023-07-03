@@ -358,16 +358,14 @@ deploykf_opt:
     namespace: deploykf-minio
 
     ## root user configs for minio
-    ##  - [WARNING] it is strongly recommended to override these credentials
     ##  - if Kubeflow Pipelines is not configured to use an external object-store,
     ##    all services and jobs will access minio using this account
     ##
     rootUser:
-      username: minioadmin
-      password: minioadmin
-      existingSecret: ""
+      existingSecret: "generated--deploykf-minio-root-user"
       existingSecretUsernameKey: "username"
       existingSecretPasswordKey: "password"
+      generateSecret: true
 
       ## service accounts for the root user
       ##  - these service accounts are created and/or updated by a post-install job
