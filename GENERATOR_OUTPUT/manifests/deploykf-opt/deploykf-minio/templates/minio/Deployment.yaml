@@ -87,6 +87,9 @@ spec:
               {{- else }}
               value: "http://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}"
               {{- end }}
+            - name: MINIO_BROWSER_LOGIN_ANIMATION
+              ## fix for kubectl port-forward: https://github.com/minio/console/issues/2539
+              value: "off"
 
             ## minio - openid
             - name: MINIO_IDENTITY_OPENID_DISPLAY_NAME
