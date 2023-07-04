@@ -153,7 +153,7 @@ data:
 
         ## TODO: remove once minio fixes: https://github.com/minio/minio/issues/17545
         if [[ "$_cmd_output" =~ "XMinioAdminNoSuchUser" ]]; then
-          echo "WARNING: ignoring previous error because it is a known issue with minio on first run"
+          echo "WARNING: ignoring previous error, it is a known issue with minio on first run"
           return
         fi
 
@@ -191,28 +191,64 @@ data:
       local _access_key="$1"
       local _secret_key="$2"
       local _policy_file="$3"
+      local _allow_delete_if_exists="${4:-true}"
 
       ## add the service account
-      ## NOTE: output will contain the secretKey, so we redirect to /dev/null
+      local _cmd_output
+      local _cmd_exit_code
+      set +e
       if [[ -s "$_policy_file" ]]; then
-        mc admin user svcacct add \
-          --access-key "$_access_key" \
-          --secret-key "$_secret_key" \
-          --policy "$_policy_file" \
-          "myminio" "$MINIO_ROOT_USER" \
-          >/dev/null || {
-          echo "ERROR: failed to add service account"
-          exit 1
-        }
+        _cmd_output=$(
+          mc admin user svcacct add --json --quiet \
+            --access-key "$_access_key" \
+            --secret-key "$_secret_key" \
+            --policy "$_policy_file" \
+            "myminio" "$MINIO_ROOT_USER" 2>&1
+        )
+        _cmd_exit_code=$?
       else
-        mc admin user svcacct add \
-          --access-key "$_access_key" \
-          --secret-key "$_secret_key" \
-          "myminio" "$MINIO_ROOT_USER" \
-          >/dev/null || {
-          echo "ERROR: failed to add service account"
+        _cmd_output=$(
+          mc admin user svcacct add --json --quiet \
+            --access-key "$_access_key" \
+            --secret-key "$_secret_key" \
+            "myminio" "$MINIO_ROOT_USER" 2>&1
+        )
+        _cmd_exit_code=$?
+      fi
+      set -e
+
+      ## if the command failed, print the output and exit
+      if [[ $_cmd_exit_code -ne 0 ]]; then
+        echo "ERROR: failed to add service account"
+        echo "OUTPUT: $_cmd_output"
+
+        ## TODO: remove once minio fixes: https://github.com/minio/minio/issues/17565
+        if [[ "$_allow_delete_if_exists" == "true" && "$_cmd_output" =~ "XMinioIAMServiceAccountNotAllowed" ]]; then
+          echo "WARNING: ignoring previous error, assuming MINIO_ROOT_USER has changed leaving old service accounts in place"
+          echo "WARNING: attempting to delete existing service account..."
+
+          ## delete the service account
+          set +e
+          _cmd_output=$(
+            mc admin user svcacct rm --json --quiet \
+              "myminio" "$_access_key" 2>&1
+          )
+          _cmd_exit_code=$?
+          set -e
+
+          ## if the command failed, print the output and exit
+          if [[ $_cmd_exit_code -ne 0 ]]; then
+            echo "ERROR: failed to delete service account"
+            echo "OUTPUT: $_cmd_output"
+            exit 1
+          fi
+
+          ## try to create the service account again
+          ## NOTE: this time we don't allow deletion, to avoid an infinite loop
+          create_minio_sa "$_access_key" "$_secret_key" "$_policy_file" "false"
+        else
           exit 1
-        }
+        fi
       fi
 
       ## add this accessKey to the current_accessKeys and desired_accessKeys arrays
