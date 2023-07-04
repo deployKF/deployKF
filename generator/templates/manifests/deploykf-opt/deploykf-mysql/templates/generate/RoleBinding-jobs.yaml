@@ -1,0 +1,23 @@
+{{- if or .Values.mysql.rootUser.generateSecret .Values.mysql.kubeflowUser.generateSecret }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: deploykf-mysql-generate-jobs
+  labels:
+    helm.sh/chart: {{ include "deploykf-mysql.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-mysql.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: generate
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: deploykf-mysql-generate-jobs
+subjects:
+  - kind: ServiceAccount
+    name: deploykf-mysql-generate-jobs
+    namespace: {{ .Release.Namespace | quote }}
+{{- end }}

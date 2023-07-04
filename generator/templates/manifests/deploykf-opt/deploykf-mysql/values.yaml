@@ -23,9 +23,9 @@ generate:
   ## configs for the kubectl container image
   ##
   kubectlImage:
-    repository: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.repository | quote >}}
-    tag: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.tag | quote >}}
-    pullPolicy: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.pullPolicy | quote >}}
+    repository: {{< .Values.deploykf_opt.deploykf_mysql.images.kubectl.repository | quote >}}
+    tag: {{< .Values.deploykf_opt.deploykf_mysql.images.kubectl.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_opt.deploykf_mysql.images.kubectl.pullPolicy | quote >}}
     pullSecret: ""
     uid: 1000
     gid: 1000
@@ -97,6 +97,10 @@ mysql:
     password: {{< .Values.deploykf_opt.deploykf_mysql.rootUser.password | quote >}}
     existingSecret: {{< .Values.deploykf_opt.deploykf_mysql.rootUser.existingSecret | quote >}}
     existingSecretPasswordKey: {{< .Values.deploykf_opt.deploykf_mysql.rootUser.existingSecretPasswordKey | quote >}}
+    generateSecret: {{< .Values.deploykf_opt.deploykf_mysql.rootUser.generateSecret | conv.ToBool >}}
+    {{<- if and (.Values.deploykf_opt.deploykf_mysql.rootUser.generateSecret) (not .Values.deploykf_opt.deploykf_mysql.rootUser.existingSecret) >}}
+    {{< fail "`deploykf_opt.deploykf_mysql.rootUser.existingSecret` must be non-empty if `deploykf_opt.deploykf_mysql.rootUser.generateSecret` is true" >}}
+    {{<- end >}}
 
   ## configs for the kubeflow mysql user
   ##
@@ -106,6 +110,10 @@ mysql:
     existingSecret: {{< .Values.deploykf_opt.deploykf_mysql.kubeflowUser.existingSecret | quote >}}
     existingSecretUsernameKey: {{< .Values.deploykf_opt.deploykf_mysql.kubeflowUser.existingSecretUsernameKey | quote >}}
     existingSecretPasswordKey: {{< .Values.deploykf_opt.deploykf_mysql.kubeflowUser.existingSecretPasswordKey | quote >}}
+    generateSecret: {{< .Values.deploykf_opt.deploykf_mysql.kubeflowUser.generateSecret | conv.ToBool >}}
+    {{<- if and (.Values.deploykf_opt.deploykf_mysql.kubeflowUser.generateSecret) (not .Values.deploykf_opt.deploykf_mysql.kubeflowUser.existingSecret) >}}
+    {{< fail "`deploykf_opt.deploykf_mysql.kubeflowUser.existingSecret` must be non-empty if `deploykf_opt.deploykf_mysql.kubeflowUser.generateSecret` is true" >}}
+    {{<- end >}}
 
   ## kubeflow databases to create with the init_file
   ##

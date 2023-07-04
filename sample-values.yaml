@@ -406,26 +406,23 @@ deploykf_opt:
     namespace: deploykf-mysql
 
     ## configs for the "root@localhost" mysql user
-    ##  - [WARNING] it is strongly recommended to override these credentials
     ##  - these credentials are used by the liveness probes
     ##  - as this is "root@localhost", these credentials can only be used from within the pod
     ##
     rootUser:
-      password: password
-      existingSecret: ""
+      existingSecret: "generated--deploykf-mysql-root-user"
       existingSecretPasswordKey: "password"
+      generateSecret: true
 
     ## configs for the kubeflow mysql user
-    ##  - [WARNING] it is strongly recommended to override these credentials
     ##  - if a Kubeflow app requires MySQL and is not configured to use an external database,
     ##    it will use these credentials
     ##
     kubeflowUser:
-      username: kubeflow
-      password: password
-      existingSecret: ""
+      existingSecret: "generated--deploykf-mysql-kubeflow-user"
       existingSecretUsernameKey: "username"
       existingSecretPasswordKey: "password"
+      generateSecret: true
 
 
 ## --------------------------------------------------------------------------------

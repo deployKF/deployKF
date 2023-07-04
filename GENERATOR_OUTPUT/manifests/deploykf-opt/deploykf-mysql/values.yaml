@@ -92,17 +92,19 @@ mysql:
   ##
   rootUser:
     password: "password"
-    existingSecret: ""
+    existingSecret: "generated--deploykf-mysql-root-user"
     existingSecretPasswordKey: "password"
+    generateSecret: true
 
   ## configs for the kubeflow mysql user
   ##
   kubeflowUser:
     username: "kubeflow"
     password: "password"
-    existingSecret: ""
+    existingSecret: "generated--deploykf-mysql-kubeflow-user"
     existingSecretUsernameKey: "username"
     existingSecretPasswordKey: "password"
+    generateSecret: true
 
   ## kubeflow databases to create with the init_file
   ##

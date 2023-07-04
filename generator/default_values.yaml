@@ -981,6 +981,11 @@ deploykf_opt:
         tag: 8.0.33
         pullPolicy: IfNotPresent
 
+      kubectl:
+        repository: docker.io/bitnami/kubectl
+        tag: 1.26.6-debian-11-r1
+        pullPolicy: IfNotPresent
+
     ## persistence configs
     ##
     persistence:
@@ -1012,7 +1017,7 @@ deploykf_opt:
       size: 5Gi
 
     ## configs for the "root@localhost" mysql user
-    ##  - [WARNING] it is strongly recommended to override these credentials
+    ##  - [WARNING] it is strongly recommended to enable `generateSecret` or use a custom value
     ##  - as this is "root@localhost", these credentials can only be used from within the pod
     ##  - these credentials are used by the liveness probes
     ##
@@ -1020,9 +1025,10 @@ deploykf_opt:
       password: password
       existingSecret: ""
       existingSecretPasswordKey: "password"
+      generateSecret: false
 
     ## configs for the kubeflow mysql user
-    ##  - [WARNING] it is strongly recommended to override these credentials
+    ##  - [WARNING] it is strongly recommended to enable `generateSecret` or use a custom value
     ##  - if a Kubeflow app requires MySQL and is not configured to use an external database,
     ##    it will use these credentials
     ##
@@ -1032,6 +1038,7 @@ deploykf_opt:
       existingSecret: ""
       existingSecretUsernameKey: "username"
       existingSecretPasswordKey: "password"
+      generateSecret: false
 
     ## custom users
     ##  - a list of custom users to create/update each time the pod starts
