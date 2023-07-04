@@ -893,8 +893,8 @@ deploykf_opt:
       ##                 https://min.io/docs/minio/container/administration/identity-access-management/policy-based-access-control.html
       ##  - [WARNING] if a `policy` is not specified, the service account will have root access
       ##  - [WARNING] unlisted minio service accounts will be removed from minio
-      ##  - [WARNING] unlisted kubernetes secrets with the label "deploykf-minio/generated-root-sa: true"
-      ##              will be removed from the cluster
+      ##  - [WARNING] unlisted kubernetes secrets with this label will be removed from the cluster:
+      ##              "deploykf-minio.deploykf.org/generated-minio-root-service-account: true"
       ##
       serviceAccounts: []
 

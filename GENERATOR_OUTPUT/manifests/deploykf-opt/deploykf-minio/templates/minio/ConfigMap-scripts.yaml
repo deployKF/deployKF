@@ -115,7 +115,7 @@ data:
     #######################################
     ## Variables
     #######################################
-    GENERATED_LABEL="deploykf-minio/generated-root-sa"
+    GENERATED_LABEL="deploykf-minio.deploykf.org/generated-minio-root-service-account"
 
     function declare_associative_arrays() {
       ## unset the associative arrays if they already exist
@@ -351,13 +351,21 @@ data:
         fi
       fi
 
-      ## create the secret with the "generated-service-account" label
-      kubectl create secret generic "$_secret_name" \
+      ## calculate the argo-cd tracking-id annotation
+      local _argocd_tracking_id
+      _argocd_tracking_id=$(printf "%s:%s/%s:%s/%s" '{{ .Release.Name }}' "" "Secret" '{{ .Release.Namespace }}' "$_secret_name")
+
+      ## create the secret
+      kubectl create secret generic "$_secret_name" --dry-run=client -o yaml \
         --from-literal="$_access_key_key"="$_access_key" \
-        --from-literal="$_secret_key_key"="$_secret_key" \
-        --dry-run=client -o yaml |
+        --from-literal="$_secret_key_key"="$_secret_key" |
         kubectl label --local -f - --dry-run=client -o yaml \
-          "$GENERATED_LABEL=true" |
+          "$GENERATED_LABEL=true" \
+          'app.kubernetes.io/instance={{ .Release.Name }}' |
+        kubectl annotate --local -f - --dry-run=client -o yaml \
+          "argocd.argoproj.io/tracking-id=$_argocd_tracking_id" \
+          "argocd.argoproj.io/compare-options=IgnoreExtraneous" \
+          "argocd.argoproj.io/sync-options=Prune=false" |
         kubectl apply -f -
     }
 
