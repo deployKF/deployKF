@@ -1,5 +1,6 @@
 ## this ClusterPolicy replaces the `pipelines-profile-controller` from the upstream manifests
 ## https://github.com/kubeflow/pipelines/tree/2.0.0-alpha.7/manifests/kustomize/base/installs/multi-user/pipelines-profile-controller
+{{<- $argocd_app_name := "kf-tools--pipelines" >}}
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
@@ -26,6 +27,13 @@ spec:
         namespace: "{{ request.object.metadata.name }}"
         synchronize: true
         data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "ConfigMap" "{{ request.object.metadata.name }}" "metadata-grpc-configmap" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
           data:
             METADATA_GRPC_SERVICE_HOST: "metadata-grpc-service.kubeflow"
             METADATA_GRPC_SERVICE_PORT: "8080"
@@ -50,8 +58,13 @@ spec:
         synchronize: true
         data:
           metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "apps" "Deployment" "{{ request.object.metadata.name }}" "ml-pipeline-visualizationserver" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
             labels:
               app: ml-pipeline-visualizationserver
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
           spec:
             selector:
               matchLabels:
@@ -96,6 +109,13 @@ spec:
         namespace: "{{ request.object.metadata.name }}"
         synchronize: true
         data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "networking.istio.io" "DestinationRule" "{{ request.object.metadata.name }}" "ml-pipeline-visualizationserver" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
           spec:
             host: ml-pipeline-visualizationserver
             trafficPolicy:
@@ -121,6 +141,13 @@ spec:
         namespace: "{{ request.object.metadata.name }}"
         synchronize: true
         data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "security.istio.io" "AuthorizationPolicy" "{{ request.object.metadata.name }}" "ml-pipeline-visualizationserver" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
           spec:
             selector:
               matchLabels:
@@ -150,6 +177,13 @@ spec:
         namespace: "{{ request.object.metadata.name }}"
         synchronize: true
         data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "Service" "{{ request.object.metadata.name }}" "ml-pipeline-visualizationserver" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
           spec:
             selector:
               app: ml-pipeline-visualizationserver
@@ -184,8 +218,13 @@ spec:
         synchronize: true
         data:
           metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "apps" "Deployment" "{{ request.object.metadata.name }}" "ml-pipeline-ui-artifact" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
             labels:
               app: ml-pipeline-ui-artifact
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
           spec:
             selector:
               matchLabels:
@@ -280,8 +319,13 @@ spec:
         synchronize: true
         data:
           metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "Service" "{{ request.object.metadata.name }}" "ml-pipeline-ui-artifact" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
             labels:
               app: ml-pipeline-ui-artifact
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
           spec:
             selector:
               app: ml-pipeline-ui-artifact
@@ -318,6 +362,11 @@ spec:
           metadata:
             annotations:
               workflows.argoproj.io/default-artifact-repository: default-v1
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "ConfigMap" "{{ request.object.metadata.name }}" "artifact-repositories" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
           data:
             default-v1: |
               archiveLogs: true
@@ -358,6 +407,13 @@ spec:
         namespace: "{{ request.object.metadata.name }}"
         synchronize: true
         data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "ConfigMap" "{{ request.object.metadata.name }}" "kfp-launcher" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
           data:
             {{<- $defaultPipelineRoot := .Values.kubeflow_tools.pipelines.kfpV2.defaultPipelineRoot >}}
             {{<- $defaultPipelineRoot := $defaultPipelineRoot | strings.ReplaceAll "{bucket_name}" .Values.kubeflow_tools.pipelines.bucket.name >}}
@@ -385,6 +441,13 @@ spec:
         namespace: "{{ request.object.metadata.name }}"
         synchronize: true
         data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "kubeflow.org" "PodDefault" "{{ request.object.metadata.name }}" "kubeflow-pipelines-api-token" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
           spec:
             desc: "Mount a serviceAccountToken to authenticate with Kubeflow Pipelines API"
             env:

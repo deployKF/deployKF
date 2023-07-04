@@ -26,6 +26,13 @@ spec:
         namespace: "{{ request.object.metadata.name }}"
         synchronize: true
         data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: "kf-tools--pipelines:/ConfigMap:{{ request.object.metadata.name }}/metadata-grpc-configmap"
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: "kf-tools--pipelines"
           data:
             METADATA_GRPC_SERVICE_HOST: "metadata-grpc-service.kubeflow"
             METADATA_GRPC_SERVICE_PORT: "8080"
@@ -50,8 +57,13 @@ spec:
         synchronize: true
         data:
           metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: "kf-tools--pipelines:apps/Deployment:{{ request.object.metadata.name }}/ml-pipeline-visualizationserver"
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
             labels:
               app: ml-pipeline-visualizationserver
+              app.kubernetes.io/instance: "kf-tools--pipelines"
           spec:
             selector:
               matchLabels:
@@ -96,6 +108,13 @@ spec:
         namespace: "{{ request.object.metadata.name }}"
         synchronize: true
         data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: "kf-tools--pipelines:networking.istio.io/DestinationRule:{{ request.object.metadata.name }}/ml-pipeline-visualizationserver"
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: "kf-tools--pipelines"
           spec:
             host: ml-pipeline-visualizationserver
             trafficPolicy:
@@ -121,6 +140,13 @@ spec:
         namespace: "{{ request.object.metadata.name }}"
         synchronize: true
         data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: "kf-tools--pipelines:security.istio.io/AuthorizationPolicy:{{ request.object.metadata.name }}/ml-pipeline-visualizationserver"
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: "kf-tools--pipelines"
           spec:
             selector:
               matchLabels:
@@ -150,6 +176,13 @@ spec:
         namespace: "{{ request.object.metadata.name }}"
         synchronize: true
         data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: "kf-tools--pipelines:/Service:{{ request.object.metadata.name }}/ml-pipeline-visualizationserver"
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: "kf-tools--pipelines"
           spec:
             selector:
               app: ml-pipeline-visualizationserver
@@ -184,8 +217,13 @@ spec:
         synchronize: true
         data:
           metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: "kf-tools--pipelines:apps/Deployment:{{ request.object.metadata.name }}/ml-pipeline-ui-artifact"
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
             labels:
               app: ml-pipeline-ui-artifact
+              app.kubernetes.io/instance: "kf-tools--pipelines"
           spec:
             selector:
               matchLabels:
@@ -276,8 +314,13 @@ spec:
         synchronize: true
         data:
           metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: "kf-tools--pipelines:/Service:{{ request.object.metadata.name }}/ml-pipeline-ui-artifact"
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
             labels:
               app: ml-pipeline-ui-artifact
+              app.kubernetes.io/instance: "kf-tools--pipelines"
           spec:
             selector:
               app: ml-pipeline-ui-artifact
@@ -314,6 +357,11 @@ spec:
           metadata:
             annotations:
               workflows.argoproj.io/default-artifact-repository: default-v1
+              argocd.argoproj.io/tracking-id: "kf-tools--pipelines:/ConfigMap:{{ request.object.metadata.name }}/artifact-repositories"
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: "kf-tools--pipelines"
           data:
             default-v1: |
               archiveLogs: true
@@ -350,5 +398,12 @@ spec:
         namespace: "{{ request.object.metadata.name }}"
         synchronize: true
         data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: "kf-tools--pipelines:/ConfigMap:{{ request.object.metadata.name }}/kfp-launcher"
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: "kf-tools--pipelines"
           data:
             defaultPipelineRoot: "minio://kubeflow-pipelines/v2/artifacts/{{ request.object.metadata.name }}"
