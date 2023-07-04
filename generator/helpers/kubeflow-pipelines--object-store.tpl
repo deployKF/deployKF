@@ -152,6 +152,7 @@ secret_key
       "Effect": "Allow",
       "Action": [
         "s3:GetBucketLocation",
+        "s3:ListBucket"
       ],
       "Resource": [
         "arn:aws:s3:::{{< .bucket_name >}}"
@@ -169,24 +170,6 @@ secret_key
         "arn:aws:s3:::{{< .bucket_name >}}/pipelines/*",
         "arn:aws:s3:::{{< .bucket_name >}}/v2/artifacts/*"
       ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:ListBucket"
-      ],
-      "Resource": [
-        "arn:aws:s3:::{{< .bucket_name >}}"
-      ],
-      "Condition": {
-        "StringLike": {
-          "s3:prefix": [
-            "artifacts/*",
-            "pipelines/*",
-            "v2/artifacts/*"
-          ]
-        }
-      }
     }
   ]
 }
@@ -238,6 +221,7 @@ secretkey
       "Effect": "Allow",
       "Action": [
         "s3:GetBucketLocation",
+        "s3:ListBucket"
       ],
       "Resource": [
         "arn:aws:s3:::{{< .bucket_name >}}"
@@ -254,23 +238,6 @@ secretkey
         "arn:aws:s3:::{{< .bucket_name >}}/artifacts/{{< .profile_name >}}/*",
         "arn:aws:s3:::{{< .bucket_name >}}/v2/artifacts/{{< .profile_name >}}/*"
       ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:ListBucket"
-      ],
-      "Resource": [
-        "arn:aws:s3:::{{< .bucket_name >}}"
-      ],
-      "Condition": {
-        "StringLike": {
-          "s3:prefix": [
-            "artifacts/{{< .profile_name >}}/*",
-            "v2/artifacts/{{< .profile_name >}}/*"
-          ]
-        }
-      }
     }
   ]
 }
