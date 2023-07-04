@@ -2,13 +2,13 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: deploykf-auth-jobs
+  name: deploykf-auth-generate-jobs
   labels:
     helm.sh/chart: {{ include "deploykf-auth.labels.chart" . }}
     app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.kubernetes.io/component: jobs
+    app.kubernetes.io/component: generate
   annotations:
     helm.sh/hook: pre-install,pre-upgrade
     helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation

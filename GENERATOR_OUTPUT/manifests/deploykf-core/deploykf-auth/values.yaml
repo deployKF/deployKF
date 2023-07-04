@@ -30,9 +30,9 @@ deployKF:
 
 
 ########################################
-## COMPONENT | jobs
+## COMPONENT | generate
 ########################################
-jobs:
+generate:
   ## configs for the kubectl container image
   ##
   kubectlImage:
