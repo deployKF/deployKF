@@ -19,6 +19,9 @@ rules:
 {{<- end ->}}
 
 
+########################################
+## SHARED | deploykf
+########################################
 deployKF:
   extraManifests:
     {{<- range $manifest := .Values.deploykf_dependencies.kyverno.extraManifests >}}
@@ -26,6 +29,9 @@ deployKF:
     {{<- end >}}
 
 
+########################################
+## DEPENDENCY | kyverno
+########################################
 ## as we reference the "kyverno" chart (https://kyverno.github.io/kyverno) in `dependencies` of Chart.yaml,
 ## we must indent our values under `kyverno:` in this file
 kyverno:

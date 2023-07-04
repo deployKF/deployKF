@@ -1,3 +1,6 @@
+########################################
+## SHARED | deploykf-helpers
+########################################
 deployKF_helpers:
   deploykf_gateway:
     http_endpoint: {{< (tmpl.Exec "deploykf_gateway.http_endpoint" .) | quote >}}
@@ -7,6 +10,10 @@ deployKF_helpers:
   scripts:
     generate_kubernetes_secret__sh: {{< (tmpl.Exec "helpers/generate_kubernetes_secret.sh" .) | quote >}}
 
+
+########################################
+## SHARED | deploykf
+########################################
 deployKF:
   extraManifests:
     {{<- range $manifest := .Values.deploykf_opt.deploykf_minio.extraManifests >}}

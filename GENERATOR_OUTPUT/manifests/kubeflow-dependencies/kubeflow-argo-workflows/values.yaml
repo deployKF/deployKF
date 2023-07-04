@@ -1,3 +1,6 @@
+########################################
+## SHARED | deploykf-helpers
+########################################
 deployKF_helpers:
   deploykf_gateway:
     http_endpoint: "deploykf.example.com:8080"
@@ -18,6 +21,10 @@ deployKF_helpers:
         access_key_key: "username"
         secret_key_key: "password"
 
+
+########################################
+## SHARED | deploykf
+########################################
 deployKF:
   extraManifests:
 
@@ -49,7 +56,7 @@ deployKF:
 
 
 ########################################
-## COMPONENT | controller
+## COMPONENT | workflow-controller
 ########################################
 controller:
   ## configs for the argo workflow-controller container image
@@ -102,7 +109,7 @@ controller:
 
 
 ########################################
-## COMPONENT | server
+## COMPONENT | argo-server
 ########################################
 server:
   ## configs for the argo-server container image

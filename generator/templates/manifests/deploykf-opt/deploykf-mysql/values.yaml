@@ -1,8 +1,35 @@
+########################################
+## SHARED | deploykf-helpers
+########################################
+deployKF_helpers:
+  scripts:
+    generate_kubernetes_secret__sh: {{< (tmpl.Exec "helpers/generate_kubernetes_secret.sh" .) | quote >}}
+
+
+########################################
+## SHARED | deploykf
+########################################
 deployKF:
   extraManifests:
     {{<- range $manifest := .Values.deploykf_opt.deploykf_mysql.extraManifests >}}
     - {{< (tpl $manifest $) | quote >}}
     {{<- end >}}
+
+
+########################################
+## COMPONENT | generate
+########################################
+generate:
+  ## configs for the kubectl container image
+  ##
+  kubectlImage:
+    repository: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.repository | quote >}}
+    tag: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
+
 
 ########################################
 ## COMPONENT | mysql

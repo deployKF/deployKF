@@ -1,3 +1,6 @@
+########################################
+## SHARED | deploykf
+########################################
 deployKF:
   extraManifests:
     {{<- range $manifest := .Values.deploykf_dependencies.cert_manager.extraManifests >}}
@@ -15,6 +18,9 @@ deployKF:
         injectedConfigMapName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
 
 
+########################################
+## DEPENDENCY | cert-manager
+########################################
 ## as we reference the "cert-manager" chart (https://charts.jetstack.io) in `dependencies` of Chart.yaml,
 ## we must indent our values under `cert-manager:` in this file
 cert-manager:
@@ -79,6 +85,9 @@ cert-manager:
       pullPolicy: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerCtl.pullPolicy | quote >}}
 
 
+########################################
+## DEPENDENCY | trust-manager
+########################################
 ## as we reference the "trust-manager" chart (https://charts.jetstack.io) in `dependencies` of Chart.yaml,
 ## we must indent our values under `trust-manager:` in this file
 trust-manager:

@@ -1,3 +1,6 @@
+########################################
+## SHARED | deploykf
+########################################
 deployKF:
   extraManifests:
     {{<- range $manifest := .Values.deploykf_core.deploykf_profiles_generator.extraManifests >}}
@@ -29,7 +32,11 @@ deployKF:
     emailToLowercase: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.emailToLowercase | conv.ToBool >}}
 
 
-## configs for generated profiles
+########################################
+## CONFIGS | profiles
+########################################
+
+## profile defaults
 ##
 profileDefaults:
 

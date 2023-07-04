@@ -1,3 +1,6 @@
+########################################
+## SHARED | deploykf
+########################################
 deployKF:
   extraManifests:
 
@@ -44,6 +47,9 @@ deployKF:
     namespace: "deploykf-minio"
 
 
+########################################
+## DEPENDENCY | istio-gateway
+########################################
 ## we reference the "gateway" chart (https://istio-release.storage.googleapis.com/charts) in `dependencies` of Chart.yaml
 ## we must indent our values under `gateway:` in this file
 gatewayEnabled: true

@@ -1,7 +1,13 @@
+########################################
+## SHARED | deploykf
+########################################
 deployKF:
   extraManifests:
 
 
+########################################
+## DEPENDENCY | kyverno
+########################################
 ## as we reference the "kyverno" chart (https://kyverno.github.io/kyverno) in `dependencies` of Chart.yaml,
 ## we must indent our values under `kyverno:` in this file
 kyverno:

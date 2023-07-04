@@ -1,3 +1,6 @@
+########################################
+## SHARED | deploykf-helpers
+########################################
 deployKF_helpers:
   deploykf_gateway:
     http_endpoint: {{< (tmpl.Exec "deploykf_gateway.http_endpoint" .) | quote >}}
@@ -18,6 +21,10 @@ deployKF_helpers:
         access_key_key: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.access_key_key" .) | quote >}}
         secret_key_key: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_key_key" .) | quote >}}
 
+
+########################################
+## SHARED | deploykf
+########################################
 deployKF:
   extraManifests:
     {{<- range $manifest := .Values.kubeflow_dependencies.kubeflow_argo_workflows.extraManifests >}}
@@ -52,7 +59,7 @@ deployKF:
 
 
 ########################################
-## COMPONENT | controller
+## COMPONENT | workflow-controller
 ########################################
 controller:
   ## configs for the argo workflow-controller container image
@@ -105,7 +112,7 @@ controller:
 
 
 ########################################
-## COMPONENT | server
+## COMPONENT | argo-server
 ########################################
 server:
   ## configs for the argo-server container image

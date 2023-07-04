@@ -1,3 +1,6 @@
+########################################
+## SHARED | deploykf
+########################################
 deployKF:
   extraManifests:
 
@@ -26,7 +29,11 @@ deployKF:
     emailToLowercase: false
 
 
-## configs for generated profiles
+########################################
+## CONFIGS | profiles
+########################################
+
+## profile defaults
 ##
 profileDefaults:
 

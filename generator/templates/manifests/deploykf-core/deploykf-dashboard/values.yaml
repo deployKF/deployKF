@@ -1,3 +1,6 @@
+########################################
+## SHARED | deploykf
+########################################
 deployKF:
   extraManifests:
     {{<- range $manifest := .Values.deploykf_core.deploykf_dashboard.extraManifests >}}
