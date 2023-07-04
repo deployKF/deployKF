@@ -49,8 +49,11 @@ spec:
           {{- end }}
           env:
             {{- if .Values.oauth2Proxy.oidc.clientSecret.existingSecret }}
-            - name: OAUTH2_PROXY_CLIENT_SECRET_FILE
-              value: "/etc/oauth2-proxy/client_secret"
+            - name: OAUTH2_PROXY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.oauth2Proxy.oidc.clientSecret.existingSecret | quote }}
+                  key: {{ .Values.oauth2Proxy.oidc.clientSecret.existingSecretKey | quote }}
             {{- end }}
             {{- if .Values.oauth2Proxy.cookie.secret.existingSecret }}
             - name: OAUTH2_PROXY_COOKIE_SECRET
@@ -91,12 +94,6 @@ spec:
               mountPath: /etc/oauth2-proxy/certs/
               readOnly: true
             {{- end }}
-            {{- if .Values.oauth2Proxy.oidc.clientSecret.existingSecret }}
-            - name: oidc-client-secret
-              mountPath: /etc/oauth2-proxy/client_secret
-              subPath: {{ .Values.oauth2Proxy.oidc.clientSecret.existingSecretKey | quote }}
-              readOnly: true
-            {{- end }}
       volumes:
         - name: oauth2-proxy-config
           secret:
@@ -109,9 +106,4 @@ spec:
             items:
               - key: root-cert.pem
                 path: root-cert.pem
-        {{- end }}
-        {{- if .Values.oauth2Proxy.oidc.clientSecret.existingSecret }}
-        - name: oidc-client-secret
-          secret:
-            secretName: {{ .Values.oauth2Proxy.oidc.clientSecret.existingSecret | quote }}
         {{- end }}
