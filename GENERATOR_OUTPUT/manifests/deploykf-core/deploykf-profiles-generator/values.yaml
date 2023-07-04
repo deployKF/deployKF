@@ -80,7 +80,7 @@ profileDefaults:
       ## the default Kubeflow Pipelines object store auth configs for profiles
       ##
       objectStoreAuth:
-        existingSecret: "kubeflow-pipelines--object-store-auth--{profile_name}"
+        existingSecret: "kubeflow-pipelines--profile-object-store-auth--{profile_name}"
         existingSecretNamespace: ""
         existingSecretAccessKeyKey: "access_key"
         existingSecretSecretKeyKey: "secret_key"

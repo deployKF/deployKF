@@ -142,12 +142,24 @@ minio:
     ##
     {{<- $service_accounts := .Values.deploykf_opt.deploykf_minio.rootUser.serviceAccounts | default coll.Slice >}}
     {{<- if and .Values.kubeflow_tools.pipelines.enabled (not .Values.kubeflow_tools.pipelines.objectStore.useExternal) >}}
+      {{<- /* -------------------------- */ ->}}
+      {{<- /* kubeflow pipelines backend */ ->}}
+      {{<- /* -------------------------- */ ->}}
+      {{<- $secret_name := "generated--kubeflow-pipelines--backend-object-store-auth" >}}
+      {{<- $secret_access_key_key := "access_key" >}}
+      {{<- $secret_secret_key_key := "secret_key" >}}
+      {{<- $policy := tmpl.Exec "kubeflow_pipelines.object_store.auth.minio_policy" (dict "bucket_name" $.Values.kubeflow_tools.pipelines.bucket.name) | json >}}
+      {{<- $service_accounts = $service_accounts | append (dict "generateSecret" true "existingSecret" $secret_name "existingSecretAccessKeyKey" $secret_access_key_key "existingSecretSecretKeyKey" $secret_secret_key_key "policy" $policy) >}}
+      {{<- /* --------------------------- */ ->}}
+      {{<- /* kubeflow pipelines profiles */ ->}}
+      {{<- /* --------------------------- */ ->}}
       {{<- $secret_name_template := .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret >}}
       {{<- $secret_access_key_key := tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_access_key_key" $ >}}
       {{<- $secret_secret_key_key := tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_secret_key_key" $ >}}
       {{<- if not ($secret_name_template | strings.Contains "{profile_name}") >}}
         {{<- fail (printf "if `kubeflow_tools.pipelines.objectStore.useExternal` is false, then `deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret` must contain '{profile_name}', but got '%s'" $secret_name_template) >}} 
       {{<- end >}}
+      {{<- $secret_name_template = printf "generated--%s" $secret_name_template >}} 
       {{<- range $profile := .Values.deploykf_core.deploykf_profiles_generator.profiles >}}
         {{<- if not (and (has $profile "tools") (has $profile.tools "kubeflowPipelines") (has $profile.tools.kubeflowPipelines "objectStoreAuth")) >}}
           {{<- $secret_name := $secret_name_template | strings.ReplaceAll "{profile_name}" $profile.name >}}

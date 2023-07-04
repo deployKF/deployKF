@@ -44,6 +44,7 @@ This allows us to loop over these configs multiple times:
     {{- if not ($objectStoreAuth_existingSecret_template | contains "{profile_name}") }}
       {{- fail (printf "when using minio, the `profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret` must contain '{profile_name}', but got '%s'" $objectStoreAuth_existingSecret_template) }}
     {{- end }}
+    {{- $objectStoreAuth_existingSecret_template = printf "generated--%s" $objectStoreAuth_existingSecret_template }}
     {{- $objectStoreAuth_existingSecret = $objectStoreAuth_existingSecret_template | replace "{profile_name}" $profile.name }}
     {{- $objectStoreAuth_existingSecretNamespace = $.Values.deployKF.minio.namespace }}
     {{- $objectStoreAuth_existingSecretAccessKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.generatedAccessKeyKey }}

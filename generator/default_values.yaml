@@ -715,7 +715,7 @@ deploykf_core:
           ##        - if a profile explicitly sets `objectStoreAuth` then it will still be used
           ##
           objectStoreAuth:
-            existingSecret: "kubeflow-pipelines--object-store-auth--{profile_name}"
+            existingSecret: "kubeflow-pipelines--profile-object-store-auth--{profile_name}"
             existingSecretNamespace: ""
             existingSecretAccessKeyKey: "access_key"
             existingSecretSecretKeyKey: "secret_key"
@@ -867,8 +867,6 @@ deploykf_opt:
 
     ## root user configs for minio
     ##  - [WARNING] it is strongly recommended to enable `generateSecret` or use a custom value
-    ##  - if Kubeflow Pipelines is not configured to use an external object-store,
-    ##    all services and jobs will access minio using this account
     ##
     rootUser:
       username: minioadmin
@@ -1063,8 +1061,6 @@ deploykf_opt:
     ##          each element is a map with the following keys:
     ##           - `username`: the username of the user (required)
     ##           - `hostname`: the hostname of the user (required)
-    ##  - deployKF will automatically create databases required for kubeflow apps
-    ##    and grant privileges to the kubeflow user
     ##
     customDatabases: []
 

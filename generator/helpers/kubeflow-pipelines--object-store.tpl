@@ -76,20 +76,16 @@ true
 ##
 ## The NAME of the Kubernetes Secret that contains the object store access/secret keys.
 ##  - NOTE: this is the SOURCE secret, the manifests actually use "kubeflow_pipelines.object_store.auth.secret_name"
-##    as we clone the secret (with Kyverno) into the kubeflow namespace
+##    as we clone the secret (with Kyverno) into the kubeflow and argo-workflows namespaces
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.source_secret_name" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
-{{<- if .Values.deploykf_opt.deploykf_minio.rootUser.existingSecret ->}}
-{{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecret >}}
-{{<- else ->}}
-deploykf-minio-root-user
-{{<- end ->}}
+generated--kubeflow-pipelines--backend-object-store-auth
 {{<- else ->}}
 {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecret ->}}
 {{< .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecret >}}
 {{<- else ->}}
-pipelines-bucket-secret
+kubeflow-pipelines--backend-object-store-auth
 {{<- end ->}}
 {{<- end ->}}
 {{<- end ->}}
@@ -107,10 +103,11 @@ kubeflow
 {{<- end ->}}
 
 ##
-## The NAME of the Kubernetes Secret that contains object store access/secret keys (in kubeflow namespace).
+## The NAME of the Kubernetes Secret that contains object store access/secret keys.
+##  - NOTE: this is the secret name AFTER it is cloned into the kubeflow and argo-workflows namespaces
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.secret_name" ->}}
-cloned--pipelines-bucket-secret
+cloned--kubeflow-pipelines--backend-object-store-auth
 {{<- end ->}}
 
 ##
@@ -118,16 +115,12 @@ cloned--pipelines-bucket-secret
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.access_key_key" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
-{{<- if .Values.deploykf_opt.deploykf_minio.rootUser.existingSecret ->}}
-{{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretUsernameKey >}}
-{{<- else ->}}
-username
-{{<- end ->}}
+access_key
 {{<- else ->}}
 {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecret ->}}
 {{< .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecretAccessKeyKey >}}
 {{<- else ->}}
-ACCESS_KEY
+access_key
 {{<- end ->}}
 {{<- end ->}}
 {{<- end ->}}
@@ -137,18 +130,66 @@ ACCESS_KEY
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.secret_key_key" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
-{{<- if .Values.deploykf_opt.deploykf_minio.rootUser.existingSecret ->}}
-{{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretPasswordKey >}}
-{{<- else ->}}
-password
-{{<- end ->}}
+secret_key
 {{<- else ->}}
 {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecret ->}}
 {{< .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecretSecretKeyKey >}}
 {{<- else ->}}
-SECRET_KEY
+secret_key
 {{<- end ->}}
 {{<- end ->}}
+{{<- end ->}}
+
+##
+## A template for a MinIO policy JSON that grants bucket read/write access for the KFP backend pods.
+## - USAGE: {{<- template "kubeflow_pipelines.object_store.auth.minio_policy" (dict "bucket_name" "my_bucket") >}}
+##
+{{<- define "kubeflow_pipelines.object_store.auth.minio_policy" ->}}
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetBucketLocation",
+      ],
+      "Resource": [
+        "arn:aws:s3:::{{< .bucket_name >}}"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::{{< .bucket_name >}}/artifacts/*",
+        "arn:aws:s3:::{{< .bucket_name >}}/pipelines/*",
+        "arn:aws:s3:::{{< .bucket_name >}}/v2/artifacts/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::{{< .bucket_name >}}"
+      ],
+      "Condition": {
+        "StringLike": {
+          "s3:prefix": [
+            "artifacts/*",
+            "pipelines/*",
+            "v2/artifacts/*"
+          ]
+        }
+      }
+    }
+  ]
+}
 {{<- end ->}}
 
 ##
