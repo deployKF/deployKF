@@ -34,6 +34,9 @@ apiVersion: kubeflow.org/v1
 kind: Profile
 metadata:
   name: {{ $profile_name | quote }}
+  annotations:
+    ## the profile resource must be created before other resources, as it creates the namespace
+    argocd.argoproj.io/sync-wave: "-10"
   labels:
     helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
     app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
