@@ -95,6 +95,9 @@ apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
   name: kubeflow-pipelines--clone-profile-bucket-secrets
+  annotations:
+    ## kyverno policies with "generate" cant be updated: https://github.com/kyverno/kyverno/issues/7718
+    argocd.argoproj.io/sync-options: Replace=true
   labels:
     helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
     app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
