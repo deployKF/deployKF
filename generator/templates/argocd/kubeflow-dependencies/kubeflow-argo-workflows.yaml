@@ -22,3 +22,15 @@ spec:
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.namespace | quote >}}
+  syncPolicy:
+    syncOptions:
+      ## ensure argo-cd does not remove the fields added by kyverno
+      - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    ## kyverno uses deployment pod annotations which start with "secret-version/" to trigger restarts on secret changes
+    - group: apps
+      kind: Deployment
+      ## TODO: use `managedFieldsManagers` once argo-cd fixes https://github.com/argoproj/argo-cd/issues/9696
+      ## we ignore all annotations on the deployment template because all other methods do not work
+      jsonPointers:
+        - /spec/template/metadata/annotations
