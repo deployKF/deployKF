@@ -155,7 +155,5 @@ server:
       clientId: "argo-server"
       clientSecret:
         value: "bbbbbbbbbbbbbbbb"
-        ## TODO: add automatic restart when secret changes
-        ##       https://kyverno.io/policies/other/restart-deployment-on-secret-change/restart-deployment-on-secret-change/
         existingSecret: "cloned--argo-server-openid-secret"
         existingSecretKey: "client_secret"

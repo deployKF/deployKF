@@ -12,7 +12,10 @@ resources:
   ## local
   {{<- if tmpl.Exec "kubeflow_katib.mysql.auth.secret_is_cloned" . >}}
   - resources/clone-mysql-secret-clusterpolicy.yaml
+  {{<- else >}}
+  - resources/restart-on-mysql-secret-update-clusterpolicy.yaml
   {{<- end >}}
+
   {{<- if .Values.kubeflow_tools.katib.extraManifests >}}
   - resources/extra-manifests.yaml
   {{<- end >}}

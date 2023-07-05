@@ -11,6 +11,7 @@ resources:
 
   ## local
   - resources/generate-profile-resources-clusterpolicy.yaml
+  - resources/restart-on-pipeline-configmap-update-clusterpolicy.yaml
   - resources/clone-bucket-secret-clusterpolicy.yaml
   - resources/clone-mysql-secret-clusterpolicy.yaml
   - resources/patch-v2-workflow-pods-clusterpolicy.yaml

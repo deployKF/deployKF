@@ -20,14 +20,14 @@ spec:
       app.kubernetes.io/sub-component: workflow-controller
   template:
     metadata:
+      annotations:
+        checksum/argo-config: {{ include (print $.Template.BasePath "/ConfigMap-argo-config.yaml") . | sha256sum }}
       labels:
         app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/component: argo
         app.kubernetes.io/sub-component: workflow-controller
-        ## NOTE: checksums are stored as labels because `spec.template.metadata.annotations` is ignored in argocd (for Kyverno)
-        checksum/argo-config: {{ include (print $.Template.BasePath "/ConfigMap-argo-config.yaml") . | sha1sum }}
     spec:
       {{- if .Values.controller.image.pullSecret }}
       imagePullSecrets:
@@ -77,19 +77,6 @@ spec:
             ##       https://github.com/kubeflow/pipelines/issues/8935
             - name: POD_NAMES
               value: v1
-            {{- if not .Values.deployKF.pipelines.objectStore.auth.fromEnv }}
-            ## these variables are only included so that our Kyverno cluster policy will restart this pod if the secrets change
-            - name: _OBJECT_STORE__ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_name | quote }}
-                  key: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.access_key_key | quote }}
-            - name: _OBJECT_STORE__SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_name | quote }}
-                  key: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_key_key | quote }}
-            {{- end }}
           ports:
             - name: http-pprof
               containerPort: 6060

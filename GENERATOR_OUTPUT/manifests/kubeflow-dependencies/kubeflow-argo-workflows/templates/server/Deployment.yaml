@@ -20,15 +20,15 @@ spec:
       app.kubernetes.io/sub-component: server
   template:
     metadata:
+      annotations:
+        checksum/argo-config: {{ include (print $.Template.BasePath "/ConfigMap-argo-config.yaml") . | sha256sum }}
+        checksum/sso: {{ include (print $.Template.BasePath "/server/Secret-sso.yaml") . | sha256sum }}
       labels:
         app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/component: argo
         app.kubernetes.io/sub-component: server
-        ## NOTE: checksums are stored as labels because `spec.template.metadata.annotations` is ignored in argocd (for Kyverno)
-        checksum/argo-config: {{ include (print $.Template.BasePath "/ConfigMap-argo-config.yaml") . | sha1sum }}
-        checksum/sso: {{ include (print $.Template.BasePath "/server/Secret-sso.yaml") . | sha1sum }}
     spec:
       {{- if .Values.server.image.pullSecret }}
       imagePullSecrets:

@@ -18,6 +18,10 @@ spec:
   destination:
     server: "https://kubernetes.default.svc"
     namespace: kubeflow
+  syncPolicy:
+    syncOptions:
+      ## ensure argo-cd does not remove the fields added by kyverno
+      - RespectIgnoreDifferences=true
   ignoreDifferences:
     ## `caBundle` is injected by cert-manager
     - group: admissionregistration.k8s.io
@@ -34,3 +38,9 @@ spec:
       kind: ClusterRole
       jqPathExpressions:
         - "select(.aggregationRule.clusterRoleSelectors | length > 0) | .rules"
+
+    ## we use kyverno to trigger restarts by setting the "deploykf.org/restart-trigger" annotation when secrets change
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/template/metadata/annotations/deploykf.org~1restart-trigger

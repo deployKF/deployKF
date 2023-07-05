@@ -11,6 +11,7 @@ resources:
 
   ## local
   - resources/generate-profile-resources-clusterpolicy.yaml
+  - resources/restart-on-pipeline-configmap-update-clusterpolicy.yaml
 
   {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
   - resources/clone-bucket-secret-clusterpolicy.yaml
@@ -22,6 +23,8 @@ resources:
 
   {{<- if tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_is_cloned" . >}}
   - resources/clone-mysql-secret-clusterpolicy.yaml
+  {{<- else >}}
+  - resources/restart-on-mysql-secret-update-clusterpolicy.yaml
   {{<- end >}}
 
   {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}

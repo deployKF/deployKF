@@ -1,4 +1,17 @@
 ########################################
+## SHARED | deploykf-helpers
+########################################
+deployKF_helpers:
+  kubeflow:
+    pipelines:
+      object_store:
+        profile:
+          cloned_secret_name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
+          generated_access_key_key: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_access_key_key" . | quote >}}
+          generated_secret_key_key: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_secret_key_key" . | quote >}}
+
+
+########################################
 ## SHARED | deploykf
 ########################################
 deployKF:
@@ -87,11 +100,6 @@ profileDefaults:
         existingSecretNamespace: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretNamespace | quote >}}
         existingSecretAccessKeyKey: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretAccessKeyKey | quote >}}
         existingSecretSecretKeyKey: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretSecretKeyKey | quote >}}
-
-        ## special configs
-        clonedSecretName: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
-        generatedAccessKeyKey: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_access_key_key" . | quote >}}
-        generatedSecretKeyKey: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_secret_key_key" . | quote >}}
 
 ## user entities
 ##  - a list of users that can be referenced when defining profile members

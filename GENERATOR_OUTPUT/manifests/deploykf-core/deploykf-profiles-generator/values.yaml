@@ -1,4 +1,17 @@
 ########################################
+## SHARED | deploykf-helpers
+########################################
+deployKF_helpers:
+  kubeflow:
+    pipelines:
+      object_store:
+        profile:
+          cloned_secret_name: "mlpipeline-minio-artifact"
+          generated_access_key_key: "accesskey"
+          generated_secret_key_key: "secretkey"
+
+
+########################################
 ## SHARED | deploykf
 ########################################
 deployKF:
@@ -84,11 +97,6 @@ profileDefaults:
         existingSecretNamespace: ""
         existingSecretAccessKeyKey: "access_key"
         existingSecretSecretKeyKey: "secret_key"
-
-        ## special configs
-        clonedSecretName: "mlpipeline-minio-artifact"
-        generatedAccessKeyKey: "accesskey"
-        generatedSecretKeyKey: "secretkey"
 
 ## user entities
 ##  - a list of users that can be referenced when defining profile members

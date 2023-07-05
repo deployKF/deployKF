@@ -18,14 +18,14 @@ spec:
       app.kubernetes.io/component: dex
   template:
     metadata:
+      annotations:
+        checksum/secret-dex: {{ include (print $.Template.BasePath "/dex/Secret-config.yaml") . | sha256sum }}
+        checksum/secret-oauth2-proxy: {{ include (print $.Template.BasePath "/oauth2-proxy/Secret-config.yaml") . | sha256sum }}
       labels:
         app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/managed-by: {{ .Release.Service }}
         app.kubernetes.io/component: dex
-        ## NOTE: checksums are stored as labels because `spec.template.metadata.annotations` is ignored in argocd (for Kyverno)
-        checksum/secret-dex: {{ include (print $.Template.BasePath "/dex/Secret-config.yaml") . | sha1sum }}
-        checksum/secret-oauth2-proxy: {{ include (print $.Template.BasePath "/oauth2-proxy/Secret-config.yaml") . | sha1sum }}
     spec:
       {{- if .Values.dex.image.pullSecret }}
       imagePullSecrets:

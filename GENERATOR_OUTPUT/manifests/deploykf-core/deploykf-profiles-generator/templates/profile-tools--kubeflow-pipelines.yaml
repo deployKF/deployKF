@@ -47,8 +47,8 @@ This allows us to loop over these configs multiple times:
     {{- $objectStoreAuth_existingSecret_template = printf "generated--%s" $objectStoreAuth_existingSecret_template }}
     {{- $objectStoreAuth_existingSecret = $objectStoreAuth_existingSecret_template | replace "{profile_name}" $profile.name }}
     {{- $objectStoreAuth_existingSecretNamespace = $.Values.deployKF.minio.namespace }}
-    {{- $objectStoreAuth_existingSecretAccessKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.generatedAccessKeyKey }}
-    {{- $objectStoreAuth_existingSecretSecretKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.generatedSecretKeyKey }}
+    {{- $objectStoreAuth_existingSecretAccessKeyKey = $.Values.deployKF_helpers.kubeflow.pipelines.object_store.profile.generated_access_key_key }}
+    {{- $objectStoreAuth_existingSecretSecretKeyKey = $.Values.deployKF_helpers.kubeflow.pipelines.object_store.profile.generated_secret_key_key }}
   {{- end }}
 {{- end }}
 
@@ -90,64 +90,101 @@ data:
 This Kyverno ClusterPolicy clones the objectStoreAuth secret into the profile namespace.
 We include this resource here so the 'kubeflow-pipelines' app does not need to be synced for new profiles.
 */}}
+{{- range $profile_name, $profile_configs := $profile_mapping }}
 ---
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:
-  name: kubeflow-pipelines--clone-profile-bucket-secrets
+  ## the max name length is 63, so to avoid collisions we include part of the SHA256 of the profile name
+  {{- $this_policy_name := (printf "clone-profile-bucket-secret-%s-%s" ($profile_name | sha256sum | trunc 8) $profile_name) | trunc 63 | trimSuffix "-" }}
+  name: {{ $this_policy_name | quote }}
   annotations:
     ## kyverno policies with "generate" cant be updated: https://github.com/kyverno/kyverno/issues/7718
     argocd.argoproj.io/sync-options: Replace=true
   labels:
     helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
     app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
 spec:
   generateExisting: true
   rules:
-    {{- range $profile_name, $profile_configs := $profile_mapping }}
-    {{- $rule_hash := (cat $profile_name $profile_configs.objectStoreAuth_existingSecret $profile_configs.objectStoreAuth_existingSecretNamespace $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.clonedSecretName) | sha1sum }}
-    ## clone the objectStoreAuth secret into the profile namespace
-    - name: clone-secret--{{ $rule_hash }}
+    {{- $source_secret__name := $profile_configs.objectStoreAuth_existingSecret }}
+    {{- $source_secret__namespace := $profile_configs.objectStoreAuth_existingSecretNamespace }}
+    {{- $target_secret__name := $.Values.deployKF_helpers.kubeflow.pipelines.object_store.profile.cloned_secret_name }}
+    {{- $target_secret__namespace := $profile_name }}
+    ## clone the secret from the source namespace to the target namespace
+    - name: clone-secret
       match:
         any:
           - resources:
               kinds:
                 - Namespace
               names:
-                - {{ $profile_name | quote }}
+                - {{ $target_secret__namespace | quote }}
       generate:
         apiVersion: v1
         kind: Secret
-        name: {{ $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.clonedSecretName | quote }}
+        name: {{ $target_secret__name | quote }}
         namespace: {{ `"{{ request.object.metadata.name }}"` }}
         synchronize: true
         clone:
-          namespace: {{ $profile_configs.objectStoreAuth_existingSecretNamespace | quote }}
-          name: {{ $profile_configs.objectStoreAuth_existingSecret | quote }}
+          namespace: {{ $source_secret__namespace | quote }}
+          name: {{ $source_secret__name | quote }}
 
-    ## annotate the cloned resources so that ArgoCD ignores them
-    - name: annotate-secret--{{ $rule_hash }}
+    ## annotate the ~cloned~ secret so that ArgoCD ignores it
+    - name: annotate-cloned-secret
       match:
         any:
           - resources:
               kinds:
                 - Secret
               names:
-                - {{ $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.clonedSecretName | quote }}
+                - {{ $target_secret__name | quote }}
               namespaces:
-                - {{ $profile_name | quote }}
+                - {{ $target_secret__namespace | quote }}
               selector:
                 matchLabels:
-                  generate.kyverno.io/policy-name: kubeflow-pipelines--clone-profile-bucket-secrets
+                  generate.kyverno.io/policy-name: {{ $this_policy_name | quote }}
       mutate:
         patchStrategicMerge:
           metadata:
             annotations:
               argocd.argoproj.io/compare-options: IgnoreExtraneous
               argocd.argoproj.io/sync-options: Prune=false
-    {{- "\n" }}
-    {{- end }}
+
+    ## restart deployments using the ~cloned~ secret when the ~source~ secret is updated
+    ## NOTE: kyverno ignores its own updates, so we cant trigger from the ~cloned~ secret
+    - name: trigger-deployment-restarts
+      match:
+        any:
+          - resources:
+              kinds:
+                - Secret
+              names:
+                - {{ $source_secret__name | quote }}
+              namespaces:
+                - {{ $source_secret__namespace | quote }}
+              operations:
+                - CREATE
+                - UPDATE
+      mutate:
+        targets:
+          - apiVersion: apps/v1
+            kind: Deployment
+            namespace: {{ $target_secret__namespace | quote }}
+        patchStrategicMerge:
+          spec:
+            template:
+              metadata:
+                annotations:
+                  deploykf.org/restart-trigger: {{ `"{{ random('[0-9a-z]{32}') }}"` }}
+              spec:
+                containers:
+                  - env:
+                      - valueFrom:
+                          secretKeyRef:
+                            <(name): {{ $target_secret__name | quote }}
+{{- end }}
 
 {{- end }}
