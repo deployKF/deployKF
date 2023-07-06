@@ -2,6 +2,11 @@
 ## SHARED | deploykf-helpers
 ########################################
 deployKF_helpers:
+  deploykf_profiles:
+    users_id_mapping: {{< tmpl.Exec "deploykf_profiles.users_id_mapping_json" . >}}
+    groups_id_mapping: {{< tmpl.Exec "deploykf_profiles.groups_id_mapping_json" . >}}
+    profiles_access_mapping: {{< tmpl.Exec "deploykf_profiles.profiles_access_mapping_json" . >}}
+
   kubeflow:
     pipelines:
       object_store:
