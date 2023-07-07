@@ -142,7 +142,7 @@ secret_key
 
 ##
 ## A template for a MinIO policy JSON that grants bucket read/write access for the KFP backend pods.
-## - USAGE: {{<- template "kubeflow_pipelines.object_store.auth.minio_policy" (dict "bucket_name" "my_bucket") >}}
+## - USAGE: `$policy_json := tmpl.Exec "kubeflow_pipelines.object_store.auth.minio_policy" (dict "bucket_name" "my_bucket")`
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.minio_policy" ->}}
 {
@@ -211,7 +211,7 @@ secretkey
 
 ##
 ## A template for a MinIO policy JSON that grants bucket read/write access for a specific profile.
-## - USAGE: {{<- template "kubeflow_pipelines.object_store.profile.minio_policy" (dict "profile_name" "my_profile" "bucket_name" "my_bucket") >}}
+## - USAGE: `$policy_json := tmpl.Exec "kubeflow_pipelines.object_store.profile.minio_policy" (dict "profile_name" "my_profile" "bucket_name" "my_bucket")`
 ##
 {{<- define "kubeflow_pipelines.object_store.profile.minio_policy" ->}}
 {

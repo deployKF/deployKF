@@ -2,6 +2,25 @@
 {{<- $_ := tmpl.Exec "helpers/check-values--incompatible-configs.tpl" ->}}
 {{<- $_ := tmpl.Exec "helpers/check-values--required-components.tpl" ->}}
 
+{{<- /* we write some expensive templates to the "runtime" folder to avoid recalculation on each use */ ->}}
+{{<- $input_dir_path := tmpl.Exec "runtime/input_dir" ->}}
+{{<- $runtime_dir_path := path.Join $input_dir_path ".." "runtime" | path.Clean ->}}
+
+{{<- /* calculate "deploykf_profiles" helpers */ ->}}
+{{<- $users_id_mapping_json := tmpl.Exec "deploykf_profiles.users_id_mapping_json" . ->}}
+{{<- $users_id_mapping := $users_id_mapping_json | json ->}}
+{{<- $groups_id_mapping_json := tmpl.Exec "deploykf_profiles.groups_id_mapping_json" (dict "Values" .Values "users_id_mapping" $users_id_mapping) ->}}
+{{<- $groups_id_mapping := $groups_id_mapping_json | json ->}}
+{{<- $profiles_users_access_mapping_json := tmpl.Exec "deploykf_profiles.profiles_users_access_mapping_json" (dict "Values" .Values "users_id_mapping" $users_id_mapping "groups_id_mapping" $groups_id_mapping) ->}}
+{{<- $profiles_users_access_mapping := $profiles_users_access_mapping_json | json ->}}
+{{<- $users_profiles_access_mapping_json := tmpl.Exec "deploykf_profiles.users_profiles_access_mapping_json" (dict "Values" .Values "profiles_users_access_mapping" $profiles_users_access_mapping) ->}}
+
+{{<- /* write "deploykf_profiles" helpers under "runtime" */ ->}}
+{{<- $users_id_mapping_json | file.Write (path.Join $runtime_dir_path "deploykf_profiles__users_id_mapping_json") ->}}
+{{<- $groups_id_mapping_json | file.Write (path.Join $runtime_dir_path "deploykf_profiles__groups_id_mapping_json") ->}}
+{{<- $profiles_users_access_mapping_json | file.Write (path.Join $runtime_dir_path "deploykf_profiles__profiles_users_access_mapping_json") ->}}
+{{<- $users_profiles_access_mapping_json | file.Write (path.Join $runtime_dir_path "deploykf_profiles__users_profiles_access_mapping_json") ->}}
+
 ## JetBrains
 .idea/
 *.iml

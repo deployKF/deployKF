@@ -1,5 +1,5 @@
 {{- /* loop over profiles */ -}}
-{{- range $profile_name, $user_access_mapping := .Values.deployKF_helpers.deploykf_profiles.profiles_access_mapping }}
+{{- range $profile_name, $user_access_mapping := .Values.deployKF_helpers.deploykf_profiles.profiles_users_access_mapping }}
 
 {{- /* loop over users with access to the profile */ -}}
 {{- range $user_id, $user_access := $user_access_mapping }}

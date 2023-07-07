@@ -3,9 +3,8 @@
 ########################################
 deployKF_helpers:
   deploykf_profiles:
-    users_id_mapping: {{< tmpl.Exec "deploykf_profiles.users_id_mapping_json" . >}}
-    groups_id_mapping: {{< tmpl.Exec "deploykf_profiles.groups_id_mapping_json" . >}}
-    profiles_access_mapping: {{< tmpl.Exec "deploykf_profiles.profiles_access_mapping_json" . >}}
+    users_id_mapping: {{< tmpl.Exec "runtime/deploykf_profiles__users_id_mapping_json" >}}
+    profiles_users_access_mapping: {{< tmpl.Exec "runtime/deploykf_profiles__profiles_users_access_mapping_json" >}}
 
   kubeflow:
     pipelines:

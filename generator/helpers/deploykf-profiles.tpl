@@ -1,5 +1,10 @@
+## NOTE: we reference these templates in `./templates/.gomplateignore_template` and write the results to the `runtime`
+##       directory to avoid re-evaluating them each time we need them (because they are computationally expensive)
+
 ##
-## A JSON object for looking up users by id: {"user_id": user_object}
+## A JSON object for looking up users by id: {"<user_id>": <user_object>}
+## - USAGE: `$users_id_mapping_json := tmpl.Exec "deploykf_profiles.users_id_mapping_json" .`
+## - RUNTIME: `$users_id_mapping_json := tmpl.Exec "runtime/deploykf_profiles__users_id_mapping_json"`
 ##
 {{<- define "deploykf_profiles.users_id_mapping_json" ->}}
 {{<- $users_id_mapping := dict ->}}
@@ -28,12 +33,13 @@
 {{<- $users_id_mapping | data.ToJSON ->}}
 {{<- end ->}}
 
-
 ##
-## A JSON object for looking up groups by id: {"group_id": {"user_id": user_object}}
+## A JSON object for looking up groups by id: {"<group_id>": {"<user_id>": <user_object>}}
+## - USAGE: `$groups_id_mapping_json := tmpl.Exec "deploykf_profiles.groups_id_mapping_json" (dict "Values" .Values "users_id_mapping" $users_id_mapping)`
+## - RUNTIME: `$groups_id_mapping_json := tmpl.Exec "runtime/deploykf_profiles__groups_id_mapping_json"`
 ##
 {{<- define "deploykf_profiles.groups_id_mapping_json" ->}}
-{{<- $users_id_mapping := tmpl.Exec "deploykf_profiles.users_id_mapping_json" . | json ->}}
+{{<- $users_id_mapping := .users_id_mapping ->}}
 {{<- $groups_id_mapping := dict ->}}
 {{<- range $group_index, $group := .Values.deploykf_core.deploykf_profiles_generator.groups ->}}
   {{<- if index $group "id" ->}}
@@ -61,14 +67,15 @@
 {{<- $groups_id_mapping | data.ToJSON ->}}
 {{<- end ->}}
 
-
 ##
-## A JSON object for looking up the access of each user in each profile: {"profile_name": {"user_id": {"role": ..., "notebookAccess": ...}}}
+## A JSON object for looking up the users of each profile, and the associated access level: {"<profile_name>": {"<user_id>": <access_object>}}
+## - USAGE: `$profiles_users_access_mapping_json := tmpl.Exec "deploykf_profiles.profiles_users_access_mapping_json" (dict "Values" .Values "users_id_mapping" $users_id_mapping "groups_id_mapping" $groups_id_mapping)`
+## - RUNTIME: `$profiles_users_access_mapping_json := tmpl.Exec "runtime/deploykf_profiles__profiles_users_access_mapping_json"`
 ##
-{{<- define "deploykf_profiles.profiles_access_mapping_json" ->}}
-{{<- $users_id_mapping := tmpl.Exec "deploykf_profiles.users_id_mapping_json" . | json ->}}
-{{<- $groups_id_mapping := tmpl.Exec "deploykf_profiles.groups_id_mapping_json" . | json ->}}
-{{<- $profiles_access_mapping := dict ->}}
+{{<- define "deploykf_profiles.profiles_users_access_mapping_json" ->}}
+{{<- $users_id_mapping := .users_id_mapping ->}}
+{{<- $groups_id_mapping := .groups_id_mapping ->}}
+{{<- $profiles_users_access_mapping := dict ->}}
 {{<- range $profile_index, $profile := .Values.deploykf_core.deploykf_profiles_generator.profiles ->}}
   {{<- if not (index $profile "name") ->}}
       {{<- fail (printf "elements of `profiles` must have non-empty `name`, but element %d does not" $profile_index) ->}}
@@ -76,11 +83,11 @@
 
   {{<- $full_profile_name := printf "%s%s" $.Values.deploykf_core.deploykf_profiles_generator.profileDefaults.profileNamePrefix $profile.name ->}}
 
-  {{<- if has $profiles_access_mapping $full_profile_name ->}}
+  {{<- if has $profiles_users_access_mapping $full_profile_name ->}}
     {{<- fail (printf "elements of `profiles` must have unique `name`, but '%s' appears more than once" $profile.name) ->}}
   {{<- end ->}}
 
-  {{<- /* build a dictionary containing the access for each user: {"user_id": {"role": ..., "notebookAccess": ...}} */ ->}}
+  {{<- /* build a dictionary containing the access for each user: {"<user_id>": <access_object>} */ ->}}
   {{<- $user_access_mapping := dict ->}}
   {{<- range $member_index, $member := index $profile "members" | default coll.Slice ->}}
     {{<- $member_access := coll.Merge (index $member "access" | default dict) $.Values.deploykf_core.deploykf_profiles_generator.profileDefaults.memberAccess ->}}
@@ -152,7 +159,23 @@
       {{<- fail (printf "elements of `profiles[%d].members` (profile name: '%s') must set `user` OR `group`, but element %d sets neither" $profile_index $profile.name $member_index) ->}}
     {{<- end ->}}
   {{<- end ->}}
-  {{<- $profiles_access_mapping = coll.Merge (dict $full_profile_name $user_access_mapping) $profiles_access_mapping ->}}
+  {{<- $profiles_users_access_mapping = coll.Merge (dict $full_profile_name $user_access_mapping) $profiles_users_access_mapping ->}}
 {{<- end ->}}
-{{<- $profiles_access_mapping | data.ToJSON ->}}
+{{<- $profiles_users_access_mapping | data.ToJSON ->}}
+{{<- end ->}}
+
+##
+## A JSON object for looking up the profiles of each user, and the associated access level: {"<user_id>": {"<profile_name>": <access_object>}}
+## - USAGE: `$users_profiles_access_mapping_json := tmpl.Exec "deploykf_profiles.users_profiles_access_mapping_json" (dict "Values" .Values "profiles_users_access_mapping" $profiles_users_access_mapping)`
+## - RUNTIME: `$users_profiles_access_mapping_json := tmpl.Exec "runtime/deploykf_profiles__users_profiles_access_mapping_json"`
+##
+{{<- define "deploykf_profiles.users_profiles_access_mapping_json" ->}}
+{{<- $profiles_users_access_mapping := .profiles_users_access_mapping ->}}
+{{<- $users_profiles_access_mapping := dict ->}}
+{{<- range $profile_name, $user_access_mapping := $profiles_users_access_mapping ->}}
+  {{<- range $user_id, $user_access := $user_access_mapping ->}}
+    {{<- $users_profiles_access_mapping = coll.Merge (dict $user_id (dict $profile_name $user_access)) $users_profiles_access_mapping ->}}
+  {{<- end ->}}
+{{<- end ->}}
+{{<- $users_profiles_access_mapping | data.ToJSON ->}}
 {{<- end ->}}
