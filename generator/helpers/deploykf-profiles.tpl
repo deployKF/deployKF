@@ -83,6 +83,8 @@
 
   {{<- $full_profile_name := printf "%s%s" $.Values.deploykf_core.deploykf_profiles_generator.profileDefaults.profileNamePrefix $profile.name ->}}
 
+  {{<- $profile_ownerEmail := index $profile "ownerEmail" | default $.Values.deploykf_core.deploykf_profiles_generator.profileDefaults.ownerEmail ->}}
+
   {{<- if has $profiles_users_access_mapping $full_profile_name ->}}
     {{<- fail (printf "elements of `profiles` must have unique `name`, but '%s' appears more than once" $profile.name) ->}}
   {{<- end ->}}
@@ -109,7 +111,7 @@
       {{<- /* CASE 1: `group` is specified */ ->}}
       {{<- if has $groups_id_mapping $member.group ->}}
         {{<- $group_users := index $groups_id_mapping $member.group ->}}
-        {{<- range $user_id, $_ := $group_users ->}}
+        {{<- range $user_id, $user := $group_users ->}}
           {{<- if has $user_access_mapping $user_id ->}}
             {{<- $existing_access := index $user_access_mapping $user_id ->}}
 
@@ -125,6 +127,10 @@
 
             {{<- $user_access_mapping = coll.Merge (dict $user_id $existing_access) $user_access_mapping ->}}
           {{<- else ->}}
+            {{<- if eq $user.email $profile_ownerEmail ->}}
+              {{<- fail (printf "elements of `profiles[%d].members` (profile name: '%s') may not include users with same email as profile owner, but group '%s' at index %d includes user '%s' which has email '%s'" $profile_index $profile.name $member.group $member_index $user_id $user.email) ->}}
+            {{<- end ->}}
+
             {{<- $copied_member_access := $member_access | toJSON | json ->}}
             {{<- $user_access_mapping = coll.Merge (dict $user_id $copied_member_access) $user_access_mapping ->}}
           {{<- end ->}}
@@ -136,6 +142,7 @@
       {{<- /* CASE 2: `user` is specified */ ->}}
       {{<- if has $users_id_mapping $member.user ->}}
         {{<- $user_id := $member.user ->}}
+        {{<- $user := index $users_id_mapping $user_id ->}}
         {{<- if has $user_access_mapping $user_id ->}}
           {{<- $existing_access := index $user_access_mapping $user_id ->}}
 
@@ -151,9 +158,14 @@
 
           {{<- $user_access_mapping = coll.Merge (dict $user_id $existing_access) $user_access_mapping ->}}
         {{<- else ->}}
+          {{<- if eq $user.email $profile_ownerEmail ->}}
+            {{<- fail (printf "elements of `profiles[%d].members` (profile name: '%s') may not include users with same email as profile owner, but user '%s' at index %d has email '%s'" $profile_index $profile.name $user_id $member_index $user.email) ->}}
+          {{<- end ->}}
           {{<- $copied_member_access := $member_access | toJSON | json ->}}
           {{<- $user_access_mapping = coll.Merge (dict $user_id $copied_member_access) $user_access_mapping ->}}
         {{<- end ->}}
+      {{<- else ->}}
+        {{<- fail (printf "elements of `profiles[%d].members` (profile name: '%s') may only reference users that exist in `users`, but element %d references '%s' which does not exist" $profile_index $profile.name $member_index $member.user) ->}}
       {{<- end ->}}
     {{<- else ->}}
       {{<- fail (printf "elements of `profiles[%d].members` (profile name: '%s') must set `user` OR `group`, but element %d sets neither" $profile_index $profile.name $member_index) ->}}

@@ -395,6 +395,16 @@ deploykf_opt:
     ##
     buckets: []
 
+    ## minio access policies
+    ##  - these policies are created and/or updated by a post-install job
+    ##  - each element is a map with the following keys:
+    ##     - `name`: the name of the policy
+    ##     - `policy`: the minio policy document as a YAML map, ~not a string~
+    ##                 https://min.io/docs/minio/container/administration/identity-access-management/policy-based-access-control.html
+    ##  - if Kubeflow Pipelines is enabled, and `identity.openid.policyClaim` is set to "email",
+    ##    policies are automatically generated for each user based on their `access.role` in each profile
+    ##
+    policies: []
 
   ## --------------------------------------
   ##            deploykf-mysql

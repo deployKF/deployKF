@@ -141,7 +141,7 @@ secret_key
 {{<- end ->}}
 
 ##
-## A template for a MinIO policy JSON that grants bucket read/write access for the KFP backend pods.
+## A template for a MinIO policy JSON that grants bucket read/write access for the KFP BACKEND pods.
 ## - USAGE: `$policy_json := tmpl.Exec "kubeflow_pipelines.object_store.auth.minio_policy" (dict "bucket_name" "my_bucket")`
 ##
 {{<- define "kubeflow_pipelines.object_store.auth.minio_policy" ->}}
@@ -210,7 +210,7 @@ secretkey
 {{<- end ->}}
 
 ##
-## A template for a MinIO policy JSON that grants bucket read/write access for a specific profile.
+## A template for a MinIO policy JSON that grants bucket read/write access for a specific PROFILE.
 ## - USAGE: `$policy_json := tmpl.Exec "kubeflow_pipelines.object_store.profile.minio_policy" (dict "profile_name" "my_profile" "bucket_name" "my_bucket")`
 ##
 {{<- define "kubeflow_pipelines.object_store.profile.minio_policy" ->}}
@@ -241,4 +241,40 @@ secretkey
     }
   ]
 }
+{{<- end ->}}
+
+##
+## A template for a MinIO policy YAML that grants bucket read/write access for a specific USER.
+## - USAGE: `$policy_yaml := tmpl.Exec "kubeflow_pipelines.object_store.user.minio_policy" (dict "edit_profiles" $edit_profiles "view_profiles" $view_profiles "bucket_name" $bucket_name)`
+##
+{{<- define "kubeflow_pipelines.object_store.user.minio_policy" ->}}
+{{<- $bucket_name := .bucket_name >}}
+{{<- $edit_profiles := .edit_profiles >}}
+{{<- $view_profiles := .view_profiles >}}
+Version: "2012-10-17"
+Statement:
+  - Effect: Allow
+    Action:
+      - s3:GetBucketLocation
+      - s3:ListBucket
+    Resource:
+      - arn:aws:s3:::{{< $bucket_name >}}
+  {{<- range $profile_name := $edit_profiles >}}
+  - Effect: Allow
+    Action:
+      - s3:GetObject
+      - s3:PutObject
+      - s3:DeleteObject
+    Resource:
+      - arn:aws:s3:::{{< $bucket_name >}}/artifacts/{{< $profile_name >}}/*
+      - arn:aws:s3:::{{< $bucket_name >}}/v2/artifacts/{{< $profile_name >}}/*
+  {{<- end >}}
+  {{< range $profile_name := $view_profiles >}}
+  - Effect: Allow
+    Action:
+      - s3:GetObject
+    Resource:
+      - arn:aws:s3:::{{< $bucket_name >}}/artifacts/{{< $profile_name >}}/*
+      - arn:aws:s3:::{{< $bucket_name >}}/v2/artifacts/{{< $profile_name >}}/*
+  {{<- end >}}
 {{<- end ->}}

@@ -142,17 +142,17 @@ minio:
     ##
     {{<- $service_accounts := .Values.deploykf_opt.deploykf_minio.rootUser.serviceAccounts | default coll.Slice >}}
     {{<- if and .Values.kubeflow_tools.pipelines.enabled (not .Values.kubeflow_tools.pipelines.objectStore.useExternal) >}}
-      {{<- /* -------------------------- */ ->}}
-      {{<- /* kubeflow pipelines backend */ ->}}
-      {{<- /* -------------------------- */ ->}}
+      {{<- /* --------------------------------------- */ ->}}
+      {{<- /* account for: kubeflow pipelines backend */ ->}}
+      {{<- /* --------------------------------------- */ ->}}
       {{<- $secret_name := "generated--kubeflow-pipelines--backend-object-store-auth" >}}
       {{<- $secret_access_key_key := "access_key" >}}
       {{<- $secret_secret_key_key := "secret_key" >}}
       {{<- $policy := tmpl.Exec "kubeflow_pipelines.object_store.auth.minio_policy" (dict "bucket_name" $.Values.kubeflow_tools.pipelines.bucket.name) | json >}}
       {{<- $service_accounts = $service_accounts | append (dict "generateSecret" true "existingSecret" $secret_name "existingSecretAccessKeyKey" $secret_access_key_key "existingSecretSecretKeyKey" $secret_secret_key_key "policy" $policy) >}}
-      {{<- /* --------------------------- */ ->}}
-      {{<- /* kubeflow pipelines profiles */ ->}}
-      {{<- /* --------------------------- */ ->}}
+      {{<- /* --------------------- */ ->}}
+      {{<- /* account for: profiles */ ->}}
+      {{<- /* --------------------- */ ->}}
       {{<- $secret_name_template := .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret >}}
       {{<- $secret_access_key_key := tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_access_key_key" $ >}}
       {{<- $secret_secret_key_key := tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_secret_key_key" $ >}}
@@ -202,4 +202,32 @@ minio:
   ## minio access policies
   ##  - these policies are created and/or updated by a post-install job
   ##
-  policies: {{< .Values.deploykf_opt.deploykf_minio.policies | toJSON >}}
+  {{<- $policies := .Values.deploykf_opt.deploykf_minio.policies | default coll.Slice >}}
+  {{<- if and .Values.kubeflow_tools.pipelines.enabled (not .Values.kubeflow_tools.pipelines.objectStore.useExternal) >}}
+  {{<- if eq .Values.deploykf_opt.deploykf_minio.identity.openid.policyClaim "email" >}}
+    {{<- $users_id_mapping := tmpl.Exec "runtime/deploykf_profiles__users_id_mapping_json" | json >}}
+    {{<- $users_profiles_access_mapping := tmpl.Exec "runtime/deploykf_profiles__users_profiles_access_mapping_json" | json >}}
+    {{<- $bucket_name := .Values.kubeflow_tools.pipelines.bucket.name >}}
+    {{<- range $user_id, $profiles_access_mapping := $users_profiles_access_mapping >}}
+       {{<- /* get the minio policy name */ ->}}
+       {{<- $user := index $users_id_mapping $user_id >}}
+       {{<- $policy_name := $user.email >}}
+
+       {{<- /* get the minio policy document */ ->}}
+       {{<- $edit_profiles := coll.Slice >}}
+       {{<- $view_profiles := coll.Slice >}}
+       {{<- range $profile_name, $user_access := $profiles_access_mapping >}}
+         {{<- if eq $user_access.role "edit" >}}
+           {{<- $edit_profiles = $edit_profiles | append $profile_name >}}
+         {{<- else if eq $user_access.role "view" >}}
+           {{<- $view_profiles = $view_profiles | append $profile_name >}}
+         {{<- end >}}
+       {{<- end >}}
+       {{<- $policy := tmpl.Exec "kubeflow_pipelines.object_store.user.minio_policy" (dict "edit_profiles" $edit_profiles "view_profiles" $view_profiles "bucket_name" $bucket_name) | yaml >}}
+
+       {{<- /* add the minio policy to the list of policies */ ->}}
+       {{<- $policies = $policies | append (dict "name" $policy_name "policy" $policy) >}}
+    {{<- end >}}
+  {{<- end >}}
+  {{<- end >}}
+  policies: {{< $policies | toJSON >}}
