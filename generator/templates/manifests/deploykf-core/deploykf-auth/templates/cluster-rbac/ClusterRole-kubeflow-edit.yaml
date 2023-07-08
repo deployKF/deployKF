@@ -11,6 +11,5 @@ metadata:
     rbac.authorization.kubeflow.org/aggregate-to-kubeflow-admin: "true"
 aggregationRule:
   clusterRoleSelectors:
-    ## TODO: add values which limit how many permissions get aggregated into these roles
     - matchLabels:
         rbac.authorization.kubeflow.org/aggregate-to-kubeflow-edit: "true"

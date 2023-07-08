@@ -39,7 +39,7 @@ deployKF:
     tls:
       enabled: true
     enableProxyProtocol: false
-    xffNumTrustedHops: 1
+    xffNumTrustedHops: 0
     emailToLowercase: false
 
   minio:

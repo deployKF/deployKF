@@ -59,7 +59,7 @@ resources:
   ####################
   ## deploykf-tools ##
   ####################
-  ## TODO: deploykf-tools
+  ## TODO: add 'deploykf-tools' https://www.deploykf.org/reference/future-tools/
 
   ###########################
   ## kubeflow-dependencies ##

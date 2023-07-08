@@ -126,7 +126,7 @@ manifests/deploykf-opt/deploykf-mysql/
 {{<- end >}}
 
 ## deployKF - deploykf-tools
-## TODO: deploykf-tools
+## TODO: add 'deploykf-tools' https://www.deploykf.org/reference/future-tools/
 
 ## deployKF - kubeflow-dependencies
 {{<- if not .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled >}}

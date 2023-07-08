@@ -21,8 +21,8 @@ deployKF:
 ########################################
 centralDashboard:
   image:
-    repository: "ghcr.io/deploykf/ci/dashboard"
-    tag: "sha-f7b4239"
+    repository: "ghcr.io/deploykf/dashboard"
+    tag: "0.1.0"
     pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 0

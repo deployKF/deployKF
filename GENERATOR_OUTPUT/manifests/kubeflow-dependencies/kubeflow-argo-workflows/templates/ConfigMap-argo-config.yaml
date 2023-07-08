@@ -48,8 +48,7 @@ data:
     {{- end }}
 
     ## if TLS certificate verification is skipped for SSO endpoints
-    ## TODO: remove once argo-server supports using local CA files
-    ##       https://github.com/argoproj/argo-workflows/issues/7198
+    ## TODO: remove once argo-server supports using local CA files: https://github.com/argoproj/argo-workflows/issues/7198
     {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
     insecureSkipVerify: true
     {{- else }}

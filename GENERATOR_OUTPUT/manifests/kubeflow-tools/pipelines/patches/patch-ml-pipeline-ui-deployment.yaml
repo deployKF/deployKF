@@ -37,9 +37,6 @@ spec:
                 - '-'
                 - http://localhost:3000/apis/v1beta1/healthz
           env:
-            ## TODO: consider supporting the argo "log archive" feature (disabled by default)
-            ##       https://github.com/kubeflow/pipelines/blob/2.0.0-alpha.5/frontend/server/configs.ts#L83-L91
-
             ## ================================
             ## UserID Configs
             ## ================================
@@ -56,12 +53,10 @@ spec:
                   name: pipeline-install-config
                   key: USERID_PREFIX
 
-            ## TODO: explain why we set configs for both Minio & S3, and ensure its actually necessary.
-            ##       (it's mostly to prevent us having to ask the users what kind of object store their endpoint is)
-
             ## ================================
             ## Minio - Object Store Configs
             ## ================================
+            ## NOTE: we set both the S3 & Minio configs because we don't know what kind of object store the user is using
             - name: MINIO_NAMESPACE
               ## must be empty, or kubeflow pipelines will attempt to append the namespace to MINIO_HOST
               value: ""
@@ -94,6 +89,7 @@ spec:
             ## ================================
             ## S3 - Object Store Configs
             ## ================================
+            ## NOTE: we set both the S3 & Minio configs because we don't know what kind of object store the user is using
             - name: AWS_REGION
               valueFrom:
                 configMapKeyRef:

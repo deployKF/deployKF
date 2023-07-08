@@ -47,8 +47,6 @@ spec:
           {{- toYaml .Values.profileController.resources | nindent 12 }}
           {{- end }}
           command:
-            ## TODO: consider enabling leader election
-            ##       https://github.com/kubeflow/kubeflow/blob/v1.7.0/components/profile-controller/main.go#L70-L74
             - /manager
             - -userid-header
             - {{ .Values.deployKF.kubeflow.useridHeader | quote }}

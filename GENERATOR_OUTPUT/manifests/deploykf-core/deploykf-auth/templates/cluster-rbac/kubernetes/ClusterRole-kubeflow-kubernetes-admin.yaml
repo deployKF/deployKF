@@ -1,4 +1,5 @@
-## TODO: link to the upstream manifests which this comes from
+## The rules come from upstream manifests.
+## https://github.com/kubeflow/manifests/blob/v1.7.0/common/kubeflow-roles/base/cluster-roles.yaml#L43-L69
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:

@@ -11,7 +11,6 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
     app.kubernetes.io/component: argo
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
-    ## TODO: ensure we want the kubeflow role to get all argo workflow permissions
     rbac.authorization.kubeflow.org/aggregate-to-kubeflow-admin: "true"
 rules:
   - apiGroups:

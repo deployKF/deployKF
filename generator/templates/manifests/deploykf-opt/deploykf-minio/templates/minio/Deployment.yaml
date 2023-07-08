@@ -163,7 +163,6 @@ spec:
               containerPort: 9001
               protocol: TCP
           livenessProbe:
-            ## TODO: tune & make values
             initialDelaySeconds: 20
             periodSeconds: 30
             timeoutSeconds: 5
@@ -171,7 +170,6 @@ spec:
               path: /minio/health/live
               port: http-api
           readinessProbe:
-            ## TODO: tune & make values
             initialDelaySeconds: 20
             periodSeconds: 30
             timeoutSeconds: 5
@@ -190,7 +188,6 @@ spec:
               mountPath: "/minio-data"
             {{- end }}
             {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
-            ## TODO: check if minio needs to restart when CA cert changes
             - name: gateway-root-ca-cert
               mountPath: "/etc/minio/certs/CAs/"
               readOnly: true

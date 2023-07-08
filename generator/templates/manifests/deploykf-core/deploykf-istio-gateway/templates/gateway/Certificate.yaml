@@ -15,7 +15,6 @@ spec:
     name: {{ .Values.deployKF.certManager.clusterIssuer.issuerName | quote }}
   commonName: "*.{{ .Values.deployKF.gateway.hostname }}"
   dnsNames:
-    ## TODO: consider if we should explicitly specify the domains rather than use wildcard cert
     - "*.{{ .Values.deployKF.gateway.hostname }}"
     - {{ .Values.deployKF.gateway.hostname | quote }}
 {{- end }}

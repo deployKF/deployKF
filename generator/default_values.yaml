@@ -1,7 +1,3 @@
-## TODO: replace all instances of 'cluster.local' with this (might need a lot of patches)
-##       (consider putting under a "kubernetes" section, also for other things like default node selectors)
-#clusterDomain: cluster.local
-
 ## --------------------------------------------------------------------------------
 ##
 ##                                      argocd
@@ -106,8 +102,6 @@ deploykf_dependencies:
         fsGroup: 1001
 
       ## ServiceAccount configs
-      ##  - TODO: document using with AWS IRSA + route53 (and similar)
-      ##    https://cert-manager.io/docs/configuration/acme/dns01/route53/
       ##
       serviceAccount:
         create: true
@@ -123,14 +117,17 @@ deploykf_dependencies:
 
     ## istio gateway certificate issuer configs
     ##  - if you wish to use your own ClusterIssuer, set `clusterIssuer.enabled` to false
-    ##    and set `clusterIssuer.issuerName` to the name of your issuer
-    ##    (this also works when you bring your own cert-manager deployment)
+    ##    and set `clusterIssuer.issuerName` to the name of your issuer, (this still works when you
+    ##    bring your own cert-manager deployment by setting `cert_manager.enabled` to false)
     ##
     clusterIssuer:
       enabled: true
       issuerName: deploykf-gateway-issuer
 
-      ## TODO: support other kinds of cluster issuers
+      ## the type of the chart-provided ClusterIssuer
+      ##  - currently only "SELF_SIGNED" is supported, to use a different issuer type
+      ##    set `clusterIssuer.enabled` to false and provision your own issuer
+      ##
       type: SELF_SIGNED
 
       selfSigned:
@@ -204,10 +201,9 @@ deploykf_dependencies:
 
     ## istio mesh configs
     ##  - note, deployKF will override some configs with the required values, even if they are set here
+    ##  - a useful config for debugging is to set `accessLogFile` as "/dev/stdout", which will print access logs to STDOUT
     ##
-    meshConfig:
-      ## TODO: disable after development (as it prints all istio access logs to STDOUT)
-      accessLogFile: /dev/stdout
+    meshConfig: {}
 
 
   ## --------------------------------------
@@ -473,9 +469,8 @@ deploykf_core:
     ##
     images:
       dashboard:
-        ## TODO: replace with non-ci image
-        repository: ghcr.io/deploykf/ci/dashboard
-        tag: sha-f7b4239
+        repository: ghcr.io/deploykf/dashboard
+        tag: 0.1.0
         pullPolicy: IfNotPresent
 
       profileController:
@@ -544,9 +539,8 @@ deploykf_core:
 
       hostname: deploykf.example.com
       ports:
-        ## TODO: consider making 80/443 the default (+ dont forget to test 80/443)
-        http: 8080
-        https: 8443
+        http: 80
+        https: 443
       tls:
         enabled: true
 
@@ -564,8 +558,7 @@ deploykf_core:
       ## the number of x-forwarded-for HTTP header hops to trust
       ##  - important if using a LoadBalancer (like AWS NLB) as the Service type of deploykf-istio-gateway
       ##
-      ## TODO: this should probably be 0 by default
-      xffNumTrustedHops: 1
+      xffNumTrustedHops: 0
 
       ## if the email passed in `X-Auth-Request-Email` by `oauth2-proxy` is cast to lowercase
       ##  - note, this will only affect the email passed to Kubeflow apps, other apps connected to

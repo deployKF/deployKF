@@ -141,13 +141,8 @@ server:
 
     ## how long each session (JWT issued by argo) is valid for
     ##
-    ## TODO: argo-server does not currently support refresh tokens
-    ##       https://github.com/argoproj/argo-workflows/issues/5053
+    ## TODO: argo-server does not currently support refresh tokens: https://github.com/argoproj/argo-workflows/issues/5053
     sessionExpiry: "2h"
-
-    ## TODO: update once "SSO Impersonate" feature is added, to align UI access with cluster RBAC
-    ##       https://github.com/argoproj/argo-workflows/pull/7193
-    #impersonate: {}
 
     ## OpenID configs for argo-server
     ##

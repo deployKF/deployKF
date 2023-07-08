@@ -40,4 +40,4 @@ istio-daemon:
     enableNamespacesByDefault: false
     injectedAnnotations: {}
 
-  meshConfig: {"accessLogFile":"/dev/stdout","defaultConfig":{"holdApplicationUntilProxyStarts":true,"proxyMetadata":{"ISTIO_META_DNS_AUTO_ALLOCATE":"true","ISTIO_META_DNS_CAPTURE":"true"}},"trustDomain":"cluster.local"}
+  meshConfig: {"defaultConfig":{"holdApplicationUntilProxyStarts":true,"proxyMetadata":{"ISTIO_META_DNS_AUTO_ALLOCATE":"true","ISTIO_META_DNS_CAPTURE":"true"}},"trustDomain":"cluster.local"}

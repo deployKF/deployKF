@@ -33,8 +33,8 @@ deploykf_dependencies:
 
     ## istio gateway certificate issuer configs
     ##  - if you wish to use your own ClusterIssuer, set `clusterIssuer.enabled` to false
-    ##    and set `clusterIssuer.issuerName` to the name of your issuer
-    ##    (this also works when you bring your own cert-manager deployment)
+    ##    and set `clusterIssuer.issuerName` to the name of your issuer, (this still works when you
+    ##    bring your own cert-manager deployment by setting `cert_manager.enabled` to false)
     ##
     clusterIssuer:
       enabled: true
