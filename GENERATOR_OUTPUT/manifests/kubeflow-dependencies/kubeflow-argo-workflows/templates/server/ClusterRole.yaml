@@ -12,14 +12,6 @@ metadata:
     app.kubernetes.io/component: argo
     app.kubernetes.io/sub-component: server
 rules:
-  ## TODO: SubjectAccessReviews are needed for testing "SSO Impersonate" feature
-  ##       https://github.com/argoproj/argo-workflows/pull/7193
-  #- apiGroups:
-  #    - authorization.k8s.io
-  #  resources:
-  #    - subjectaccessreviews
-  #  verbs:
-  #    - create
   - apiGroups:
       - ""
     resources:

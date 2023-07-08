@@ -4,6 +4,26 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  name: argo-server-user-profile-object-store-secret
+  labels:
+    helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+rules:
+  ## NOTE: this rule allows argo-server user ServiceAccounts to use the object store Secret in profile namespaces
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    resourceNames:
+      - {{ .Values.deployKF_helpers.kubeflow.pipelines.object_store.profile.cloned_secret_name | quote }}
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
   name: argo-server-user-edit
   labels:
     helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" . }}
@@ -73,6 +93,29 @@ type: kubernetes.io/service-account-token
 {{- /* loop over profiles */ -}}
 {{- /* ------------------ */ -}}
 {{- range $profile_name, $users_access_mapping := .Values.deployKF_helpers.deploykf_profiles.profiles_users_access_mapping }}
+---
+{{- /* create RoleBinding for access to the object store secret in this profile namespace */ -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: argo-server-user-profile-object-store-secret
+  namespace: {{ $profile_name | quote }}
+  labels:
+    helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
+    app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: argo-server-user-profile-object-store-secret
+subjects:
+  {{- range $user_id, $user_access := $users_access_mapping }}
+  {{- $user := get $.Values.deployKF_helpers.deploykf_profiles.users_id_mapping $user_id }}
+  - kind: ServiceAccount
+    name: argo-server-user-{{ $user.email | sha256sum }}
+    namespace: {{ $.Values.deployKF.argoWorkflows.namespace | quote }}
+  {{- end }}
 ---
 {{- /* create RoleBinding for "edit" permissions in this profile namespace */ -}}
 apiVersion: rbac.authorization.k8s.io/v1
