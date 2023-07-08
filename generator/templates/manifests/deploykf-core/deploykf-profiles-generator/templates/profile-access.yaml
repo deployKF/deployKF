@@ -13,9 +13,8 @@ calculate the Kubernetes resource name base:
    user's email by replacing any special characters with '-' and casting to lower-case
 */}}
 {{- $resource_name := regexReplaceAll "[^0-9a-zA-Z]" $user.email "-" | lower }}
-
-{{- if $user_access.notebooksAccess }}
 ---
+{{- if or $user_access.notebooksAccess $.Values.deployKF.kubeflow.pipelines.enabled }}
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
@@ -35,10 +34,13 @@ spec:
     - from:
         - source:
             principals:
+              {{- if $user_access.notebooksAccess }}
+              ## allowing traffic from the gateway is what allows the user to access the notebooks
               - "{{ $.Values.deployKF.clusterDomain }}/ns/{{ $.Values.deployKF.gateway.namespace }}/sa/{{ $.Values.deployKF.gateway.serviceAccount }}"
+              {{- end }}
               {{- if $.Values.deployKF.kubeflow.pipelines.enabled }}
-              ## the `ml-pipeline-ui` pod will proxy some requests into the user's namespace,
-              ## for example, to view logs on the object store
+              ## allowing traffic from `ml-pipeline-ui` is what allows the user to see KFP object store artifacts,
+              ## this is because it proxies the user's requests to `ml-pipeline-ui-artifact` in the profile namespace
               - "{{ $.Values.deployKF.clusterDomain }}/ns/{{ $.Values.deployKF.kubeflow.pipelines.pipelineUI.namespace }}/sa/{{ $.Values.deployKF.kubeflow.pipelines.pipelineUI.serviceAccount }}"
               {{- end }}
       when:
