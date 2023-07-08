@@ -88,11 +88,4 @@ data:
 
     ## RBAC Config
     rbac:
-      enabled: false
-
-    ## Impersonate Config
-    ## TODO: enable when impersonate PR is merged
-    ##       https://github.com/argoproj/argo-workflows/pull/7193
-    #impersonate:
-    #  enabled: true
-    #  usernameClaim: "email"
+      enabled: true

@@ -5,6 +5,7 @@ deployKF_helpers:
   deploykf_profiles:
     users_id_mapping: {{< tmpl.Exec "runtime/deploykf_profiles__users_id_mapping_json" >}}
     profiles_users_access_mapping: {{< tmpl.Exec "runtime/deploykf_profiles__profiles_users_access_mapping_json" >}}
+    users_profiles_access_mapping: {{< tmpl.Exec "runtime/deploykf_profiles__users_profiles_access_mapping_json" >}}
 
   kubeflow:
     pipelines:
@@ -28,6 +29,10 @@ deployKF:
 
   minio:
     namespace: {{< .Values.deploykf_opt.deploykf_minio.namespace | quote >}}
+
+  argoWorkflows:
+    enabled: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled | conv.ToBool >}}
+    namespace: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.namespace | quote >}}
 
   kubeflow:
     useridHeader: kubeflow-userid

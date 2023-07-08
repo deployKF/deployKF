@@ -12,6 +12,8 @@ metadata:
     app.kubernetes.io/component: argo
     rbac.authorization.k8s.io/aggregate-to-view: "true"
     rbac.authorization.kubeflow.org/aggregate-to-kubeflow-view: "true"
+    ## NOTE: "aggregate-to-argo-server-view" is used by our argo-server "user" service accounts
+    rbac.authorization.kubeflow.org/aggregate-to-argo-server-view: "true"
 rules:
   - apiGroups:
       - argoproj.io

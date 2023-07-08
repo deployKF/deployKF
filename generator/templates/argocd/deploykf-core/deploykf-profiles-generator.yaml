@@ -22,3 +22,9 @@ spec:
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: kubeflow
+  ignoreDifferences:
+    ## `rules` are aggregated when `aggregationRule.clusterRoleSelectors` is set
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+      jqPathExpressions:
+        - "select(.aggregationRule.clusterRoleSelectors | length > 0) | .rules"

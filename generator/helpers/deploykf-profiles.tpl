@@ -8,6 +8,7 @@
 ##
 {{<- define "deploykf_profiles.users_id_mapping_json" ->}}
 {{<- $users_id_mapping := dict ->}}
+{{<- $found_emails := dict ->}}
 {{<- range $index, $user := .Values.deploykf_core.deploykf_profiles_generator.users ->}}
   {{<- if index $user "id" ->}}
     {{<- if has $users_id_mapping $user.id ->}}
@@ -23,6 +24,12 @@
     {{<- if $.Values.deploykf_core.deploykf_istio_gateway.gateway.emailToLowercase ->}}
       {{<- $user = coll.Merge (dict "email" ($user.email | toLower)) $user ->}}
     {{<- end ->}}
+
+    {{<- /* verify this user's `email` is unique */ ->}}
+    {{<- if has $found_emails $user.email ->}}
+      {{<- fail (printf "elements of `users` must have unique `email`, but '%s' appears more than once" $user.email) ->}}
+    {{<- end ->}}
+    {{<- $found_emails = coll.Merge (dict $user.email true) $found_emails ->}}
 
     {{<- /* store in users_id_mapping */ ->}}
     {{<- $users_id_mapping = coll.Merge (dict $user.id $user) $users_id_mapping ->}}

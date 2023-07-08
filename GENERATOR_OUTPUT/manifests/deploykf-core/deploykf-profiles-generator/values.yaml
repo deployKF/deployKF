@@ -5,6 +5,7 @@ deployKF_helpers:
   deploykf_profiles:
     users_id_mapping: {"user-1":{"email":"user1@example.com","id":"user-1"},"user-2":{"email":"user2@example.com","id":"user-2"}}
     profiles_users_access_mapping: {"team-1":{"user-1":{"notebooksAccess":true,"role":"edit"},"user-2":{"notebooksAccess":true,"role":"edit"}},"team-1-prod":{"user-1":{"notebooksAccess":true,"role":"edit"},"user-2":{"notebooksAccess":false,"role":"view"}}}
+    users_profiles_access_mapping: {"user-1":{"team-1":{"notebooksAccess":true,"role":"edit"},"team-1-prod":{"notebooksAccess":true,"role":"edit"}},"user-2":{"team-1":{"notebooksAccess":true,"role":"edit"},"team-1-prod":{"notebooksAccess":false,"role":"view"}}}
 
   kubeflow:
     pipelines:
@@ -25,6 +26,10 @@ deployKF:
 
   minio:
     namespace: "deploykf-minio"
+
+  argoWorkflows:
+    enabled: true
+    namespace: "kubeflow-argo-workflows"
 
   kubeflow:
     useridHeader: kubeflow-userid
