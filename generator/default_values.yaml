@@ -784,10 +784,6 @@ deploykf_core:
             access:
               role: view
               notebooksAccess: false
-          - user: user-1
-            access:
-              role: edit
-              notebooksAccess: true
 
 
 ## --------------------------------------------------------------------------------
