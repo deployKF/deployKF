@@ -1101,7 +1101,12 @@ kubeflow_dependencies:
     images:
       argoCli:
         repository: quay.io/argoproj/argocli
-        tag: v3.3.10
+        ## NOTE: we use v3.4 for this image because in v3.3, argo-server does not support Kubernetes 1.24:
+        ##        https://github.com/argoproj/argo-workflows/pull/9620
+        ##       but Kubeflow Pipelines does not support argo-server v3.4, so we can't upgrade the other images:
+        ##        https://github.com/kubeflow/pipelines/issues/8935
+        ##        https://github.com/kubeflow/pipelines/issues/8942
+        tag: v3.4.8
         pullPolicy: IfNotPresent
 
       argoExecutor:
