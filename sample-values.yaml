@@ -396,6 +396,7 @@ deploykf_opt:
     buckets: []
 
     ## minio access policies
+    ##  - [WARNING] existing policies that have "@" in their name will be removed from minio if they are not listed here
     ##  - these policies are created and/or updated by a post-install job
     ##  - each element is a map with the following keys:
     ##     - `name`: the name of the policy

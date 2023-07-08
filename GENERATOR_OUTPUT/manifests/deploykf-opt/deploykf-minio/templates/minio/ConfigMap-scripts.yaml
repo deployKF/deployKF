@@ -32,31 +32,30 @@ data:
       "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
 
     {{- $found_bucketNames := dict }}
-
     {{- range $index, $bucket := .Values.minio.buckets }}
-    {{- $escaped__bucket_ref := printf "myminio/%s" ($bucket.name | default "") }}
 
-    {{- /* ensure this bucket has a unique `name` */ -}}
-    {{- if $bucket.name }}
-    {{- if hasKey $found_bucketNames $bucket.name }}
-    {{- fail (printf "elements of `minio.buckets` must have unique `name`, but '%s' appears more than once" $bucket.name) }}
-    {{- else }}
-    {{- $_ := set $found_bucketNames $bucket.name true }}
-    {{- end }}
-    {{- else }}
+    {{- /* ensure this bucket has a non-empty `name` */ -}}
+    {{- if not $bucket.name }}
     {{- fail (printf "elements of `minio.buckets` must have non-empty `name`, but element %d does not" $index) }}
     {{- end }}
 
+    {{- /* ensure this bucket has a unique `name` */ -}}
+    {{- if hasKey $found_bucketNames $bucket.name }}
+    {{- fail (printf "elements of `minio.buckets` must have unique `name`, but '%s' appears more than once" $bucket.name) }}
+    {{- end }}
+    {{- $_ := set $found_bucketNames $bucket.name true }}
+
     {{- "\n" }}
     ## bucket #{{ $index }}
-    echo {{ (printf `INFO: processing bucket #%d (name: '%s')...` $index $bucket.name) | replace `'` `'\''` | squote }}
-    mc mb --ignore-existing {{ $escaped__bucket_ref | squote }}
+    bucket_name={{ $bucket.name | replace `'` `'\''` | squote }}
+    bucket_ref="myminio/$bucket_name"
+    echo "INFO: processing bucket #{{ $index }} (name: '$bucket_name')..."
+    mc mb --ignore-existing "$bucket_ref"
     {{- if $bucket.versioning }}
-    mc version enable {{ $escaped__bucket_ref | squote }}
+    mc version enable "$bucket_ref"
     {{- else }}
-    mc version suspend {{ $escaped__bucket_ref | squote }}
+    mc version suspend "$bucket_ref"
     {{- end }}
-
     {{- end }}
 
     ## we were successful, send quit command to istio-proxy sidecar
@@ -70,6 +69,21 @@ data:
     set -eou pipefail
 
     #######################################
+    ## Variables
+    #######################################
+    function declare_associative_arrays() {
+      ## unset the associative arrays if they already exist
+      unset current_policies
+      unset desired_policies
+
+      ## declare the associative arrays
+      ## NOTE: global associative arrays can only be declared in a function
+      declare -gA current_policies
+      declare -gA desired_policies
+    }
+    declare_associative_arrays
+
+    #######################################
     ## Main
     #######################################
 
@@ -79,28 +93,61 @@ data:
       "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
 
     {{- $found_policyNames := dict }}
-
     {{- range $index, $policy := .Values.minio.policies }}
 
-    {{- /* ensure this policy has a unique `name` */ -}}
-    {{- if $policy.name }}
-    {{- if hasKey $found_policyNames $policy.name }}
-    {{- fail (printf "elements of `minio.policies` must have unique `name`, but '%s' appears more than once" $policy.name) }}
-    {{- else }}
-    {{- $_ := set $found_policyNames $policy.name true }}
-    {{- end }}
-    {{- else }}
+    {{- /* ensure this policy has a non-empty `name` */ -}}
+    {{- if not $policy.name }}
     {{- fail (printf "elements of `minio.policies` must have non-empty `name`, but element %d does not" $index) }}
     {{- end }}
 
+    {{- /* ensure this policy has a unique `name` */ -}}
+    {{- if hasKey $found_policyNames $policy.name }}
+    {{- fail (printf "elements of `minio.policies` must have unique `name`, but '%s' appears more than once" $policy.name) }}
+    {{- end }}
+    {{- $_ := set $found_policyNames $policy.name true }}
+
     {{- "\n" }}
     ## policy #{{ $index }}
-    echo {{ (printf `INFO: processing policy #%d (name: '%s')...` $index $policy.name) | replace `'` `'\''` | squote }}
-    mc admin policy create "myminio" \
-      {{ $policy.name | replace `'` `'\''` | squote }} \
-      {{ (printf "/minio-policies/%d.json" $index) | replace `'` `'\''` | squote }}
-
+    policy_name={{ $policy.name | replace `'` `'\''` | squote }}
+    echo "INFO: processing policy #{{ $index }} (name: '$policy_name')..."
+    desired_policies[$policy_name]=1
+    mc admin policy create "myminio" "$policy_name" "/minio-policies/{{ $index }}.json"
     {{- end }}
+
+    ## list current policies and capture the output
+    set +e
+    _cmd_output=$(mc admin policy ls --json --quiet "myminio" 2>&1)
+    _cmd_exit_code=$?
+    set -e
+
+    ## if the command failed, print the output and exit
+    if [[ $_cmd_exit_code -ne 0 ]]; then
+      echo "ERROR: failed to list current policies"
+      echo "$_cmd_output"
+      exit 1
+    fi
+
+    ## if the command succeeded, parse the output and populate 'current_policies'
+    for policy_name in $(echo "$_cmd_output" | jq -r '.policy // empty'); do
+      if [[ -z "$policy_name" ]]; then
+        echo "ERROR: minio did not return expected output when listing policies"
+        echo "OUTPUT: $_cmd_output"
+        exit 1
+      else
+        current_policies[$policy_name]=1
+      fi
+    done
+
+    ## remove policies which contain "@" in their name that are not in 'desired_policies'
+    for policy_name in "${!current_policies[@]}"; do
+      if [[ "$policy_name" =~ "@" ]] && [[ ! -v "desired_policies[$policy_name]" ]]; then
+          echo "INFO: Found unexpected policy containing '@' in name '$policy_name', removing..."
+          mc admin policy remove "myminio" "$policy_name" || {
+          echo "ERROR: Failed to remove policy '$policy_name'"
+          exit 1
+          }
+      fi
+    done
 
     ## we were successful, send quit command to istio-proxy sidecar
     curl -sf -XPOST "http://127.0.0.1:15020/quitquitquit"
