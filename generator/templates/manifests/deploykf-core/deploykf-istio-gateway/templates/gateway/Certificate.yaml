@@ -1,0 +1,20 @@
+{{- if .Values.deployKF.gateway.tls.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: deploykf-istio-gateway
+  labels:
+    helm.sh/chart: {{ include "deploykf-istio-gateway.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-istio-gateway.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  secretName: deploykf-istio-gateway-cert
+  issuerRef:
+    kind: ClusterIssuer
+    name: {{ .Values.deployKF.certManager.clusterIssuer.issuerName | quote }}
+  commonName: "*.{{ .Values.deployKF.gateway.hostname }}"
+  dnsNames:
+    - "*.{{ .Values.deployKF.gateway.hostname }}"
+    - {{ .Values.deployKF.gateway.hostname | quote }}
+{{- end }}

@@ -1,0 +1,102 @@
+{{- if .Values.minio.policies }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: deploykf-minio-create-policies
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: minio
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: minio
+    spec:
+      restartPolicy: OnFailure
+      {{- if .Values.minio.mcImage.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.minio.mcImage.pullSecret | quote }}
+      {{- end }}
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      serviceAccountName: deploykf-minio-jobs
+      securityContext: {}
+      initContainers: []
+      containers:
+        - name: create-policies
+          image: {{ .Values.minio.mcImage.repository }}:{{ .Values.minio.mcImage.tag }}
+          imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.minio.mcImage.uid }}
+            runAsGroup: {{ .Values.minio.mcImage.gid }}
+          command:
+            - "/job-scripts/create_policies.sh"
+          args: []
+          env:
+            ## minio - root credentials
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.minio.rootUser.existingSecret }}
+                  name: {{ .Values.minio.rootUser.existingSecret | quote }}
+                  key: {{ .Values.minio.rootUser.existingSecretUsernameKey | quote }}
+                  {{- else }}
+                  name: deploykf-minio-root-user
+                  key: username
+                  {{- end }}
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.minio.rootUser.existingSecret }}
+                  name: {{ .Values.minio.rootUser.existingSecret | quote }}
+                  key: {{ .Values.minio.rootUser.existingSecretPasswordKey | quote }}
+                  {{- else }}
+                  name: deploykf-minio-root-user
+                  key: password
+                  {{- end }}
+          volumeMounts:
+            - name: job-scripts
+              mountPath: "/job-scripts/"
+            - name: mc-config
+              ## we must mount a writable volume at the `/.mc/` path so that the `mc` command can store its configs
+              mountPath: "/.mc/"
+            - name: minio-policies
+              mountPath: "/minio-policies/"
+            {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
+            - name: gateway-root-ca-cert
+              mountPath: "/.mc/certs/CAs/"
+              readOnly: true
+            {{- end }}
+      volumes:
+        - name: job-scripts
+          configMap:
+            name: deploykf-minio-scripts
+            items:
+              - key: create_policies.sh
+                path: create_policies.sh
+                mode: 0755
+        - name: mc-config
+          emptyDir: {}
+        - name: minio-policies
+          configMap:
+            name: deploykf-minio-policies
+        {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
+        - name: gateway-root-ca-cert
+          configMap:
+            name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}
+            items:
+              - key: root-cert.pem
+                path: root-cert.pem
+        {{- end }}
+{{- end }}

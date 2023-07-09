@@ -1,0 +1,77 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+commonLabels:
+  app: jupyter-web-app
+  kustomize.component: jupyter-web-app
+configMapGenerator:
+- envs:
+  - params.env
+  name: parameters
+- files:
+  - configs/spawner_ui_config.yaml
+  name: config
+images:
+- name: docker.io/kubeflownotebookswg/jupyter-web-app
+  newName: docker.io/kubeflownotebookswg/jupyter-web-app
+  newTag: v1.7.0
+kind: Kustomization
+namePrefix: jupyter-web-app-
+namespace: kubeflow
+resources:
+- cluster-role-binding.yaml
+- cluster-role.yaml
+- deployment.yaml
+- role-binding.yaml
+- role.yaml
+- service-account.yaml
+- service.yaml
+- configs/logos-configmap.yaml
+vars:
+- fieldref:
+    fieldPath: data.JWA_CLUSTER_DOMAIN
+  name: JWA_CLUSTER_DOMAIN
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: metadata.namespace
+  name: JWA_NAMESPACE
+  objref:
+    apiVersion: v1
+    kind: Service
+    name: service
+- fieldref:
+    fieldPath: data.JWA_USERID_HEADER
+  name: JWA_USERID_HEADER
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: data.JWA_USERID_PREFIX
+  name: JWA_USERID_PREFIX
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: data.JWA_UI
+  name: JWA_UI
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: data.JWA_PREFIX
+  name: JWA_PREFIX
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: data.JWA_APP_SECURE_COOKIES
+  name: JWA_APP_SECURE_COOKIES
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters

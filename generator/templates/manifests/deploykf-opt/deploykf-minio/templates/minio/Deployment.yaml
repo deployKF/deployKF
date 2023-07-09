@@ -1,0 +1,215 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deploykf-minio
+  labels:
+    helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: minio
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: minio
+  template:
+    metadata:
+      annotations:
+        {{- if not .Values.minio.identity.openid.clientSecret.existingSecret }}
+        checksum/openid: {{ include (print $.Template.BasePath "/minio/Secret-openid.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if not .Values.minio.rootUser.existingSecret }}
+        checksum/root-user: {{ include (print $.Template.BasePath "/minio/Secret-root-user.yaml") . | sha256sum }}
+        {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: minio
+    spec:
+      {{- if .Values.minio.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.minio.image.pullSecret | quote }}
+      {{- end }}
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      serviceAccountName: deploykf-minio
+      securityContext: {}
+      initContainers: []
+      containers:
+        - name: minio
+          image: {{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}
+          imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.minio.image.uid }}
+            runAsGroup: {{ .Values.minio.image.gid }}
+          {{- if .Values.minio.resources }}
+          resources:
+            {{- toYaml .Values.minio.resources | nindent 12 }}
+          {{- end }}
+          env:
+            ## minio - root credentials
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.minio.rootUser.existingSecret }}
+                  name: {{ .Values.minio.rootUser.existingSecret | quote }}
+                  key: {{ .Values.minio.rootUser.existingSecretUsernameKey | quote }}
+                  {{- else }}
+                  name: deploykf-minio-root-user
+                  key: username
+                  {{- end }}
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.minio.rootUser.existingSecret }}
+                  name: {{ .Values.minio.rootUser.existingSecret | quote }}
+                  key: {{ .Values.minio.rootUser.existingSecretPasswordKey | quote }}
+                  {{- else }}
+                  name: deploykf-minio-root-user
+                  key: password
+                  {{- end }}
+
+            ## minio - console
+            - name: MINIO_BROWSER_REDIRECT_URL
+              {{- if .Values.deployKF.gateway.tls.enabled }}
+              value: "https://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}"
+              {{- else }}
+              value: "http://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}"
+              {{- end }}
+            - name: MINIO_BROWSER_LOGIN_ANIMATION
+              ## fix for kubectl port-forward: https://github.com/minio/console/issues/2539
+              value: "off"
+
+            ## minio - openid
+            - name: MINIO_IDENTITY_OPENID_DISPLAY_NAME
+              value: {{ .Values.minio.identity.openid.displayName | quote }}
+            - name: MINIO_IDENTITY_OPENID_CONFIG_URL
+              {{- if .Values.deployKF.gateway.tls.enabled }}
+              value: "https://{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/dex/.well-known/openid-configuration"
+              {{- else }}
+              value: "http://{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/dex/.well-known/openid-configuration"
+              {{- end }}
+            - name: MINIO_IDENTITY_OPENID_CLIENT_ID
+              value: {{ .Values.minio.identity.openid.clientId | quote }}
+            - name: MINIO_IDENTITY_OPENID_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.minio.identity.openid.clientSecret.existingSecret }}
+                  name: {{ .Values.minio.identity.openid.clientSecret.existingSecret | quote }}
+                  key: {{ .Values.minio.identity.openid.clientSecret.existingSecretKey | quote }}
+                  {{- else }}
+                  name: deploykf-minio-openid
+                  key: client_secret
+                  {{- end }}
+            - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
+              value: {{ .Values.minio.identity.openid.policyClaim | quote }}
+            - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
+              {{- if .Values.deployKF.gateway.tls.enabled }}
+              value: "https://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/oauth_callback"
+              {{- else }}
+              value: "http://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/oauth_callback"
+              {{- end }}
+            - name: MINIO_IDENTITY_OPENID_SCOPES
+              value: {{ .Values.minio.identity.openid.scopes | quote }}
+          command:
+            - "/bin/bash"
+            - "-c"
+          args:
+            - |
+              ## if Minio can't GET the OPENID URL on start, it never tries again
+              ## so we must ensure the URL is reachable before starting Minio
+              echo "Checking OPENID Config URL: $MINIO_IDENTITY_OPENID_CONFIG_URL";
+              retries=5;
+              while [[ $retries -gt 0 ]]; do
+                curl -f -k -s -S "$MINIO_IDENTITY_OPENID_CONFIG_URL" >/dev/null
+                if [[ $? -eq 0 ]]; then
+                  echo "URL GET succeeded.";
+                  break
+                else
+                  retries=$((retries - 1))
+                  if [[ $retries -gt 0 ]]; then
+                    echo "URL GET failed. Retrying in 5 seconds... (attempts remaining: $retries)";
+                    sleep 5
+                  else
+                    echo "URL GET failed. No attempts remaining. Exiting...";
+                    exit 1
+                  fi
+                fi
+              done
+
+              ## run minio
+              exec /usr/bin/docker-entrypoint.sh \
+                minio server \
+                  "/minio-data" \
+                  --address=:9000 \
+                  --console-address=:9001 \
+                  --certs-dir=/etc/minio/certs/
+          ports:
+            - name: http-api
+              containerPort: 9000
+              protocol: TCP
+            - name: http-console
+              containerPort: 9001
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 5
+            httpGet:
+              path: /minio/health/live
+              port: http-api
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 5
+            httpGet:
+              path: /minio/health/ready
+              port: http-api
+          volumeMounts:
+            {{- if .Values.minio.persistence.enabled }}
+            - name: minio-data
+              mountPath: "/minio-data"
+              {{- if .Values.minio.persistence.subPath }}
+              subPath: {{ .Values.minio.persistence.subPath | quote }}
+              {{- end }}
+            {{- else }}
+            - name: minio-data
+              mountPath: "/minio-data"
+            {{- end }}
+            {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
+            - name: gateway-root-ca-cert
+              mountPath: "/etc/minio/certs/CAs/"
+              readOnly: true
+            {{- end }}
+      volumes:
+        {{- if .Values.minio.persistence.enabled }}
+        - name: minio-data
+          persistentVolumeClaim:
+            {{- if .Values.minio.persistence.existingClaim }}
+            claimName: {{ .Values.minio.persistence.existingClaim | quote }}
+            {{- else }}
+            claimName: deploykf-minio-data
+            {{- end }}
+        {{- else }}
+        - name: minio-data
+          emptyDir: {}
+        {{- end }}
+        {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
+        - name: gateway-root-ca-cert
+          configMap:
+            name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}
+            items:
+              - key: root-cert.pem
+                path: root-cert.pem
+        {{- end }}

@@ -1,0 +1,136 @@
+########################################
+## SHARED | deploykf-helpers
+########################################
+deployKF_helpers:
+  scripts:
+    generate_kubernetes_secret__sh: {{< (tmpl.Exec "helpers/generate_kubernetes_secret.sh" .) | quote >}}
+
+
+########################################
+## SHARED | deploykf
+########################################
+deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.deploykf_opt.deploykf_mysql.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
+
+########################################
+## COMPONENT | generate
+########################################
+generate:
+  ## configs for the kubectl container image
+  ##
+  kubectlImage:
+    repository: {{< .Values.deploykf_opt.deploykf_mysql.images.kubectl.repository | quote >}}
+    tag: {{< .Values.deploykf_opt.deploykf_mysql.images.kubectl.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_opt.deploykf_mysql.images.kubectl.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
+
+
+########################################
+## COMPONENT | mysql
+########################################
+mysql:
+  image:
+    repository: {{< .Values.deploykf_opt.deploykf_mysql.images.mysql.repository | quote >}}
+    tag: {{< .Values.deploykf_opt.deploykf_mysql.images.mysql.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_opt.deploykf_mysql.images.mysql.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 999
+    gid: 999
+
+  ## the securityContext configs for mysql Pods
+  ## - spec for PodSecurityContext:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podsecuritycontext-v1-core
+  ##
+  podSecurityContext:
+    ## sets filesystem owner group of in mounted volumes, ensuring pod has permissions to read DB data
+    fsGroup: 999
+
+  ## resource requests/limits for mysql Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## persistence configs for mysql
+  ##
+  persistence:
+    enabled: {{< .Values.deploykf_opt.deploykf_mysql.persistence.enabled | conv.ToBool >}}
+
+    ## the name of an existing PersistentVolumeClaim to use
+    ## - if non-emtpy, you must manually create a PVC with this name
+    ##
+    existingClaim: {{< .Values.deploykf_opt.deploykf_mysql.persistence.existingClaim | quote >}}
+
+    ## the sub-path within the PersistentVolume to mount, instead of the root
+    ##
+    subPath: {{< .Values.deploykf_opt.deploykf_mysql.persistence.subPath | quote >}}
+
+    ## the name of the StorageClass requested by the PersistentVolumeClaim
+    ## - if set to "", then `PersistentVolumeClaim/spec.storageClassName` is omitted
+    ## - if set to "-", then `PersistentVolumeClaim/spec.storageClassName` is set to ""
+    ##
+    storageClass: {{< .Values.deploykf_opt.deploykf_mysql.persistence.storageClass | quote >}}
+
+    ## the access mode of the PersistentVolumeClaim
+    ##
+    accessMode: {{< .Values.deploykf_opt.deploykf_mysql.persistence.accessMode | quote >}}
+
+    ## the initial size for the PersistentVolumeClaim to request
+    ## - if your StorageClass has `allowVolumeExpansion=true`, kubernetes allows the
+    ##   PVC to grow in size as needed, starting from this value
+    ##
+    size: {{< .Values.deploykf_opt.deploykf_mysql.persistence.size | quote >}}
+
+  ## the string content of a config file mounted at `/etc/mysql/conf.d/custom.cnf`
+  ##
+  configuration: {{< .Values.deploykf_opt.deploykf_mysql.configuration | quote >}}
+
+  ## configs for the "root@localhost" mysql user
+  ##
+  rootUser:
+    password: {{< .Values.deploykf_opt.deploykf_mysql.rootUser.password | quote >}}
+    existingSecret: {{< .Values.deploykf_opt.deploykf_mysql.rootUser.existingSecret | quote >}}
+    existingSecretPasswordKey: {{< .Values.deploykf_opt.deploykf_mysql.rootUser.existingSecretPasswordKey | quote >}}
+    generateSecret: {{< .Values.deploykf_opt.deploykf_mysql.rootUser.generateSecret | conv.ToBool >}}
+    {{<- if and (.Values.deploykf_opt.deploykf_mysql.rootUser.generateSecret) (not .Values.deploykf_opt.deploykf_mysql.rootUser.existingSecret) >}}
+    {{< fail "`deploykf_opt.deploykf_mysql.rootUser.existingSecret` must be non-empty if `deploykf_opt.deploykf_mysql.rootUser.generateSecret` is true" >}}
+    {{<- end >}}
+
+  ## configs for the kubeflow mysql user
+  ##
+  kubeflowUser:
+    username: {{< .Values.deploykf_opt.deploykf_mysql.kubeflowUser.username | quote >}}
+    password: {{< .Values.deploykf_opt.deploykf_mysql.kubeflowUser.password | quote >}}
+    existingSecret: {{< .Values.deploykf_opt.deploykf_mysql.kubeflowUser.existingSecret | quote >}}
+    existingSecretUsernameKey: {{< .Values.deploykf_opt.deploykf_mysql.kubeflowUser.existingSecretUsernameKey | quote >}}
+    existingSecretPasswordKey: {{< .Values.deploykf_opt.deploykf_mysql.kubeflowUser.existingSecretPasswordKey | quote >}}
+    generateSecret: {{< .Values.deploykf_opt.deploykf_mysql.kubeflowUser.generateSecret | conv.ToBool >}}
+    {{<- if and (.Values.deploykf_opt.deploykf_mysql.kubeflowUser.generateSecret) (not .Values.deploykf_opt.deploykf_mysql.kubeflowUser.existingSecret) >}}
+    {{< fail "`deploykf_opt.deploykf_mysql.kubeflowUser.existingSecret` must be non-empty if `deploykf_opt.deploykf_mysql.kubeflowUser.generateSecret` is true" >}}
+    {{<- end >}}
+
+  ## kubeflow databases to create with the init_file
+  ##
+  kubeflowDatabases:
+    {{<- if .Values.kubeflow_tools.katib.enabled >}}
+    - name: {{< .Values.kubeflow_tools.katib.mysqlDatabase | quote >}}
+    {{<- end >}}
+    {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
+    - name: {{< .Values.kubeflow_tools.pipelines.mysqlDatabases.cacheDatabase | quote >}}
+    - name: {{< .Values.kubeflow_tools.pipelines.mysqlDatabases.metadataDatabase | quote >}}
+    - name: {{< .Values.kubeflow_tools.pipelines.mysqlDatabases.pipelinesDatabase | quote >}}
+    {{<- end >}}
+
+  ## custom users to create with the init_file
+  ##
+  customUsers: {{< .Values.deploykf_opt.deploykf_mysql.customUsers | toJSON >}}
+
+  ## custom databases to create with the init_file
+  ##
+  customDatabases: {{< .Values.deploykf_opt.deploykf_mysql.customDatabases | toJSON >}}

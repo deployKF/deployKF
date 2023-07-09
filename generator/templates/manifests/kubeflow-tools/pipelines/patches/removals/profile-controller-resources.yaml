@@ -1,0 +1,36 @@
+## NOTE: this will remove all resources related to kubeflow-pipelines-profile-controller
+---
+$patch: delete
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kfp-launcher
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeflow-pipelines-profile-controller-code
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeflow-pipelines-profile-controller-env
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubeflow-pipelines-profile-controller
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubeflow-pipelines-profile-controller
+  namespace: kubeflow

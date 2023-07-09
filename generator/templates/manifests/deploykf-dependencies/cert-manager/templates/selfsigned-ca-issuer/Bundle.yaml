@@ -1,0 +1,19 @@
+{{- if and (.Values.deployKF.certManager.clusterIssuer.enabled) (eq .Values.deployKF.certManager.clusterIssuer.type "SELF_SIGNED") }}
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}
+spec:
+  sources:
+    - secret:
+        name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.caSecretName | quote }}
+        key: "ca.crt"
+  target:
+    ## creates a ConfigMap with the same name as this Bundle that contains the key "root-cert.pem"
+    ## in each Namespace that has the label "deploykf.github.io/inject-root-ca-cert=enabled"
+    configMap:
+      key: "root-cert.pem"
+    namespaceSelector:
+      matchLabels:
+        deploykf.github.io/inject-root-ca-cert: "enabled"
+{{- end }}

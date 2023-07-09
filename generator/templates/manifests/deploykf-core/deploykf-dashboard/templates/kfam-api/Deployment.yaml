@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kfam-api
+  labels:
+    helm.sh/chart: {{ include "deploykf-dashboard.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: kfam-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: kfam-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: kfam-api
+    spec:
+      {{- if .Values.kfamAPI.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.kfamAPI.image.pullSecret }}
+      {{- end }}
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      serviceAccountName: kfam-api
+      securityContext: {}
+      containers:
+        - name: kfam-api
+          image: {{ .Values.kfamAPI.image.repository }}:{{ .Values.kfamAPI.image.tag }}
+          imagePullPolicy: {{ .Values.kfamAPI.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.kfamAPI.image.uid }}
+            runAsGroup: {{ .Values.kfamAPI.image.gid }}
+          {{- if .Values.kfamAPI.resources }}
+          resources:
+          {{- toYaml .Values.kfamAPI.resources | nindent 12 }}
+          {{- end }}
+          command:
+            - /access-management
+            - -userid-header
+            - {{ .Values.deployKF.kubeflow.useridHeader | quote }}
+            - -userid-prefix
+            - ""
+            {{- if .Values.kfamAPI.adminEmail }}
+            - -cluster-admin
+            - {{ .Values.kfamAPI.adminEmail | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8081
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            httpGet:
+              path: /metrics
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: http

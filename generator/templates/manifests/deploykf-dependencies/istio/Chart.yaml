@@ -1,0 +1,12 @@
+apiVersion: v2
+name: deploykf-istio
+version: 1.0.0
+dependencies:
+  - alias: istio-base
+    name: {{< .Values.deploykf_dependencies.istio.charts.istioBase.name | quote >}}
+    version: {{< .Values.deploykf_dependencies.istio.charts.istioBase.version | quote >}}
+    repository: {{< .Values.deploykf_dependencies.istio.charts.istioBase.repository | quote >}}
+  - alias: istio-daemon
+    name: {{< .Values.deploykf_dependencies.istio.charts.istioDaemon.name | quote >}}
+    version: {{< .Values.deploykf_dependencies.istio.charts.istioDaemon.version | quote >}}
+    repository: {{< .Values.deploykf_dependencies.istio.charts.istioDaemon.repository | quote >}}

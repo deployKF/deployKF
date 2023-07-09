@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dkf-dep--istio
+  namespace: {{< .Values.argocd.namespace | quote >}}
+  labels:
+    app.kubernetes.io/name: istio
+    app.kubernetes.io/component: deploykf-dependencies
+    app.kubernetes.io/part-of: deploykf
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{< .Values.argocd.project | quote >}}
+  source:
+    repoURL: {{< .Values.argocd.source.repo.url | quote >}}
+    targetRevision: {{< .Values.argocd.source.repo.revision | quote >}}
+    path: {{< path.Join .Values.argocd.source.repo.path "manifests/deploykf-dependencies/istio" | quote >}}
+    helm:
+      ignoreMissingValueFiles: true
+      valueFiles:
+        - values-overrides.yaml
+  destination:
+    server: {{< .Values.argocd.destination.server | quote >}}
+    namespace: {{< .Values.deploykf_dependencies.istio.namespace | quote >}}
+  ignoreDifferences:
+    ## istio patches the `failurePolicy` from "Ignore" to "Fail" once the webhook is up
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      name: istiod-default-validator
+      jqPathExpressions:
+        - ".webhooks[]?.failurePolicy"

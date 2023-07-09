@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: kubeflow
+
+resources:
+  ## upstream
+  - upstream/apps/admission-webhook/upstream/overlays/cert-manager
+
+  ## local
+  {{<- if .Values.kubeflow_tools.poddefaults_webhook.extraManifests >}}
+  - resources/extra-manifests.yaml
+  {{<- end >}}
+
+images:
+  - name: docker.io/kubeflownotebookswg/poddefaults-webhook
+    newName: {{< .Values.kubeflow_tools.poddefaults_webhook.images.poddefaultsWebhook.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.poddefaults_webhook.images.poddefaultsWebhook.tag >}}
+    newTag: {{< .Values.kubeflow_tools.poddefaults_webhook.images.poddefaultsWebhook.tag | quote >}}
+    {{<- end >}}

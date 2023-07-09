@@ -1,0 +1,50 @@
+## NOTE: this will remove all resources related to the baked-in MySQL deployment
+---
+$patch: delete
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mysql
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: mysql
+  namespace: kubeflow
+---
+$patch: delete
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: ml-pipeline-mysql
+  namespace: kubeflow

@@ -1,0 +1,17 @@
+{{- if .Values.minio.policies }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deploykf-minio-policies
+  labels:
+    helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: minio
+data:
+  {{- range $index, $policy := .Values.minio.policies }}
+  {{ printf "%d.json" $index | quote }}: |-
+    {{- $policy.policy | default dict | toJson | nindent 4 }}
+  {{- end }}
+{{- end }}

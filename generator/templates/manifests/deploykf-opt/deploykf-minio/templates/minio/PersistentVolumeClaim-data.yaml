@@ -1,0 +1,25 @@
+{{- if and (.Values.minio.persistence.enabled) (not .Values.minio.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: deploykf-minio-data
+  labels:
+    helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: minio
+spec:
+  accessModes:
+    - {{ .Values.minio.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.minio.persistence.size | quote }}
+  {{- if .Values.minio.persistence.storageClass }}
+  {{- if eq "-" .Values.minio.persistence.storageClass }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ .Values.minio.persistence.storageClass | quote }}
+  {{- end }}
+  {{- end }}
+{{- end }}

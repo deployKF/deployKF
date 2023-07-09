@@ -1,0 +1,28 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: dex-allow
+  labels:
+    helm.sh/chart: {{ include "deploykf-auth.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: dex
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: dex
+  rules:
+    ## allow requests from `deploykf-istio-gateway` Pods
+    - from:
+        - source:
+            principals:
+              - "{{ .Values.deployKF.clusterDomain }}/ns/{{ .Values.deployKF.gateway.namespace }}/sa/{{ .Values.deployKF.gateway.serviceAccount }}"
+      to:
+        - operation:
+            ports:
+              - "5556"

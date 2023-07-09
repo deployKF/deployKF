@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: profile-controller-namespace-labels
+  labels:
+    helm.sh/chart: {{ include "deploykf-dashboard.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: profile-controller
+data:
+  namespace-labels.yaml: |
+    {{- .Values.profileController.namespaceLabels | toYaml | nindent 4 }}

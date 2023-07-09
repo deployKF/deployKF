@@ -1,0 +1,168 @@
+{{<- /* as gomplate lazily evaluates templates, we reference our check templates here so they are always run */ ->}}
+{{<- $_ := tmpl.Exec "helpers/check-values--incompatible-configs.tpl" ->}}
+{{<- $_ := tmpl.Exec "helpers/check-values--required-components.tpl" ->}}
+
+{{<- /* we write some expensive templates to the "runtime" folder to avoid recalculation on each use */ ->}}
+{{<- $input_dir_path := tmpl.Exec "runtime/input_dir" ->}}
+{{<- $runtime_dir_path := path.Join $input_dir_path ".." "runtime" | path.Clean ->}}
+
+{{<- /* calculate "deploykf_profiles" helpers */ ->}}
+{{<- $users_id_mapping_json := tmpl.Exec "deploykf_profiles.users_id_mapping_json" . ->}}
+{{<- $users_id_mapping := $users_id_mapping_json | json ->}}
+{{<- $groups_id_mapping_json := tmpl.Exec "deploykf_profiles.groups_id_mapping_json" (dict "Values" .Values "users_id_mapping" $users_id_mapping) ->}}
+{{<- $groups_id_mapping := $groups_id_mapping_json | json ->}}
+{{<- $profiles_users_access_mapping_json := tmpl.Exec "deploykf_profiles.profiles_users_access_mapping_json" (dict "Values" .Values "users_id_mapping" $users_id_mapping "groups_id_mapping" $groups_id_mapping) ->}}
+{{<- $profiles_users_access_mapping := $profiles_users_access_mapping_json | json ->}}
+{{<- $users_profiles_access_mapping_json := tmpl.Exec "deploykf_profiles.users_profiles_access_mapping_json" (dict "Values" .Values "profiles_users_access_mapping" $profiles_users_access_mapping) ->}}
+
+{{<- /* write "deploykf_profiles" helpers under "runtime" */ ->}}
+{{<- $users_id_mapping_json | file.Write (path.Join $runtime_dir_path "deploykf_profiles__users_id_mapping_json") ->}}
+{{<- $groups_id_mapping_json | file.Write (path.Join $runtime_dir_path "deploykf_profiles__groups_id_mapping_json") ->}}
+{{<- $profiles_users_access_mapping_json | file.Write (path.Join $runtime_dir_path "deploykf_profiles__profiles_users_access_mapping_json") ->}}
+{{<- $users_profiles_access_mapping_json | file.Write (path.Join $runtime_dir_path "deploykf_profiles__users_profiles_access_mapping_json") ->}}
+
+## JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+
+## VSCode
+.vscode/*
+*.code-workspace
+.history/
+
+## Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+*~
+[._]*.un~
+
+## Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+.\#*
+
+## macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+## Common VCS Directories
+.git/
+.bzr/
+.hg/
+.svn/
+
+## Helm
+*.tgz
+Chart.lock
+
+## Gomplate
+.gomplateignore
+.gomplateignore_template
+
+## deployKF - dev scripts
+sync_upstream.sh
+
+## deployKF - deploykf-dependencies
+{{<- if not .Values.deploykf_dependencies.cert_manager.enabled >}}
+argocd/deploykf-dependencies/cert-manager.yaml
+argocd/namespaces/cert-manager.yaml
+manifests/deploykf-dependencies/cert-manager/
+{{<- end >}}
+{{<- if not .Values.deploykf_dependencies.istio.enabled >}}
+argocd/deploykf-dependencies/istio.yaml
+argocd/namespaces/istio.yaml
+manifests/deploykf-dependencies/istio/
+{{<- end >}}
+{{<- if not .Values.deploykf_dependencies.kyverno.enabled >}}
+argocd/deploykf-dependencies/kyverno.yaml
+argocd/namespaces/kyverno.yaml
+manifests/deploykf-dependencies/kyverno/
+{{<- end >}}
+
+## deployKF - deploykf-core
+{{<- if not .Values.deploykf_core.deploykf_auth.enabled >}}
+argocd/deploykf-core/deploykf-auth.yaml
+argocd/namespaces/deploykf-auth.yaml
+manifests/deploykf-core/deploykf-auth/
+{{<- end >}}
+{{<- if not .Values.deploykf_core.deploykf_dashboard.enabled >}}
+argocd/deploykf-core/deploykf-dashboard.yaml
+argocd/namespaces/deploykf-dashboard.yaml
+manifests/deploykf-core/deploykf-dashboard/
+{{<- end >}}
+{{<- if not .Values.deploykf_core.deploykf_istio_gateway.enabled >}}
+argocd/deploykf-core/deploykf-istio-gateway.yaml
+argocd/namespaces/deploykf-istio-gateway.yaml
+manifests/deploykf-core/deploykf-istio-gateway/
+{{<- end >}}
+{{<- if not .Values.deploykf_core.deploykf_profiles_generator.enabled >}}
+argocd/deploykf-core/deploykf-profiles-generator.yaml
+manifests/deploykf-core/deploykf-profiles-generator/
+{{<- end >}}
+
+## deployKF - deploykf-opt
+{{<- if not .Values.deploykf_opt.deploykf_minio.enabled >}}
+argocd/deploykf-opt/deploykf-minio.yaml
+argocd/namespaces/deploykf-minio.yaml
+manifests/deploykf-opt/deploykf-minio/
+{{<- end >}}
+{{<- if not .Values.deploykf_opt.deploykf_mysql.enabled >}}
+argocd/deploykf-opt/deploykf-mysql.yaml
+argocd/namespaces/deploykf-mysql.yaml
+manifests/deploykf-opt/deploykf-mysql/
+{{<- end >}}
+
+## deployKF - deploykf-tools
+## TODO: add 'deploykf-tools' https://www.deploykf.org/reference/future-tools/
+
+## deployKF - kubeflow-dependencies
+{{<- if not .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled >}}
+argocd/kubeflow-dependencies/kubeflow-argo-workflows.yaml
+argocd/namespaces/kubeflow-argo-workflows.yaml
+manifests/kubeflow-dependencies/kubeflow-argo-workflows/
+{{<- end >}}
+
+## deployKF - kubeflow-tools
+{{<- if not .Values.kubeflow_tools.katib.enabled >}}
+argocd/kubeflow-tools/katib.yaml
+manifests/kubeflow-tools/katib/
+{{<- end >}}
+{{<- if not .Values.kubeflow_tools.notebooks.enabled >}}
+argocd/kubeflow-tools/notebooks--jupyter-web-app.yaml
+argocd/kubeflow-tools/notebooks--notebook-controller.yaml
+manifests/kubeflow-tools/notebooks/
+{{<- end >}}
+{{<- if not .Values.kubeflow_tools.pipelines.enabled >}}
+argocd/kubeflow-tools/pipelines.yaml
+manifests/kubeflow-tools/pipelines/
+{{<- end >}}
+{{<- if not .Values.kubeflow_tools.poddefaults_webhook.enabled >}}
+argocd/kubeflow-tools/poddefaults-webhook.yaml
+manifests/kubeflow-tools/poddefaults-webhook/
+{{<- end >}}
+{{<- if not .Values.kubeflow_tools.tensorboards.enabled >}}
+argocd/kubeflow-tools/tensorboards--tensorboard-controller.yaml
+argocd/kubeflow-tools/tensorboards--tensorboards-web-app.yaml
+manifests/kubeflow-tools/tensorboards/
+{{<- end >}}
+{{<- if not .Values.kubeflow_tools.training_operator.enabled >}}
+argocd/kubeflow-tools/training-operator.yaml
+manifests/kubeflow-tools/training-operator/
+{{<- end >}}
+{{<- if not .Values.kubeflow_tools.volumes.enabled >}}
+argocd/kubeflow-tools/volumes--volumes-web-app.yaml
+manifests/kubeflow-tools/volumes/
+{{<- end >}}

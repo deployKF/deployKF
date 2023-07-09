@@ -1,0 +1,33 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: oauth2-proxy
+  labels:
+    helm.sh/chart: {{ include "deploykf-auth.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: oauth2-proxy
+spec:
+  gateways:
+    - {{ .Values.deployKF.gateway.namespace }}/{{ .Values.deployKF.gateway.name }}
+  hosts:
+    - {{ .Values.deployKF.gateway.hostname | quote }}
+  http:
+    - name: oauth2-proxy-route
+      match:
+        - uri:
+            prefix: /oauth2/
+      route:
+        - destination:
+            host: oauth2-proxy.{{ .Release.Namespace }}.svc.{{ .Values.deployKF.clusterDomain }}
+            port:
+              number: 4180
+
+    ## make Kubeflow's logout button work (it points to `http://kubeflow.exmaple.com/logout`)
+    - match:
+        - uri:
+            exact: /logout
+      redirect:
+        ## https://oauth2-proxy.github.io/oauth2-proxy/docs/features/endpoints/#sign-out
+        uri: /oauth2/sign_out

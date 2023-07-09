@@ -1,0 +1,37 @@
+apiVersion: kyverno.io/v2beta1
+kind: ClusterPolicy
+metadata:
+  name: kubeflow-pipelines--restart-on-pipeline-configmap-update
+spec:
+  mutateExistingOnPolicyUpdate: false
+  rules:
+    - name: trigger-deployment-restarts
+      match:
+        any:
+          - resources:
+              kinds:
+                - ConfigMap
+              names:
+                - "pipeline-install-config"
+              namespaces:
+                - "kubeflow"
+              operations:
+                - CREATE
+                - UPDATE
+      mutate:
+        targets:
+          - apiVersion: apps/v1
+            kind: Deployment
+            namespace: "{{ request.namespace }}"
+        patchStrategicMerge:
+          spec:
+            template:
+              metadata:
+                annotations:
+                  deploykf.org/restart-trigger: "{{ random('[0-9a-z]{32}') }}"
+              spec:
+                containers:
+                  - env:
+                      - valueFrom:
+                          configMapKeyRef:
+                            <(name): "{{ request.object.metadata.name }}"

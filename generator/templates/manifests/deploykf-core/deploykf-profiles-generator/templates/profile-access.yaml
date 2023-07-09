@@ -1,0 +1,74 @@
+{{- /* loop over profiles */ -}}
+{{- range $profile_name, $users_access_mapping := .Values.deployKF_helpers.deploykf_profiles.profiles_users_access_mapping }}
+
+{{- /* loop over users with access to the profile */ -}}
+{{- range $user_id, $user_access := $users_access_mapping }}
+
+{{- /* get the user object */ -}}
+{{- $user := get $.Values.deployKF_helpers.deploykf_profiles.users_id_mapping $user_id }}
+
+{{- /*
+calculate the Kubernetes resource name base:
+ - Kubeflow generates the `AuthorizationPolicy` and `RoleBinding` resource names from the
+   user's email by replacing any special characters with '-' and casting to lower-case
+*/}}
+{{- $resource_name := regexReplaceAll "[^0-9a-zA-Z]" $user.email "-" | lower }}
+---
+{{- if or $user_access.notebooksAccess $.Values.deployKF.kubeflow.pipelines.enabled }}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: user-{{ $resource_name }}-clusterrole-{{ $user_access.role }}
+  namespace: {{ $profile_name | quote }}
+  annotations:
+    role: {{ $user_access.role | quote }}
+    user: {{ $user.email | quote }}
+  labels:
+    helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
+    app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+spec:
+  rules:
+    ## allow requests from `deploykf-istio-gateway` Pods with this user's email in the `useridHeader`
+    - from:
+        - source:
+            principals:
+              {{- if $user_access.notebooksAccess }}
+              ## allowing traffic from the gateway is what allows the user to access the notebooks
+              - "{{ $.Values.deployKF.clusterDomain }}/ns/{{ $.Values.deployKF.gateway.namespace }}/sa/{{ $.Values.deployKF.gateway.serviceAccount }}"
+              {{- end }}
+              {{- if $.Values.deployKF.kubeflow.pipelines.enabled }}
+              ## allowing traffic from `ml-pipeline-ui` is what allows the user to see KFP object store artifacts,
+              ## this is because it proxies the user's requests to `ml-pipeline-ui-artifact` in the profile namespace
+              - "{{ $.Values.deployKF.clusterDomain }}/ns/{{ $.Values.deployKF.kubeflow.pipelines.pipelineUI.namespace }}/sa/{{ $.Values.deployKF.kubeflow.pipelines.pipelineUI.serviceAccount }}"
+              {{- end }}
+      when:
+        - key: request.headers[{{ $.Values.deployKF.kubeflow.useridHeader }}]
+          values:
+            - {{ $user.email | quote }}
+{{- end }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: user-{{ $resource_name }}-clusterrole-{{ $user_access.role }}
+  namespace: {{ $profile_name | quote }}
+  annotations:
+    role: {{ $user_access.role | quote }}
+    user: {{ $user.email | quote }}
+  labels:
+    helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
+    app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubeflow-{{ $user_access.role }}
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: {{ $user.email | quote }}
+{{- end }}
+{{- end }}

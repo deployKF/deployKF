@@ -1,0 +1,22 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: deploykf-minio-api
+  labels:
+    helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: minio
+spec:
+  gateways:
+    - {{ .Values.deployKF.gateway.namespace }}/{{ .Values.deployKF.gateway.name }}
+  hosts:
+    - minio-api.{{ .Values.deployKF.gateway.hostname }}
+  http:
+    - name: minio-api-route
+      route:
+        - destination:
+            host: deploykf-minio-api.{{ .Release.Namespace }}.svc.{{ .Values.deployKF.clusterDomain }}
+            port:
+              number: 9000

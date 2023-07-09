@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oauth2-proxy
+  labels:
+    helm.sh/chart: {{ include "deploykf-auth.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: oauth2-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: oauth2-proxy
+  template:
+    metadata:
+      annotations:
+        checksum/secret-dex: {{ include (print $.Template.BasePath "/dex/Secret-config.yaml") . | sha256sum }}
+        checksum/secret-oauth2-proxy: {{ include (print $.Template.BasePath "/oauth2-proxy/Secret-config.yaml") . | sha256sum }}
+      labels:
+        app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: oauth2-proxy
+    spec:
+      {{- if .Values.oauth2Proxy.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.oauth2Proxy.image.pullSecret }}
+      {{- end }}
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      serviceAccountName: oauth2-proxy
+      securityContext: {}
+      containers:
+        - name: oauth2-proxy
+          image: {{ .Values.oauth2Proxy.image.repository }}:{{ .Values.oauth2Proxy.image.tag }}
+          imagePullPolicy: {{ .Values.oauth2Proxy.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.oauth2Proxy.image.uid }}
+            runAsGroup: {{ .Values.oauth2Proxy.image.gid }}
+          {{- if .Values.oauth2Proxy.resources }}
+          resources:
+            {{- toYaml .Values.oauth2Proxy.resources | nindent 12 }}
+          {{- end }}
+          env:
+            {{- if .Values.oauth2Proxy.oidc.clientSecret.existingSecret }}
+            - name: OAUTH2_PROXY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.oauth2Proxy.oidc.clientSecret.existingSecret | quote }}
+                  key: {{ .Values.oauth2Proxy.oidc.clientSecret.existingSecretKey | quote }}
+            {{- end }}
+            {{- if .Values.oauth2Proxy.cookie.secret.existingSecret }}
+            - name: OAUTH2_PROXY_COOKIE_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.oauth2Proxy.cookie.secret.existingSecret | quote }}
+                  key: {{ .Values.oauth2Proxy.cookie.secret.existingSecretKey | quote }}
+            {{- end }}
+          command:
+            - "oauth2-proxy"
+            - "--config=/etc/oauth2-proxy/oauth2-proxy.cfg"
+            {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
+            ## if our certificate is self-signed, we must trust its Certification Authority (CA)
+            - "--provider-ca-file=/etc/oauth2-proxy/certs/root-cert.pem"
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 4180
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            httpGet:
+              path: /ping
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: http
+          volumeMounts:
+            - name: oauth2-proxy-config
+              mountPath: /etc/oauth2-proxy/oauth2-proxy.cfg
+              subPath: oauth2-proxy.cfg
+              readOnly: true
+            {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
+            - name: gateway-root-ca-cert
+              mountPath: /etc/oauth2-proxy/certs/
+              readOnly: true
+            {{- end }}
+      volumes:
+        - name: oauth2-proxy-config
+          secret:
+            secretName: oauth2-proxy-config
+        {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
+        - name: gateway-root-ca-cert
+          configMap:
+            name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}
+            items:
+              - key: root-cert.pem
+                path: root-cert.pem
+        {{- end }}

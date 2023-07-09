@@ -1,0 +1,664 @@
+## --------------------------------------------------------------------------------
+##
+##                                      argocd
+##
+## --------------------------------------------------------------------------------
+argocd:
+
+  ## the namespace in which argocd is deployed
+  ##
+  namespace: argocd
+
+  ## the project used for deployKF argocd applications
+  ##
+  project: default
+
+  ## the source used for deployKF argocd applications
+  ##
+  source:
+
+    ## configs specifying the git repo which contains your generated manifests
+    ##
+    repo:
+      ## the URL of your manifest git repo
+      ##  - for example, if you are using a GitHub repo named 'deployKF/examples', you might set this value
+      ##    to "https://github.com/deployKF/examples" or "git@github.com:deployKF/examples.git"
+      ##
+      url: ""
+
+      ## the git revision which contains your generated manifests
+      ##  - for example, if you are using the 'main' branch of your repo, you might set this value to "main"
+      ##
+      revision: ""
+
+      ## the path within your repo where the generated manifests are stored
+      ##  - for example, if you are using a folder named 'GENERATOR_OUTPUT' at the root of your repo,
+      ##    you might set this value to "./GENERATOR_OUTPUT/"
+      ##
+      path: ""
+
+  ## the destination used for deployKF argocd applications
+  ##
+  destination:
+    server: https://kubernetes.default.svc
+
+
+## --------------------------------------------------------------------------------
+##
+##                              deploykf-dependencies
+##
+## --------------------------------------------------------------------------------
+deploykf_dependencies:
+
+  ## --------------------------------------
+  ##             cert-manager
+  ## --------------------------------------
+  cert_manager:
+    enabled: true
+    namespace: cert-manager
+
+    ## istio gateway certificate issuer configs
+    ##  - if you wish to use your own ClusterIssuer, set `clusterIssuer.enabled` to false
+    ##    and set `clusterIssuer.issuerName` to the name of your issuer, (this still works when you
+    ##    bring your own cert-manager deployment by setting `cert_manager.enabled` to false)
+    ##
+    clusterIssuer:
+      enabled: true
+      issuerName: deploykf-gateway-issuer
+
+
+  ## --------------------------------------
+  ##                 istio
+  ## --------------------------------------
+  istio:
+    enabled: true
+    namespace: istio-system
+
+
+  ## --------------------------------------
+  ##                kyverno
+  ## --------------------------------------
+  kyverno:
+    enabled: true
+    namespace: kyverno
+
+
+## --------------------------------------------------------------------------------
+##
+##                                  deploykf-core
+##
+## --------------------------------------------------------------------------------
+deploykf_core:
+
+  ## --------------------------------------
+  ##             deploykf-auth
+  ## --------------------------------------
+  deploykf_auth:
+    namespace: deploykf-auth
+
+    ## dex configs
+    ##
+    dex:
+
+      ## dex static passwords
+      ##  - a list of users to create in dex's built-in password database
+      ##  - each element is a map with keys `email` and `password`,
+      ##    the `password` is a map with the following keys:
+      ##     - `value`: the password value
+      ##     - `existingSecret`: the name of a kubernetes secret containing the password (overrides `value`)
+      ##     - `existingSecretKey`: the key in the secret that contains the password
+      ##     - `type`: how the password is provided (default: "plain")
+      ##         - "plain": the password is provided as plain text
+      ##         - "hash": the password is provided as a bcrypt hash
+      ##  - a bcrypt hash for "PASSWORD_STRING" can be generated with one of the following:
+      ##     - echo "PASSWORD_STRING" | htpasswd -BinC 10 NULL | cut -d: -f2
+      ##     - python -c 'import bcrypt; print(bcrypt.hashpw(b"PASSWORD_STRING", bcrypt.gensalt(10)).decode())'
+      ##
+      staticPasswords:
+        - email: "admin@example.com"
+          password:
+            value: "admin"
+        - email: "user1@example.com"
+          password:
+            value: "user1"
+        - email: "user2@example.com"
+          password:
+            value: "user2"
+
+      ## dex connectors
+      ##  - dex connectors which allow bridging trust to external identity providers
+      ##    https://dexidp.io/docs/connectors/
+      ##  - not all connector types support refresh tokens, notably "SAML 2.0" and "OAUTH 2.0" do not
+      ##    however, most providers support "OpenID Connect" which does support refresh tokens
+      ##    without refresh tokens, users will be forced to re-authenticate every `expiry.idToken` period
+      ##  - each element is a map with keys `type`, `id`, `name`, and `config` (which are the same aas upstream dex)
+      ##    additionally, `configExistingSecret` and `configExistingSecretKey` allow you to set `config`
+      ##    from a YAML-formatted string in a kubernetes secret
+      ##  - in most cases `config.redirectURI` will be set to "https://{DEPLOYKF_HOST}/dex/callback" (if port is 443)
+      ##
+      connectors: []
+
+      ## dex OpenID Connect clients
+      ##
+      clients:
+
+        ## OpenID client for oauth2-proxy (deployKF Dashboard)
+        oauth2Proxy:
+          clientId: "oauth2-proxy"
+          clientSecret:
+            existingSecret: "generated--dex-oauth2-proxy-client"
+            existingSecretKey: "client_secret"
+            generateSecret: true
+
+        ## OpenID client for Minio Console
+        minioConsole:
+          clientId: "minio-console"
+          clientSecret:
+            existingSecret: "generated--dex-minio-console-client"
+            existingSecretKey: "client_secret"
+            generateSecret: true
+
+        ## OpenID client for Argo Server
+        argoServer:
+          clientId: "argo-server"
+          clientSecret:
+            existingSecret: "generated--dex-argo-server-client"
+            existingSecretKey: "client_secret"
+            generateSecret: true
+
+    ## oauth2-proxy configs
+    ##
+    oauth2Proxy:
+
+      ## oauth2-proxy cookie configs
+      ##
+      cookie:
+        secret:
+          existingSecret: "generated--oauth2-proxy-cookie-secret"
+          existingSecretKey: "cookie_secret"
+          generateSecret: true
+
+
+  ## --------------------------------------
+  ##          deploykf-dashboard
+  ## --------------------------------------
+  deploykf_dashboard:
+    namespace: deploykf-dashboard
+
+
+  ## --------------------------------------
+  ##        deploykf-istio-gateway
+  ## --------------------------------------
+  deploykf_istio_gateway:
+    namespace: deploykf-istio-gateway
+
+    ## istio gateway configs
+    gateway:
+      hostname: deploykf.example.com
+      ports:
+        http: 8080
+        https: 8443
+      selectorLabels:
+        app: deploykf-gateway
+        istio: deploykf-gateway
+
+    ## istio gateway deployment configs
+    ##
+    gatewayDeployment:
+      serviceAccount:
+        name: deploykf-gateway
+        annotations: {}
+
+    ## istio gateway service configs
+    gatewayService:
+      name: deploykf-gateway
+      annotations: {}
+      type: LoadBalancer
+
+
+  ## --------------------------------------
+  ##      deploykf-profiles-generator
+  ## --------------------------------------
+  deploykf_profiles_generator:
+
+    ## profile defaults
+    ##
+    profileDefaults:
+
+      ## a common prefix to add to all profile names
+      ##
+      profileNamePrefix: ""
+
+      ## the default email to set as the owner of profiles
+      ##  - [WARNING] treat the default owner as a super-admin service account,
+      ##              that is, people should NOT use this account day-to-day
+      ##  - [WARNING] changing the `ownerEmail` of profiles requires ~manual~ steps
+      ##              https://github.com/kubeflow/kubeflow/issues/6576
+      ##
+      ownerEmail: "admin@example.com"
+
+      ## the default access for members of profiles, when not explicitly specified
+      ##  - `role`: the Kubernetes RBAC role to bind to the user in the profile namespace
+      ##      - "edit": binds "ClusterRole/kubeflow-edit" (can view/create/delete resources)
+      ##      - "view": binds "ClusterRole/kubeflow-view" (cam view resources)
+      ##  - `notebooksAccess`: if the user can ~connect~ to kubeflow notebooks in the profile
+      ##                       note, the ability to create/delete notebook resources is controlled by `role`
+      ##
+      memberAccess:
+        role: view
+        notebooksAccess: false
+
+      ## the default list of plugins for profiles, when not explicitly specified
+      ##  - each entry is a map with the following keys:
+      ##     - `kind`: the kind of plugin
+      ##         - "AwsIamForServiceAccount": manages AWS IRSA for the profile namespace
+      ##         - "WorkloadIdentity": manages GCP WorkloadIdentity for the profile namespace
+      ##     - `spec`: a map of plugin-specific configurations
+      ##         - spec for AwsIamForServiceAccount:
+      ##           https://github.com/kubeflow/kubeflow/blob/v1.7.0/components/profile-controller/controllers/plugin_iam.go#L30
+      ##         - spec for WorkloadIdentity:
+      ##           https://github.com/kubeflow/kubeflow/blob/v1.7.0/components/profile-controller/controllers/plugin_workload_identity.go#L39
+      ##
+      plugins: []
+
+      ## the default tool configs for profiles
+      ##
+      tools:
+
+        ## the default Kubeflow Pipelines configs for profiles
+        ##
+        kubeflowPipelines:
+
+          ## the default Kubeflow Pipelines object store auth configs for profiles
+          ##  - the behaviour of these configs depends on `kubeflow_tools.kubeflow_pipelines.objectStore`
+          ##  - when `kubeflow_tools.kubeflow_pipelines.objectStore.useExternal`:
+          ##     - is false (default):
+          ##        - minio is automatically configured to generate unique service-account credentials for each
+          ##          profile and store them in a kubernetes secret named `existingSecret` in the minio namespace
+          ##        - this secret will be cloned into the profile's namespace and kept in sync with the original
+          ##        - note, generated credentials only have access to `kubeflow_tools.pipelines.bucket` under "artifacts/{profile_name}/"
+          ##        - note, no credentials are generated for profiles which set `objectStoreAuth`
+          ##        - note, the value of `existingSecret` MUST contain "{profile_name}"
+          ##        - note, the value of `existingSecretNamespace` is ignored
+          ##     - is true:
+          ##        - a kubernetes secret named `existingSecret` must exist the namespace `existingSecretNamespace`
+          ##          with the keys `existingSecretAccessKeyKey` and `existingSecretSecretKeyKey`
+          ##        - this secret will be cloned into the profile's namespace and kept in sync with the original
+          ##        - note, all occurances of "{profile_name}" in `existingSecret` are replaced with the profile name
+          ##        - note, the default value of `existingSecretNamespace` is the kubeflow-pipelines namespace
+          ##  - when `kubeflow_tools.kubeflow_pipelines.objectStore.auth.fromEnv`:
+          ##     - is false (default):
+          ##        - normal behaviour
+          ##     - is true:
+          ##        - default configs are ignored to allow for environment-based authentication (e.g. AWS IRSA)
+          ##        - if a profile explicitly sets `objectStoreAuth` then it will still be used
+          ##
+          objectStoreAuth:
+            existingSecret: "kubeflow-pipelines--profile-object-store-auth--{profile_name}"
+            existingSecretNamespace: ""
+            existingSecretAccessKeyKey: "access_key"
+            existingSecretSecretKeyKey: "secret_key"
+
+    ## user entities
+    ##  - a list of users that can be referenced when defining profile members
+    ##  - each element is a map with the following keys:
+    ##     - `id`: a unique identifier for the user
+    ##     - `email`: the email of the user (must exactly match the email from your identity provider)
+    ##
+    users:
+      - id: user-1
+        email: "user1@example.com"
+      - id: user-2
+        email: "user2@example.com"
+
+    ## group entities
+    ##  - a list of groups that can be referenced when defining profile members
+    ##  - each element is a map with the following keys:
+    ##     - `id`: a unique identifier for the group
+    ##     - `users`: a list of user IDs that are members of the group
+    ##
+    groups:
+      - id: team-1
+        users:
+          - user-1
+          - user-2
+
+    ## profile definitions
+    ##  - [WARNING] changing the `ownerEmail` of a profile requires ~manual~ steps
+    ##              https://github.com/kubeflow/kubeflow/issues/6576
+    ##  - a list of profile definitions to be generated
+    ##  - each element is a map with the following keys:
+    ##     - `name`: the name of the profile (must be unique)
+    ##               note, the name of a profile is also its namespace name
+    ##     - `members`: a list of members and their access to this profile (default: [])
+    ##                  note, if a user appears in multiple memberships, the most permissive access is used
+    ##          each element is a map with the following keys:
+    ##           - `user`: the ID of a user (mutually exclusive with `group`)
+    ##           - `group`: the ID of a group (mutually exclusive with `user`)
+    ##           - `access`: a map with configs for this member's access to the profile:
+    ##               - `role`: the Kubernetes RBAC role to bind to the user (default: `profileDefaults.memberAccess.role`)
+    ##               - `notebooksAccess`: if the user can ~connect~ to kubeflow notebooks (default: `profileDefaults.memberAccess.notebooksAccess`)
+    ##     - `ownerEmail`: the email to set as the owner of the profile (default: `profileDefaults.ownerEmail`)
+    ##     - `plugins`: the list of plugins for this profile (default: `profileDefaults.plugins`)
+    ##     - `resourceQuotaSpec`: the resource quota for this profile (default: `profileDefaults.resourceQuotaSpec`)
+    ##     - `tools`: a map with configs for tools:
+    ##         - `kubeflowPipelines`: a map with configs for Kubeflow Pipelines:
+    ##             - `objectStoreAuth`: a map with configs for object store auth (default: `profileDefaults.tools.kubeflowPipelines.objectStoreAuth`)
+    ##                 - `existingSecret`: the name of an existing kubernetes secret
+    ##                 - `existingSecretNamespace`: the namespace containing the kubernetes secret (default: namespace of this profile)
+    ##                 - `existingSecretAccessKeyKey`: the key within the secret that contains the access-key (default: "access_key")
+    ##                 - `existingSecretSecretKeyKey`: the key within the secret that contains the secret-key (default: "secret_key")
+    ##
+    profiles:
+      - name: team-1
+        members:
+          - group: team-1
+            access:
+              role: edit
+              notebooksAccess: true
+
+      - name: team-1-prod
+        members:
+          - group: team-1
+            access:
+              role: view
+              notebooksAccess: false
+
+
+## --------------------------------------------------------------------------------
+##
+##                                   deploykf-opt
+##
+## --------------------------------------------------------------------------------
+deploykf_opt:
+
+  ## --------------------------------------
+  ##            deploykf-minio
+  ## --------------------------------------
+  deploykf_minio:
+    enabled: true
+    namespace: deploykf-minio
+
+    ## root user configs for minio
+    ##
+    rootUser:
+      existingSecret: "generated--deploykf-minio-root-user"
+      existingSecretUsernameKey: "username"
+      existingSecretPasswordKey: "password"
+      generateSecret: true
+
+      ## service accounts for the root user
+      ##  - these service accounts are created and/or updated by a post-install job
+      ##  - each element in the list is a map with the following fields:
+      ##     - `accessKey`: the access-key for the service account
+      ##     - `secretKey`: the secret-key for the service account
+      ##     - `existingSecret`: the name of an existing secret containing the access & secret keys
+      ##     - `existingSecretAccessKeyKey`: the key in the secret containing the access-key (default: "access_key")
+      ##     - `existingSecretSecretKeyKey`: the key in the secret containing the secret-key (default: "secret_key")
+      ##     - `generateSecret`: if true, random keys are generated and stored in `existingSecret` (default: false)
+      ##                         note, `existingSecret` must be set to a unique value for each service account
+      ##                         note, the job will fail if the secret already exists in the cluster
+      ##     - `policy`: the minio policy document as a YAML map, ~not a string~ (default: empty/root-access)
+      ##                 https://min.io/docs/minio/container/administration/identity-access-management/policy-based-access-control.html
+      ##  - [WARNING] if a `policy` is not specified, the service account will have root access
+      ##  - [WARNING] unlisted minio service accounts will be removed from minio
+      ##  - [WARNING] unlisted kubernetes secrets with this label will be removed from the cluster:
+      ##              "deploykf-minio.deploykf.org/generated-minio-root-service-account: true"
+      ##
+      serviceAccounts: []
+
+    ## minio buckets
+    ##  - these buckets are created and/or updated by a post-install job
+    ##  - each element is a map with the following keys:
+    ##     - `name`: the name of the bucket
+    ##     - `versioning`: the name of the policy to apply to the bucket
+    ##  - if Kubeflow Pipelines is enabled, a bucket named `kubeflow_tools.pipelines.bucket.name`
+    ##    is automatically added to this list, with `versioning` disabled
+    ##
+    buckets: []
+
+    ## minio access policies
+    ##  - [WARNING] existing policies that have "@" in their name will be removed from minio if they are not listed here
+    ##  - these policies are created and/or updated by a post-install job
+    ##  - each element is a map with the following keys:
+    ##     - `name`: the name of the policy
+    ##     - `policy`: the minio policy document as a YAML map, ~not a string~
+    ##                 https://min.io/docs/minio/container/administration/identity-access-management/policy-based-access-control.html
+    ##  - if Kubeflow Pipelines is enabled, and `identity.openid.policyClaim` is set to "email",
+    ##    policies are automatically generated for each user based on their `access.role` in each profile
+    ##
+    policies: []
+
+  ## --------------------------------------
+  ##            deploykf-mysql
+  ## --------------------------------------
+  deploykf_mysql:
+    enabled: true
+    namespace: deploykf-mysql
+
+    ## configs for the "root@localhost" mysql user
+    ##  - these credentials are used by the liveness probes
+    ##  - as this is "root@localhost", these credentials can only be used from within the pod
+    ##
+    rootUser:
+      existingSecret: "generated--deploykf-mysql-root-user"
+      existingSecretPasswordKey: "password"
+      generateSecret: true
+
+    ## configs for the kubeflow mysql user
+    ##  - if a Kubeflow app requires MySQL and is not configured to use an external database,
+    ##    it will use these credentials
+    ##
+    kubeflowUser:
+      existingSecret: "generated--deploykf-mysql-kubeflow-user"
+      existingSecretUsernameKey: "username"
+      existingSecretPasswordKey: "password"
+      generateSecret: true
+
+
+## --------------------------------------------------------------------------------
+##
+##                              kubeflow-dependencies
+##
+## --------------------------------------------------------------------------------
+kubeflow_dependencies:
+
+  ## --------------------------------------
+  ##        kubeflow-argo-workflows
+  ## --------------------------------------
+  kubeflow_argo_workflows:
+    enabled: true
+    namespace: kubeflow-argo-workflows
+
+
+## --------------------------------------------------------------------------------
+##
+##                                  kubeflow-tools
+##
+## --------------------------------------------------------------------------------
+kubeflow_tools:
+
+  ## --------------------------------------
+  ##                 katib
+  ## --------------------------------------
+  katib:
+    enabled: true
+
+    ## mysql connection configs
+    ##  - if `useExternal` is true, katib will use the specified external mysql database
+    ##  - if `useExternal` is false, katib will use the embedded `deploykf_opt.deploykf_mysql` database,
+    ##    and all other configs will be ignored
+    ##
+    mysql:
+      useExternal: false
+      host: "mysql.example.com"
+      port: 3306
+      auth:
+        username: kubeflow
+        password: password
+        existingSecret: ""
+        existingSecretUsernameKey: "username"
+        existingSecretPasswordKey: "password"
+
+    ## mysql database name
+    ##
+    mysqlDatabase: katib
+
+
+  ## --------------------------------------
+  ##               notebooks
+  ## --------------------------------------
+  notebooks:
+    enabled: true
+
+    ## notebook spawner configs
+    ##  - these configs directly become the `spawner_ui_config.yaml` in the jupyter-web-app
+    ##
+    spawnerFormDefaults: {}
+
+
+  ## --------------------------------------
+  ##               pipelines
+  ## --------------------------------------
+  pipelines:
+    enabled: true
+
+    ## storage bucket configs
+    ##
+    bucket:
+      name: kubeflow-pipelines
+      region: ""
+
+    ## object store configs
+    ##  - if `useExternal` is true, pipelines will use the specified external object store
+    ##  - if `useExternal` is false, pipelines will use the embedded `deploykf_opt.deploykf_minio` object store,
+    ##    and all other configs will be ignored
+    ##
+    objectStore:
+      useExternal: false
+      host: s3.amazonaws.com
+      port: ""
+      useSSL: true
+
+      ## object store auth configs
+      ##  - if `fromEnv` is true, all other configs are ignored to allow for environment-based authentication like
+      ##     - AWS IRSA: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
+      ##     - GCP Workload Identity: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
+      ##       [WARNING] GCP Workload Identity is not currently supported by Kubeflow Pipelines, this is because
+      ##                 the api-server uses an S3 client to access the object store (even GCS), until a native
+      ##                 GCS client is used, GCS can only be used via its S3 API with HMAC keys for authentication
+      ##  - if `fromEnv` is true, you will likely need to set appropriate Pod ServiceAccount annotations:
+      ##     - annotations for Kubeflow Pipelines backend are set with these values:
+      ##        - `kubeflow_tools.pipelines.serviceAccounts.apiServer.annotations`
+      ##        - `kubeflow_tools.pipelines.serviceAccounts.frontend.annotations`
+      ##     - annotations for Argo Workflows backend are set with these values:
+      ##        - `kubeflow_dependencies.kubeflow_argo_workflows.controller.serviceAccount.annotations`
+      ##        - `kubeflow_dependencies.kubeflow_argo_workflows.workflow.serviceAccount.annotations`
+      ##     - annotations for Pods in Profiles are set using profile plugins, which are configured with these values:
+      ##        - `deploykf_core.deploykf_profiles_generator.profileDefaults.plugins`
+      ##        - `deploykf_core.deploykf_profiles_generator.profiles[].plugins`
+      ##
+      auth:
+        fromEnv: false
+        accessKey: my-access-key
+        secretKey: my-secret-key
+        existingSecret: ""
+        existingSecretAccessKeyKey: "AWS_ACCESS_KEY_ID"
+        existingSecretSecretKeyKey: "AWS_SECRET_ACCESS_KEY"
+
+    ## mysql connection configs
+    ##  - if `useExternal` is true, pipelines will use the specified external mysql database
+    ##  - if `useExternal` is false, pipelines will use the embedded `deploykf_opt.deploykf_mysql` database,
+    ##    and all other configs will be ignored
+    ##
+    mysql:
+      useExternal: false
+      host: "mysql.example.com"
+      port: 3306
+      auth:
+        username: kubeflow
+        password: password
+        existingSecret: ""
+        existingSecretUsernameKey: "username"
+        existingSecretPasswordKey: "password"
+
+    ## mysql database names
+    ##
+    mysqlDatabases:
+      cacheDatabase: kfp_cache
+      metadataDatabase: kfp_metadata
+      pipelinesDatabase: kfp_pipelines
+
+    ## configs specific to Kubeflow Pipelines v2
+    ##
+    kfpV2:
+
+      ## sets the default `pipeline_root` in each profile
+      ##  - https://www.kubeflow.org/docs/components/pipelines/v1/overview/pipeline-root/
+      ##  - if `kubeflow_tools.pipelines.objectStore.useExternal` is false, then this must be left as the default
+      ##  - the following template variables are available:
+      ##     - `{bucket_name}`: the name of the bucket (see `kubeflow_tools.pipelines.bucket.name`)
+      ##     - `{profile_name}`: the name of the profile
+      ##
+      defaultPipelineRoot: "minio://{bucket_name}/v2/artifacts/{profile_name}"
+
+      ## apply fixes to make MinIO work with KFP v2
+      ##  - these fixes are needed because KFP v2 uses hard-coded configs for MinIO
+      ##    https://github.com/kubeflow/pipelines/issues/9689
+      ##  - if true:
+      ##     - the name of all cloned object store auth secrets in profiles becomes "mlpipeline-minio-artifact"
+      ##     - the key names used in generated minio auth secrets becomes "accesskey" and "secretkey"
+      ##     - the 'kfp-launcher' containers in workflow pods are patched at runtime to set:
+      ##        - `MINIO_SERVICE_SERVICE_HOST` and `MINIO_SERVICE_SERVICE_PORT`
+      ##        - `ML_PIPELINE_SERVICE_HOST` and `ML_PIPELINE_SERVICE_PORT_GRPC`
+      ##     - the value of `kubeflow_tools.pipelines.objectStore.useExternal` must be false
+      ##
+      minioFix: true
+
+      ## overrides the image of 'kfp-launcher' containers at runtime
+      ##  - this is useful because pipelines compiled with v2-compatible mode use a hard-coded image
+      ##    https://github.com/kubeflow/pipelines/blob/1.8.22/sdk/python/kfp/compiler/v2_compat.py#L25
+      ##
+      launcherImage: ""
+
+    ## profile resource generation configs
+    ##
+    profileResourceGeneration:
+
+      ## if a PodDefault named "kubeflow-pipelines-api-token" should be generated in each profile namespace
+      ##  - the generated PodDefault will mount a serviceAccountToken volume which can be used to authenticate
+      ##    with the Kubeflow Pipelines API on Pods which have a `kubeflow-pipelines-api-token` label with value "true"
+      ##  - for more information, see the "Full Kubeflow (from inside cluster)" section of the following page:
+      ##    https://www.kubeflow.org/docs/components/pipelines/v1/sdk/connect-api/
+      ##  - the PodDefault will NOT be generated if `kubeflow_tools.poddefaults_webhook.enabled` is false,
+      ##    regardless of this setting
+      ##
+      kfpApiTokenPodDefault: false
+
+
+  ## --------------------------------------
+  ##          poddefaults-webhook
+  ## --------------------------------------
+  poddefaults_webhook:
+    enabled: true
+
+
+  ## --------------------------------------
+  ##             tensorboards
+  ## --------------------------------------
+  tensorboards:
+    enabled: true
+
+
+  ## --------------------------------------
+  ##           training-operator
+  ## --------------------------------------
+  training_operator:
+    enabled: true
+
+
+  ## --------------------------------------
+  ##                volumes
+  ## --------------------------------------
+  volumes:
+    enabled: true

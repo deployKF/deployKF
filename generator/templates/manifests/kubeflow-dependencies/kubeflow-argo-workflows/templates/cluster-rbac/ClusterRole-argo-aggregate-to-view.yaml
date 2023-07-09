@@ -1,0 +1,34 @@
+## The rules come from upstream manifests.
+## https://github.com/argoproj/argo-workflows/blob/v3.3.10/manifests/cluster-install/workflow-controller-rbac/workflow-aggregate-roles.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argo-aggregate-to-view
+  labels:
+    helm.sh/chart: {{ include "kubeflow-argo-workflows.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: argo
+    rbac.authorization.k8s.io/aggregate-to-view: "true"
+    rbac.authorization.kubeflow.org/aggregate-to-kubeflow-view: "true"
+    ## NOTE: "aggregate-to-argo-server-view" is used by our argo-server "user" service accounts
+    rbac.authorization.kubeflow.org/aggregate-to-argo-server-view: "true"
+rules:
+  - apiGroups:
+      - argoproj.io
+    resources:
+      - workflows
+      - workflows/finalizers
+      - workfloweventbindings
+      - workfloweventbindings/finalizers
+      - workflowtemplates
+      - workflowtemplates/finalizers
+      - cronworkflows
+      - cronworkflows/finalizers
+      - clusterworkflowtemplates
+      - clusterworkflowtemplates/finalizers
+    verbs:
+      - get
+      - list
+      - watch

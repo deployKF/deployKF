@@ -1,0 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+commonLabels:
+  app: poddefaults
+  app.kubernetes.io/component: poddefaults
+  app.kubernetes.io/name: poddefaults
+  kustomize.component: poddefaults
+configurations:
+- params.yaml
+generatorOptions:
+  disableNameSuffixHash: true
+images:
+- name: docker.io/kubeflownotebookswg/poddefaults-webhook
+  newName: docker.io/kubeflownotebookswg/poddefaults-webhook
+  newTag: v1.7.0
+kind: Kustomization
+namespace: kubeflow
+resources:
+- cluster-role-binding.yaml
+- cluster-role.yaml
+- deployment.yaml
+- mutating-webhook-configuration.yaml
+- service-account.yaml
+- service.yaml
+- crd.yaml
+vars:
+- fieldref:
+    fieldPath: metadata.namespace
+  name: podDefaultsNamespace
+  objref:
+    apiVersion: v1
+    kind: Service
+    name: service
+- fieldref:
+    fieldPath: metadata.name
+  name: podDefaultsServiceName
+  objref:
+    apiVersion: v1
+    kind: Service
+    name: service
+- fieldref:
+    fieldPath: metadata.name
+  name: podDefaultsDeploymentName
+  objref:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: deployment

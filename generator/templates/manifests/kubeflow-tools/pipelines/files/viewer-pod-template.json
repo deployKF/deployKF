@@ -1,0 +1,24 @@
+{{<- define "kubeflow-pipelines.viewer-pod-template.yaml" ->}}
+## NOTE: we define the 'viewer-pod-template' file as YAML and then convert it to JSON
+spec:
+  serviceAccountName: default-editor
+  containers:
+    - env:
+        - name: AWS_REGION
+          value: {{< .Values.kubeflow_tools.pipelines.bucket.region | quote >}}
+        - name: AWS_S3_ENDPOINT
+          value: {{< (tmpl.Exec "kubeflow_pipelines.object_store.endpoint" .) | quote >}}
+        {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_name" .) | quote >}}
+              key: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.access_key_key" .) | quote >}}
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_name" .) | quote >}}
+              key: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_key_key" .) | quote >}}
+        {{<- end >}}
+{{<- end ->}}
+{{< tmpl.Exec "kubeflow-pipelines.viewer-pod-template.yaml" . | yaml | toJSONPretty "  " >}}

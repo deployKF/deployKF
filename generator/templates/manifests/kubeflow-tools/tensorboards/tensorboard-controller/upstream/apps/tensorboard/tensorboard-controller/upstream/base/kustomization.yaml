@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+configMapGenerator:
+- literals:
+  - RWO_PVC_SCHEDULING="True"
+  - TENSORBOARD_IMAGE=tensorflow/tensorflow:2.5.1
+  - ISTIO_GATEWAY=kubeflow/kubeflow-gateway
+  name: tensorboard-controller-config
+images:
+- name: docker.io/kubeflownotebookswg/tensorboard-controller
+  newName: docker.io/kubeflownotebookswg/tensorboard-controller
+  newTag: v1.7.0
+kind: Kustomization
+patchesStrategicMerge:
+- patches/add_controller_config.yaml
+resources:
+- ../default

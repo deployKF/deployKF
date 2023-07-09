@@ -1,0 +1,135 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argo-server
+  labels:
+    helm.sh/chart: {{ include "kubeflow-argo-workflows.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: argo
+    app.kubernetes.io/sub-component: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: argo
+      app.kubernetes.io/sub-component: server
+  template:
+    metadata:
+      annotations:
+        checksum/argo-config: {{ include (print $.Template.BasePath "/ConfigMap-argo-config.yaml") . | sha256sum }}
+        checksum/sso: {{ include (print $.Template.BasePath "/server/Secret-sso.yaml") . | sha256sum }}
+      labels:
+        app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: argo
+        app.kubernetes.io/sub-component: server
+    spec:
+      {{- if .Values.server.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.server.image.pullSecret }}
+      {{- end }}
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      serviceAccountName: {{ .Values.server.serviceAccount.name | quote }}
+      securityContext:
+        ## NOTE: this is important for AWS IRSA
+        fsGroup: {{ .Values.server.image.gid }}
+      containers:
+        - name: argo-server
+          image: {{ .Values.server.image.repository }}:{{ .Values.server.image.tag }}
+          imagePullPolicy: {{ .Values.server.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.server.image.uid }}
+            runAsGroup: {{ .Values.server.image.gid }}
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          {{- if .Values.server.resources }}
+          resources:
+            {{- toYaml .Values.server.resources | nindent 12 }}
+          {{- end }}
+          args:
+            - "server"
+            - "--configmap"
+            - "argo-config"
+            - "--auth-mode"
+            - "sso"
+          env:
+            - name: IN_CLUSTER
+              value: "true"
+            - name: ARGO_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: ARGO_SECURE
+              ## the istio gateway provides HTTPS
+              value: "false"
+            - name: FEEDBACK_MODAL
+              value: "false"
+            - name: FIRST_TIME_USER_MODAL
+              value: "false"
+            - name: NEW_VERSION_MODAL
+              value: "false"
+            ## TODO: we must manually set `POD_NAMES=v1` until kubeflow-pipelines supports argo-workflows 3.4+
+            ##       https://github.com/kubeflow/pipelines/issues/8935
+            - name: POD_NAMES
+              value: v1
+            {{- if .Values.server.identity.openid.clientSecret.existingSecret }}
+            ## this variable is only included so that our Kyverno cluster policy will restart this pod if the secret changes
+            - name: _OPENID_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.server.identity.openid.clientSecret.existingSecret | quote }}
+                  key: {{ .Values.server.identity.openid.clientSecret.existingSecretKey | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 2746
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            initialDelaySeconds: 10
+            periodSeconds: 20
+            timeoutSeconds: 3
+            httpGet:
+              path: /
+              port: http
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            ## TODO: use once argo-server can trust a self-signed cert https://github.com/argoproj/argo-workflows/issues/7198
+            #{{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
+            #- name: gateway-root-ca-cert
+            #  mountPath: "/etc/argo-server/CAs/"
+            #  readOnly: true
+            #{{- end }}
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        ## TODO: use once argo-server can trust a self-signed cert https://github.com/argoproj/argo-workflows/issues/7198
+        #{{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
+        #- name: gateway-root-ca-cert
+        #  configMap:
+        #    name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}
+        #    items:
+        #      - key: root-cert.pem
+        #        path: root-cert.pem
+        #{{- end }}

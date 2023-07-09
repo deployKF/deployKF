@@ -1,0 +1,22 @@
+{{<- if .Values.kubeflow_tools.notebooks.notebookTemplate ->}}
+## this overwrites the `notebook_template.yaml` with our custom one from `ConfigMap/notebook-template`
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyter-web-app-deployment
+  namespace: kubeflow
+spec:
+  template:
+    spec:
+      containers:
+        - name: jupyter-web-app
+          volumeMounts:
+            - name: notebook-template-volume
+              mountPath: /src/apps/common/yaml/notebook_template.yaml
+              subPath: notebook_template.yaml
+              readOnly: true
+      volumes:
+        - name: notebook-template-volume
+          configMap:
+            name: notebook-template
+{{<- end >}}

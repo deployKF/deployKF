@@ -1,0 +1,39 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deploykf-minio-allow
+  labels:
+    helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: minio
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: minio
+  rules:
+    ## allow requests from `deploykf-istio-gateway` Pods
+    - from:
+        - source:
+            principals:
+              - "{{ .Values.deployKF.clusterDomain }}/ns/{{ .Values.deployKF.gateway.namespace }}/sa/{{ .Values.deployKF.gateway.serviceAccount }}"
+      to:
+        - operation:
+            ports:
+              ## minio s3 api
+              - "9000"
+              ## minio console
+              - "9001"
+
+    ## allow requests to the minio api from anywhere
+    ## (needed for KFP/Argo to access via the ClusterIP Service, as workflow Pods are not injected with istio sidecars)
+    - to:
+        - operation:
+            ports:
+              ## minio s3 api
+              - "9000"

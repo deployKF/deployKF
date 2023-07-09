@@ -1,0 +1,17 @@
+{{- if and (.Values.deployKF.certManager.clusterIssuer.enabled) (eq .Values.deployKF.certManager.clusterIssuer.type "SELF_SIGNED") }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.caIssuerName | quote }}
+spec:
+  isCA: true
+  commonName: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.caIssuerName | quote }}
+  secretName: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.caSecretName | quote }}
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.caIssuerName | quote }}
+    kind: Issuer
+    group: cert-manager.io
+{{- end }}

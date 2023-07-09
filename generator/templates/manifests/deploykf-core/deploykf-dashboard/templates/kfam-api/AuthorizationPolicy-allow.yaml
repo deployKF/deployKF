@@ -1,0 +1,28 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: kfam-api-allow
+  labels:
+    helm.sh/chart: {{ include "deploykf-dashboard.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: kfam-api
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: kfam-api
+  rules:
+    ## allow requests from `central-dashboard` Pods
+    - from:
+        - source:
+            principals:
+              - "{{ .Values.deployKF.clusterDomain }}/ns/{{ .Release.Namespace }}/sa/central-dashboard"
+      to:
+        - operation:
+            ports:
+              - "8081"

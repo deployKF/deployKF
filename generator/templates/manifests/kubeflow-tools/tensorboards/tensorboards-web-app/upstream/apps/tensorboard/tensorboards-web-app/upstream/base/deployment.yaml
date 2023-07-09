@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+      - name: tensorboards-web-app
+        image: docker.io/kubeflownotebookswg/tensorboards-web-app
+        ports:
+        - containerPort: 5000
+        env:
+        - name: APP_PREFIX
+          value: $(TWA_PREFIX)
+        - name: USERID_HEADER
+          value: $(TWA_USERID_HEADER)
+        - name: USERID_PREFIX
+          value: $(TWA_USERID_PREFIX)
+        - name: APP_SECURE_COOKIES
+          value: $(TWA_APP_SECURE_COOKIES)
+      serviceAccountName: service-account

@@ -1,0 +1,240 @@
+########################################
+## SHARED | deploykf
+########################################
+deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.deploykf_core.deploykf_dashboard.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
+  clusterDomain: cluster.local
+
+  kubeflow:
+    useridHeader: kubeflow-userid
+
+  gateway:
+    namespace: {{< .Values.deploykf_core.deploykf_istio_gateway.namespace | quote >}}
+    serviceAccount: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.name | quote >}}
+    name: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name | quote >}}
+    hostname: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
+
+
+########################################
+## COMPONENT | central-dashboard
+########################################
+centralDashboard:
+  image:
+    repository: {{< .Values.deploykf_core.deploykf_dashboard.images.dashboard.repository | quote >}}
+    tag: {{< .Values.deploykf_core.deploykf_dashboard.images.dashboard.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_core.deploykf_dashboard.images.dashboard.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 0
+    gid: 0
+
+  ## resource requests/limits for the central-dashboard Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## the value of `REGISTRATION_FLOW` environment variable for central-dashboard
+  ##
+  registrationFlow: false
+
+  ## configs central-dashboard navigation
+  ##
+  navigation:
+
+    ## menu links that appear in the sidebar
+    ##
+    menuLinks:
+      {{<- if .Values.kubeflow_tools.notebooks.enabled >}}
+      - type: item
+        text: Notebooks
+        icon: book
+        link: "/jupyter/"
+      {{<- end >}}
+      {{<- if .Values.kubeflow_tools.volumes.enabled >}}
+      - type: item
+        text: Volumes
+        icon: device:storage
+        link: "/volumes/"
+      {{<- end >}}
+      {{<- if .Values.kubeflow_tools.tensorboards.enabled >}}
+      - type: item
+        text: Tensorboards
+        icon: assessment
+        link: "/tensorboards/"
+      {{<- end >}}
+      {{<- if .Values.kubeflow_tools.katib.enabled >}}
+      - type: item
+        text: Katib
+        icon: kubeflow:katib
+        link: "/katib/"
+      {{<- end >}}
+      {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
+      - type: item
+        text: KFP - Pipelines
+        icon: kubeflow:pipeline-centered
+        link: "/pipeline/#/pipelines"
+      - type: item
+        text: KFP - Experiments
+        icon: done-all
+        link: "/pipeline/#/experiments"
+      - type: item
+        text: KFP - Runs
+        icon: maps:directions-run
+        link: "/pipeline/#/runs"
+      - type: item
+        text: KFP - Recurring Runs
+        icon: device:access-alarm
+        link: "/pipeline/#/recurringruns"
+      - type: item
+        text: KFP - Artifacts
+        icon: editor:bubble-chart
+        link: "/pipeline/#/artifacts"
+      - type: item
+        text: KFP - Executions
+        icon: av:play-arrow
+        link: "/pipeline/#/executions"
+      {{<- end >}}
+
+    ## external links that appear in the sidebar
+    ##
+    externalLinks:
+      {{<- if .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled >}}
+      - type: item
+        iframe: false
+        text: Argo Server
+        icon: settings-input-composite
+        {{<- if .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled >}}
+        link: "https://argo-server.{{< tmpl.Exec "deploykf_gateway.https_endpoint" . >}}"
+        {{<- else >}}
+        link: "http://argo-server.{{< tmpl.Exec "deploykf_gateway.http_endpoint" . >}}"
+        {{<- end >}}
+      {{<- end >}}
+      {{<- if .Values.deploykf_opt.deploykf_minio.enabled >}}
+      - type: item
+        iframe: false
+        text: Minio Console
+        icon: cloud
+        {{<- if .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled >}}
+        link: "https://minio-console.{{< tmpl.Exec "deploykf_gateway.https_endpoint" . >}}"
+        {{<- else >}}
+        link: "http://minio-console.{{< tmpl.Exec "deploykf_gateway.http_endpoint" . >}}"
+        {{<- end >}}
+      {{<- end >}}
+      {{<- range $externalLink := .Values.deploykf_core.deploykf_dashboard.navigation.externalLinks >}}
+      - type: item
+        iframe: false
+        text: {{< $externalLink.text | quote >}}
+        icon: {{< $externalLink.icon | quote >}}
+        link: {{< $externalLink.url | quote >}}
+      {{<- end >}}
+
+    ## quick action links that appear in the home page
+    ##
+    quickLinks:
+      {{<- if .Values.kubeflow_tools.notebooks.enabled >}}
+      - text: Create a new Notebook
+        desc: Kubeflow Notebooks
+        link: "/jupyter/new"
+      {{<- end >}}
+      {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
+      - text: Upload a Pipeline
+        desc: Kubeflow Pipelines
+        link: "/pipeline/#/pipelines"
+      {{<- end >}}
+
+    ## documentation links that appear in the home page
+    ##
+    documentationItems:
+      - text: deployKF Website
+        desc: The tool that deployed your ML platform!
+        link: https://github.com/deployKF/deployKF
+      {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
+      - text: Kubeflow Pipelines Documentation
+        desc: Documentation for Kubeflow Pipelines
+        link: https://www.kubeflow.org/docs/components/pipelines/
+      {{<- end >}}
+      {{<- if .Values.kubeflow_tools.notebooks.enabled >}}
+      - text: Kubeflow Notebooks Documentation
+        desc: Documentation for Kubeflow Notebooks
+        link: https://www.kubeflow.org/docs/components/notebooks/
+      {{<- end >}}
+      {{<- if .Values.kubeflow_tools.training_operator.enabled >}}
+      - text: Kubeflow Training Operator Documentation
+        desc: Documentation for Kubeflow Training Operator
+        link: https://www.kubeflow.org/docs/components/training/
+      {{<- end >}}
+      {{<- if .Values.kubeflow_tools.katib.enabled >}}
+      - text: Katib Documentation
+        desc: Documentation for Katib
+        link: https://www.kubeflow.org/docs/components/katib/
+      {{<- end >}}
+
+
+########################################
+## COMPONENT | profile-controller
+########################################
+profileController:
+  image:
+    repository: {{< .Values.deploykf_core.deploykf_dashboard.images.profileController.repository | quote >}}
+    tag: {{< .Values.deploykf_core.deploykf_dashboard.images.profileController.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_core.deploykf_dashboard.images.profileController.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 0
+    gid: 0
+
+  ## resource requests/limits for the profile-controller Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## the value of `-workload-identity` start argument for profile-controller
+  ##
+  workloadIdentity: ""
+
+  ## a list of labels to set on Profile Namespaces
+  ##
+  ## FORMAT:
+  ## - ADD a Namespace label:    `key: "value"`
+  ## - REMOVE a Namespace label: `key: ""`
+  ##
+  ## WARNING:
+  ## - The controller will NOT overwrite a label if one with same key already exists.
+  ## - To override the value of a previously applied label:
+  ##    1. REMOVE the label: `key: ""`
+  ##    2. Apply new ConfigMap
+  ##    3. RE-ADD the label: `key: "value"`
+  ##    4. Apply new ConfigMap
+  ##
+  namespaceLabels:
+    app.kubernetes.io/part-of: "kubeflow-profile"
+    katib.kubeflow.org/metrics-collector-injection: "enabled"
+    pipelines.kubeflow.org/enabled: "true"
+    serving.kubeflow.org/inferenceservice: "enabled"
+
+
+########################################
+## COMPONENT | kfam-api
+########################################
+kfamAPI:
+  image:
+    repository: {{< .Values.deploykf_core.deploykf_dashboard.images.kfamApi.repository | quote >}}
+    tag: {{< .Values.deploykf_core.deploykf_dashboard.images.kfamApi.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_core.deploykf_dashboard.images.kfamApi.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 0
+    gid: 0
+
+  ## resource requests/limits for the kfam-api Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## the value of `-cluster-admin` start argument for kfam-api
+  ##
+  adminEmail: ""

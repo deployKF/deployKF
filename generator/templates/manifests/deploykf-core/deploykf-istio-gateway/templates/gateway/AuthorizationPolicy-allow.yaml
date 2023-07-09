@@ -1,0 +1,23 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deploykf-istio-gateway--allow
+  labels:
+    helm.sh/chart: {{ include "deploykf-istio-gateway.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-istio-gateway.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
+  rules:
+    ## allow requests from anywhere
+    - to:
+        - operation:
+            ports:
+              - {{ .Values.deployKF.gateway.ports.http | quote }}
+              {{- if .Values.deployKF.gateway.tls.enabled }}
+              - {{ .Values.deployKF.gateway.ports.https | quote }}
+              {{- end }}

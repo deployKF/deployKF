@@ -1,0 +1,20 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: profile-controller-cluster-admin
+  labels:
+    helm.sh/chart: {{ include "deploykf-dashboard.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: profile-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  ## The profile-controller creates Namespaces and RoleBindings that give permissions in various user namespaces.
+  ## Thus, profile-controller is using the highly privileged `cluster-admin` ClusterRole.
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: profile-controller
+    namespace: {{ .Release.Namespace | quote }}

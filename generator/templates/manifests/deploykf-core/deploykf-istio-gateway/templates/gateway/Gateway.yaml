@@ -1,0 +1,39 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: {{ .Values.deployKF.gateway.name | quote }}
+  labels:
+    helm.sh/chart: {{ include "deploykf-istio-gateway.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-istio-gateway.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  selector:
+    {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 4 }}
+  servers:
+    - hosts:
+        ## select VirtualServices in any namespace with the deployKF hostname
+        - "*/{{ .Values.deployKF.gateway.hostname }}"
+        {{- if .Values.deployKF.argoWorkflows.enabled }}
+        ## select VirtualService for Argo Workflows UI
+        - "{{ .Values.deployKF.argoWorkflows.namespace }}/argo-server.{{ .Values.deployKF.gateway.hostname }}"
+        {{- end }}
+        {{- if .Values.deployKF.minio.enabled }}
+        ## select VirtualServices for Minio API and Console
+        - "{{ .Values.deployKF.minio.namespace }}/minio-api.{{ .Values.deployKF.gateway.hostname }}"
+        - "{{ .Values.deployKF.minio.namespace }}/minio-console.{{ .Values.deployKF.gateway.hostname }}"
+        {{- end }}
+      {{- if .Values.deployKF.gateway.tls.enabled }}
+      port:
+        name: https
+        number: {{ .Values.deployKF.gateway.ports.https | int }}
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: deploykf-istio-gateway-cert
+      {{- else }}
+      port:
+        name: http
+        number: {{ .Values.deployKF.gateway.ports.http | int }}
+        protocol: HTTP
+      {{- end }}

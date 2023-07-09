@@ -1,0 +1,12 @@
+apiVersion: v2
+name: deploykf-cert-manager
+version: 1.0.0
+dependencies:
+  - alias: cert-manager
+    name: {{< .Values.deploykf_dependencies.cert_manager.charts.certManager.name | quote >}}
+    version: {{< .Values.deploykf_dependencies.cert_manager.charts.certManager.version | quote >}}
+    repository: {{< .Values.deploykf_dependencies.cert_manager.charts.certManager.repository | quote >}}
+  - alias: trust-manager
+    name: {{< .Values.deploykf_dependencies.cert_manager.charts.trustManager.name | quote >}}
+    version: {{< .Values.deploykf_dependencies.cert_manager.charts.trustManager.version | quote >}}
+    repository: {{< .Values.deploykf_dependencies.cert_manager.charts.trustManager.repository | quote >}}

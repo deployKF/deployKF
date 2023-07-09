@@ -1,0 +1,190 @@
+{{- if .Values.deployKF.kubeflow.pipelines.enabled }}
+
+{{- /*
+First, we build up a mapping with {"profile_name": "profile_specific_configs"}.
+This allows us to loop over these configs multiple times:
+ - once to generate the ConfigMap for each profile with the profile-specific configs
+ - once to generate the Kyverno ClusterPolicy to clone the objectStoreAuth secret into the profile namespace
+*/ -}}
+{{- $profile_mapping := dict }}
+{{- range $index, $profile := .Values.profiles }}
+{{- $objectStoreAuth_existingSecret := "" }}
+{{- $objectStoreAuth_existingSecretNamespace := "" }}
+{{- $objectStoreAuth_existingSecretAccessKeyKey := "" }}
+{{- $objectStoreAuth_existingSecretSecretKeyKey := "" }}
+
+{{- /* CASE 1: the profile specifies `objectStoreAuth` */ -}}
+{{- $profile_objectStoreAuth := $profile | dig "tools" "kubeflowPipelines" "objectStoreAuth" false }}
+{{- if $profile_objectStoreAuth }}
+  {{- $objectStoreAuth_existingSecret = $profile_objectStoreAuth.existingSecret | default "" }}
+  {{- $objectStoreAuth_existingSecretNamespace = $profile_objectStoreAuth.existingSecretNamespace | default $profile.name }}
+  {{- $objectStoreAuth_existingSecretAccessKeyKey = $profile_objectStoreAuth.existingSecretAccessKeyKey | default "access_key" }}
+  {{- $objectStoreAuth_existingSecretSecretKeyKey = $profile_objectStoreAuth.existingSecretSecretKeyKey | default "secret_key" }}
+  {{- if not $objectStoreAuth_existingSecret }}
+  {{- fail (printf "profiles which set `tools.kubeflowPipelines.objectStoreAuth` must have non-empty `objectStoreAuth.existingSecret`, but profile '%s' does not" $profile.name) }}
+  {{- end }}
+
+{{- /* CASE 2: the profile does not specify `objectStoreAuth` */ -}}
+{{- else }}
+  {{- /* SKIP: there is no default if `auth.fromEnv` is true */ -}}
+  {{- if $.Values.deployKF.kubeflow.pipelines.objectStore.auth.fromEnv }}
+  {{- continue }}
+  {{- end }}
+
+  {{- /* CASE 2a: external object store */ -}}
+  {{- if $.Values.deployKF.kubeflow.pipelines.objectStore.useExternal }}
+    {{- $objectStoreAuth_existingSecret = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret | default "" | replace "{profile_name}" $profile.name }}
+    {{- $objectStoreAuth_existingSecretNamespace = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretNamespace | default $.Values.deployKF.kubeflow.pipelines.namespace }}
+    {{- $objectStoreAuth_existingSecretAccessKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretAccessKeyKey }}
+    {{- $objectStoreAuth_existingSecretSecretKeyKey = $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretSecretKeyKey }}
+
+  {{- /* CASE 2b: minio (generated secret) */ -}}
+  {{- else }}
+    {{- $objectStoreAuth_existingSecret_template := $.Values.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret | default "" }}
+    {{- if not ($objectStoreAuth_existingSecret_template | contains "{profile_name}") }}
+      {{- fail (printf "when using minio, the `profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret` must contain '{profile_name}', but got '%s'" $objectStoreAuth_existingSecret_template) }}
+    {{- end }}
+    {{- $objectStoreAuth_existingSecret_template = printf "generated--%s" $objectStoreAuth_existingSecret_template }}
+    {{- $objectStoreAuth_existingSecret = $objectStoreAuth_existingSecret_template | replace "{profile_name}" $profile.name }}
+    {{- $objectStoreAuth_existingSecretNamespace = $.Values.deployKF.minio.namespace }}
+    {{- $objectStoreAuth_existingSecretAccessKeyKey = $.Values.deployKF_helpers.kubeflow.pipelines.object_store.profile.generated_access_key_key }}
+    {{- $objectStoreAuth_existingSecretSecretKeyKey = $.Values.deployKF_helpers.kubeflow.pipelines.object_store.profile.generated_secret_key_key }}
+  {{- end }}
+{{- end }}
+
+{{- $_ := set $profile_mapping $profile.name (
+dict
+  "objectStoreAuth_existingSecret" $objectStoreAuth_existingSecret
+  "objectStoreAuth_existingSecretNamespace" $objectStoreAuth_existingSecretNamespace
+  "objectStoreAuth_existingSecretAccessKeyKey" $objectStoreAuth_existingSecretAccessKeyKey
+  "objectStoreAuth_existingSecretSecretKeyKey" $objectStoreAuth_existingSecretSecretKeyKey
+) }}
+
+{{- end }}
+
+{{- /*
+This ConfigMap stores profile-specific configurations for Kubeflow Pipelines.
+Our Kyverno policies which generate each profile's Kubeflow Pipelines resources use this for their `context`.
+https://kyverno.io/docs/writing-policies/external-data-sources/
+*/}}
+{{- range $profile_name, $profile_configs := $profile_mapping }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: profile-tools--kubeflow-pipelines
+  namespace: {{ $profile_name | quote }}
+  labels:
+    helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
+    app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+data:
+  objectStoreAuth_existingSecret: {{ $profile_configs.objectStoreAuth_existingSecret | quote }}
+  objectStoreAuth_existingSecretNamespace: {{ $profile_configs.objectStoreAuth_existingSecretNamespace | quote }}
+  objectStoreAuth_existingSecretAccessKeyKey: {{ $profile_configs.objectStoreAuth_existingSecretAccessKeyKey | quote }}
+  objectStoreAuth_existingSecretSecretKeyKey: {{ $profile_configs.objectStoreAuth_existingSecretSecretKeyKey | quote }}
+{{- end }}
+
+{{- /*
+This Kyverno ClusterPolicy clones the objectStoreAuth secret into the profile namespace.
+We include this resource here so the 'kubeflow-pipelines' app does not need to be synced for new profiles.
+*/}}
+{{- range $profile_name, $profile_configs := $profile_mapping }}
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  ## the max name length is 63, so to avoid collisions we include part of the SHA256 of the profile name
+  {{- $this_policy_name := (printf "clone-profile-bucket-secret-%s-%s" ($profile_name | sha256sum | trunc 8) $profile_name) | trunc 63 | trimSuffix "-" }}
+  name: {{ $this_policy_name | quote }}
+  annotations:
+    ## kyverno policies with "generate" cant be updated: https://github.com/kyverno/kyverno/issues/7718
+    argocd.argoproj.io/sync-options: Replace=true
+  labels:
+    helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
+    app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+spec:
+  generateExisting: true
+  rules:
+    {{- $source_secret__name := $profile_configs.objectStoreAuth_existingSecret }}
+    {{- $source_secret__namespace := $profile_configs.objectStoreAuth_existingSecretNamespace }}
+    {{- $target_secret__name := $.Values.deployKF_helpers.kubeflow.pipelines.object_store.profile.cloned_secret_name }}
+    {{- $target_secret__namespace := $profile_name }}
+    ## clone the secret from the source namespace to the target namespace
+    - name: clone-secret
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              names:
+                - {{ $target_secret__namespace | quote }}
+      generate:
+        apiVersion: v1
+        kind: Secret
+        name: {{ $target_secret__name | quote }}
+        namespace: {{ `"{{ request.object.metadata.name }}"` }}
+        synchronize: true
+        clone:
+          namespace: {{ $source_secret__namespace | quote }}
+          name: {{ $source_secret__name | quote }}
+
+    ## annotate the ~cloned~ secret so that ArgoCD ignores it
+    - name: annotate-cloned-secret
+      match:
+        any:
+          - resources:
+              kinds:
+                - Secret
+              names:
+                - {{ $target_secret__name | quote }}
+              namespaces:
+                - {{ $target_secret__namespace | quote }}
+              selector:
+                matchLabels:
+                  generate.kyverno.io/policy-name: {{ $this_policy_name | quote }}
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              argocd.argoproj.io/compare-options: IgnoreExtraneous
+              argocd.argoproj.io/sync-options: Prune=false
+
+    ## restart deployments using the ~cloned~ secret when the ~source~ secret is updated
+    ## NOTE: kyverno ignores its own updates, so we cant trigger from the ~cloned~ secret
+    - name: trigger-deployment-restarts
+      match:
+        any:
+          - resources:
+              kinds:
+                - Secret
+              names:
+                - {{ $source_secret__name | quote }}
+              namespaces:
+                - {{ $source_secret__namespace | quote }}
+              operations:
+                - CREATE
+                - UPDATE
+      mutate:
+        targets:
+          - apiVersion: apps/v1
+            kind: Deployment
+            namespace: {{ $target_secret__namespace | quote }}
+        patchStrategicMerge:
+          spec:
+            template:
+              metadata:
+                annotations:
+                  deploykf.org/restart-trigger: {{ `"{{ random('[0-9a-z]{32}') }}"` }}
+              spec:
+                containers:
+                  - env:
+                      - valueFrom:
+                          secretKeyRef:
+                            <(name): {{ $target_secret__name | quote }}
+{{- end }}
+
+{{- end }}

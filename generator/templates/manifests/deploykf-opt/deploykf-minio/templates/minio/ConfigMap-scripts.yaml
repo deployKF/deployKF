@@ -1,0 +1,685 @@
+{{- if or .Values.minio.buckets .Values.minio.policies .Values.minio.rootUser.serviceAccounts }}
+{{- $minio_endpoint := "" }}
+{{- if .Values.deployKF.gateway.tls.enabled }}
+{{- $minio_endpoint = printf "https://minio-api.%s" .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}
+{{- else }}
+{{- $minio_endpoint = printf "http://minio-api.%s" .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deploykf-minio-scripts
+  labels:
+    helm.sh/chart: {{ include "deploykf-minio.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: minio
+data:
+  {{- if .Values.minio.buckets }}
+  create_buckets.sh: |
+    #!/usr/bin/env bash
+
+    set -eou pipefail
+
+    #######################################
+    ## Main
+    #######################################
+
+    ## add an alias for the local minio server
+    mc alias set "myminio" \
+      {{ $minio_endpoint | replace `'` `'\''` | squote }} \
+      "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+
+    {{- $found_bucketNames := dict }}
+    {{- range $index, $bucket := .Values.minio.buckets }}
+
+    {{- /* ensure this bucket has a non-empty `name` */ -}}
+    {{- if not $bucket.name }}
+    {{- fail (printf "elements of `minio.buckets` must have non-empty `name`, but element %d does not" $index) }}
+    {{- end }}
+
+    {{- /* ensure this bucket has a unique `name` */ -}}
+    {{- if hasKey $found_bucketNames $bucket.name }}
+    {{- fail (printf "elements of `minio.buckets` must have unique `name`, but '%s' appears more than once" $bucket.name) }}
+    {{- end }}
+    {{- $_ := set $found_bucketNames $bucket.name true }}
+
+    {{- "\n" }}
+    ## bucket #{{ $index }}
+    bucket_name={{ $bucket.name | replace `'` `'\''` | squote }}
+    bucket_ref="myminio/$bucket_name"
+    echo "INFO: processing bucket #{{ $index }} (name: '$bucket_name')..."
+    mc mb --ignore-existing "$bucket_ref"
+    {{- if $bucket.versioning }}
+    mc version enable "$bucket_ref"
+    {{- else }}
+    mc version suspend "$bucket_ref"
+    {{- end }}
+    {{- end }}
+
+    ## we were successful, send quit command to istio-proxy sidecar
+    curl -sf -XPOST "http://127.0.0.1:15020/quitquitquit"
+  {{- end }}
+
+  {{- if .Values.minio.policies }}
+  create_policies.sh: |
+    #!/usr/bin/env bash
+
+    set -eou pipefail
+
+    #######################################
+    ## Variables
+    #######################################
+    function declare_associative_arrays() {
+      ## unset the associative arrays if they already exist
+      unset current_policies
+      unset desired_policies
+
+      ## declare the associative arrays
+      ## NOTE: global associative arrays can only be declared in a function
+      declare -gA current_policies
+      declare -gA desired_policies
+    }
+    declare_associative_arrays
+
+    #######################################
+    ## Main
+    #######################################
+
+    ## add an alias for the local minio server
+    mc alias set "myminio" \
+      {{ $minio_endpoint | replace `'` `'\''` | squote }} \
+      "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+
+    {{- $found_policyNames := dict }}
+    {{- range $index, $policy := .Values.minio.policies }}
+
+    {{- /* ensure this policy has a non-empty `name` */ -}}
+    {{- if not $policy.name }}
+    {{- fail (printf "elements of `minio.policies` must have non-empty `name`, but element %d does not" $index) }}
+    {{- end }}
+
+    {{- /* ensure this policy has a unique `name` */ -}}
+    {{- if hasKey $found_policyNames $policy.name }}
+    {{- fail (printf "elements of `minio.policies` must have unique `name`, but '%s' appears more than once" $policy.name) }}
+    {{- end }}
+    {{- $_ := set $found_policyNames $policy.name true }}
+
+    {{- "\n" }}
+    ## policy #{{ $index }}
+    policy_name={{ $policy.name | replace `'` `'\''` | squote }}
+    echo "INFO: processing policy #{{ $index }} (name: '$policy_name')..."
+    desired_policies[$policy_name]=1
+    mc admin policy create "myminio" "$policy_name" "/minio-policies/{{ $index }}.json"
+    {{- end }}
+
+    ## list current policies and capture the output
+    set +e
+    _cmd_output=$(mc admin policy ls --json --quiet "myminio" 2>&1)
+    _cmd_exit_code=$?
+    set -e
+
+    ## if the command failed, print the output and exit
+    if [[ $_cmd_exit_code -ne 0 ]]; then
+      echo "ERROR: failed to list current policies"
+      echo "$_cmd_output"
+      exit 1
+    fi
+
+    ## if the command succeeded, parse the output and populate 'current_policies'
+    for policy_name in $(echo "$_cmd_output" | jq -r '.policy // empty'); do
+      if [[ -z "$policy_name" ]]; then
+        echo "ERROR: minio did not return expected output when listing policies"
+        echo "OUTPUT: $_cmd_output"
+        exit 1
+      else
+        current_policies[$policy_name]=1
+      fi
+    done
+
+    ## remove policies which contain "@" in their name that are not in 'desired_policies'
+    for policy_name in "${!current_policies[@]}"; do
+      if [[ "$policy_name" =~ "@" ]] && [[ ! -v "desired_policies[$policy_name]" ]]; then
+          echo "INFO: Found unexpected policy containing '@' in name '$policy_name', removing..."
+          mc admin policy remove "myminio" "$policy_name" || {
+          echo "ERROR: Failed to remove policy '$policy_name'"
+          exit 1
+          }
+      fi
+    done
+
+    ## we were successful, send quit command to istio-proxy sidecar
+    curl -sf -XPOST "http://127.0.0.1:15020/quitquitquit"
+  {{- end }}
+
+  {{- if .Values.minio.rootUser.serviceAccounts }}
+  create_service_accounts.sh: |
+    #!/usr/bin/env bash
+
+    set -eou pipefail
+
+    #######################################
+    ## Variables
+    #######################################
+    GENERATED_LABEL="deploykf-minio.deploykf.org/generated-minio-root-service-account"
+
+    function declare_associative_arrays() {
+      ## unset the associative arrays if they already exist
+      unset current_accessKeys
+      unset desired_accessKeys
+      unset expected_kube_secrets
+
+      ## declare the associative arrays
+      ## NOTE: global associative arrays can only be declared in a function
+      declare -gA current_accessKeys
+      declare -gA desired_accessKeys
+      declare -gA expected_kube_secrets
+    }
+    declare_associative_arrays
+
+    #######################################
+    ## Functions
+    #######################################
+    function populate_current_accessKeys() {
+      ## list current service accounts and capture the output
+      local _cmd_output
+      local _cmd_exit_code
+      set +e
+      _cmd_output=$(
+        mc admin user svcacct ls --json --quiet \
+          "myminio" "$MINIO_ROOT_USER" 2>&1
+      )
+      _cmd_exit_code=$?
+      set -e
+
+      ## if the command failed, print the output and exit
+      if [[ $_cmd_exit_code -ne 0 ]]; then
+        echo "ERROR: failed to list current service accounts"
+        echo "OUTPUT: $_cmd_output"
+
+        ## TODO: remove once minio fixes: https://github.com/minio/minio/issues/17545
+        if [[ "$_cmd_output" =~ "XMinioAdminNoSuchUser" ]]; then
+          echo "WARNING: ignoring previous error, it is a known issue with minio on first run"
+          return
+        fi
+
+        exit 1
+      fi
+
+      ## if the command succeeded, parse the output and populate the current_accessKeys
+      local _accessKey
+      for _accessKey in $(echo "$_cmd_output" | awk '/{/{p=1} p' | jq -r '.accessKey // empty'); do
+        if [[ -z "$_accessKey" ]]; then
+          echo "ERROR: minio did not return expected output when listing service accounts"
+          echo "OUTPUT: $_cmd_output"
+          exit 1
+        else
+          current_accessKeys[$_accessKey]=1
+        fi
+      done
+    }
+
+    function write_temp_file() {
+      local _file_content="$1"
+
+      ## get a temp file path
+      local _temp_file
+      _temp_file=$(mktemp)
+
+      ## write the file content to the temp file
+      echo -n "$_file_content" >"$_temp_file"
+
+      ## return the temp file path
+      echo "$_temp_file"
+    }
+
+    function create_minio_sa() {
+      local _access_key="$1"
+      local _secret_key="$2"
+      local _policy_file="$3"
+      local _allow_delete_if_exists="${4:-true}"
+
+      ## add the service account
+      local _cmd_output
+      local _cmd_exit_code
+      set +e
+      if [[ -s "$_policy_file" ]]; then
+        _cmd_output=$(
+          mc admin user svcacct add --json --quiet \
+            --access-key "$_access_key" \
+            --secret-key "$_secret_key" \
+            --policy "$_policy_file" \
+            "myminio" "$MINIO_ROOT_USER" 2>&1
+        )
+        _cmd_exit_code=$?
+      else
+        _cmd_output=$(
+          mc admin user svcacct add --json --quiet \
+            --access-key "$_access_key" \
+            --secret-key "$_secret_key" \
+            "myminio" "$MINIO_ROOT_USER" 2>&1
+        )
+        _cmd_exit_code=$?
+      fi
+      set -e
+
+      ## if the command failed, print the output and exit
+      if [[ $_cmd_exit_code -ne 0 ]]; then
+        echo "ERROR: failed to add service account"
+        echo "OUTPUT: $_cmd_output"
+
+        ## TODO: remove once minio fixes: https://github.com/minio/minio/issues/17565
+        if [[ "$_allow_delete_if_exists" == "true" && "$_cmd_output" =~ "XMinioIAMServiceAccountNotAllowed" ]]; then
+          echo "WARNING: ignoring previous error, assuming MINIO_ROOT_USER has changed leaving old service accounts in place"
+          echo "WARNING: attempting to delete existing service account..."
+
+          ## delete the service account
+          set +e
+          _cmd_output=$(
+            mc admin user svcacct rm --json --quiet \
+              "myminio" "$_access_key" 2>&1
+          )
+          _cmd_exit_code=$?
+          set -e
+
+          ## if the command failed, print the output and exit
+          if [[ $_cmd_exit_code -ne 0 ]]; then
+            echo "ERROR: failed to delete service account"
+            echo "OUTPUT: $_cmd_output"
+            exit 1
+          fi
+
+          ## try to create the service account again
+          ## NOTE: this time we don't allow deletion, to avoid an infinite loop
+          create_minio_sa "$_access_key" "$_secret_key" "$_policy_file" "false"
+        else
+          exit 1
+        fi
+      fi
+
+      ## add this accessKey to the current_accessKeys and desired_accessKeys arrays
+      current_accessKeys[$_access_key]=1
+      desired_accessKeys[$_access_key]=1
+    }
+
+    function sync_minio_sa() {
+      local _access_key="$1"
+      local _secret_key="$2"
+      local _policy_file="$3"
+
+      if [[ -s "$_policy_file" ]]; then
+        mc admin user svcacct edit \
+          --secret-key "$_secret_key" \
+          --policy "$_policy_file" \
+          "myminio" "$_access_key" || {
+          echo "ERROR: failed to edit service account"
+          exit 1
+        }
+      else
+        mc admin user svcacct edit \
+          --secret-key "$_secret_key" \
+          "myminio" "$_access_key" || {
+          echo "ERROR: failed to edit service account"
+          exit 1
+        }
+      fi
+
+      ## add this accessKey to the current_accessKeys and desired_accessKeys arrays
+      current_accessKeys[$_access_key]=1
+      desired_accessKeys[$_access_key]=1
+    }
+
+    function generate_minio_sa() {
+      local _policy_file="$1"
+
+      ## initialize return values
+      ## NOTE: these are global variables
+      access_key=""
+      secret_key=""
+
+      ## generate a new service account and capture the output
+      local _cmd_output
+      local _cmd_exit_code
+      set +e
+      if [[ -s "$_policy_file" ]]; then
+        _cmd_output=$(
+          mc admin user svcacct add --json --quiet \
+            --policy "$_policy_file" \
+            "myminio" "$MINIO_ROOT_USER" 2>&1
+        )
+        _cmd_exit_code=$?
+      else
+        _cmd_output=$(
+          mc admin user svcacct add --json --quiet \
+            "myminio" "$MINIO_ROOT_USER" 2>&1
+        )
+        _cmd_exit_code=$?
+      fi
+      set -e
+
+      ## handle the captured output
+      if [[ $_cmd_exit_code -eq 0 ]]; then
+        access_key=$(echo "$_cmd_output" | jq -r '.accessKey // empty')
+        secret_key=$(echo "$_cmd_output" | jq -r '.secretKey // empty')
+        if [[ -z "$access_key" ]] || [[ -z "$secret_key" ]]; then
+          echo "ERROR: minio did not return expected output when generating service account"
+          exit 1
+        fi
+      else
+        echo "ERROR: failed to generate service account"
+        echo "OUTPUT: $_cmd_output"
+        exit 1
+      fi
+
+      ## add this accessKey to the current_accessKeys and desired_accessKeys arrays
+      current_accessKeys[$access_key]=1
+      desired_accessKeys[$access_key]=1
+    }
+
+    function create_kube_secret() {
+      local _secret_name="$1"
+      local _access_key="$2"
+      local _secret_key="$3"
+      local _access_key_key="$4"
+      local _secret_key_key="$5"
+      local _force="$6"
+
+      ## check if the secret already exists, and handle accordingly
+      local _secret_exists
+      _secret_exists=$(kubectl get secret "$_secret_name" &>/dev/null && echo "true" || echo "false")
+      if [[ "$_secret_exists" = "true" ]]; then
+        if [[ "$_force" == "true" ]]; then
+          echo "WARNING: deleting existing secret '$_secret_name'"
+          kubectl delete secret "$_secret_name"
+        else
+          echo "ERROR: secret '$_secret_name' already exists but 'force' is not set to true"
+          exit 1
+        fi
+      fi
+
+      ## calculate the argo-cd tracking-id annotation
+      local _argocd_tracking_id
+      _argocd_tracking_id=$(printf "%s:%s/%s:%s/%s" '{{ .Release.Name }}' "" "Secret" '{{ .Release.Namespace }}' "$_secret_name")
+
+      ## create the secret
+      kubectl create secret generic "$_secret_name" --dry-run=client -o yaml \
+        --from-literal="$_access_key_key"="$_access_key" \
+        --from-literal="$_secret_key_key"="$_secret_key" |
+        kubectl label --local -f - --dry-run=client -o yaml \
+          "$GENERATED_LABEL=true" \
+          'app.kubernetes.io/instance={{ .Release.Name }}' |
+        kubectl annotate --local -f - --dry-run=client -o yaml \
+          "argocd.argoproj.io/tracking-id=$_argocd_tracking_id" \
+          "argocd.argoproj.io/compare-options=IgnoreExtraneous" \
+          "argocd.argoproj.io/sync-options=Prune=false" |
+        kubectl apply -f -
+    }
+
+    function read_kube_secret() {
+      local _secret_name="$1"
+      local _access_key_key="$2"
+      local _secret_key_key="$3"
+
+      ## initialize return values
+      ## NOTE: these are global variables
+      access_key=""
+      secret_key=""
+      needs_update="false"
+
+      ## get the secret
+      local _secret
+      _secret=$(kubectl get secret "$_secret_name" -o json 2>/dev/null || echo "")
+
+      ## check if the secret exists
+      if [[ -z "$_secret" ]]; then
+        ## secret does not exist
+        needs_update="true"
+      else
+        ## secret exists, check if it has the required label
+        local _label
+        _label=$(echo "$_secret" | jq -r --arg l "$GENERATED_LABEL" '.metadata.labels[$l] // empty')
+        if [[ "$_label" != "true" ]]; then
+          echo "ERROR: secret '$_secret_name' exists but does not have the required label '$GENERATED_LABEL'"
+          exit 1
+        fi
+
+        ## extract access_key and secret_key
+        access_key=$(
+          echo "$_secret" |
+            jq -r --arg key "$_access_key_key" '.data[$key] // empty' |
+            base64 --decode 2>/dev/null
+        )
+        secret_key=$(
+          echo "$_secret" |
+            jq -r --arg key "$_secret_key_key" '.data[$key] // empty' |
+            base64 --decode 2>/dev/null
+        )
+
+        ## check if either key is missing or empty
+        if [[ -z "$access_key" ]] || [[ -z "$secret_key" ]]; then
+          needs_update="true"
+        fi
+      fi
+    }
+
+    ## create or sync a minio service account using the provided 'access_key', 'secret_key', and 'policy_json'
+    function create_or_sync_minio_sa() {
+      local _access_key="$1"
+      local _secret_key="$2"
+      local _policy_json="$3"
+
+      ## validate access_key
+      if [[ -z "$_access_key" ]]; then
+        echo "ERROR: access_key must not be empty"
+        exit 1
+      fi
+      if [[ "${#_access_key}" -lt 3 ]] || [[ "${#_access_key}" -gt 20 ]]; then
+        echo "ERROR: access_key must be between 3 and 20 characters long"
+        exit 1
+      fi
+
+      ## validate secret_key
+      if [[ -z "$_secret_key" ]]; then
+        echo "ERROR: secret_key must not be empty"
+        exit 1
+      fi
+      if [[ "${#_secret_key}" -lt 8 ]] || [[ "${#_secret_key}" -gt 40 ]]; then
+        echo "ERROR: secret_key must be between 8 and 40 characters long"
+        exit 1
+      fi
+
+      ## validate policy_json
+      if [[ -n "$_policy_json" ]]; then
+        if ! jq -e . >/dev/null 2>&1 <<<"$_policy_json"; then
+          echo "ERROR: policy_json is not valid JSON"
+          exit 1
+        fi
+      fi
+
+      ## create a temp file for the policy
+      local _policy_file
+      _policy_file=$(write_temp_file "$_policy_json")
+
+      ## create or sync the service account
+      if [[ -v "current_accessKeys[$_access_key]" ]]; then
+        echo "INFO: Access key '$_access_key' already exists, syncing with minio..."
+        sync_minio_sa "$_access_key" "$_secret_key" "$_policy_file"
+      else
+        echo "INFO: Access key '$_access_key' does not exist, creating in minio..."
+        create_minio_sa "$_access_key" "$_secret_key" "$_policy_file"
+      fi
+
+      rm -f "$_policy_file"
+    }
+
+    ## create or sync a minio service account by reading the 'access_key', 'secret_key', from a kubernetes secret
+    ## if the kubernetes secret does not exist, new credentials will be generated and stored in the secret
+    function generate_or_sync_minio_sa() {
+      local _secret_name="$1"
+      local _access_key_key="$2"
+      local _secret_key_key="$3"
+      local _policy_json="$4"
+
+      ## validate policy_json
+      if [[ -n "$_policy_json" ]]; then
+        if ! jq -e . >/dev/null 2>&1 <<<"$_policy_json"; then
+          echo "ERROR: policy_json is not valid JSON"
+          exit 1
+        fi
+      fi
+
+      ## create a temp file for the policy
+      local _policy_file
+      _policy_file=$(write_temp_file "$_policy_json")
+
+      ## read the kubernetes secret, if it exists
+      ## NOTE: this sets the global variables $access_key, $secret_key, $needs_update
+      read_kube_secret "$_secret_name" "$_access_key_key" "$_secret_key_key"
+
+      ## check if the secret needs to be updated (i.e. we need to generate a new service account)
+      if [[ "$needs_update" == "true" ]]; then
+        echo "INFO: Secret '$_secret_name' does not exist or is missing required keys"
+
+        ## generate a new service account
+        ## NOTE: this sets the global variables $access_key, $secret_key
+        echo "INFO: generating new minio credentials..."
+        generate_minio_sa "$_policy_file"
+
+        ## create the kubernetes secret
+        echo "INFO: Storing generated credentials in secret '$_secret_name'..."
+        create_kube_secret "$_secret_name" "$access_key" "$secret_key" "$_access_key_key" "$_secret_key_key" "true"
+      else
+        echo "INFO: Secret '$_secret_name' exists and has the required keys"
+
+        ## create or sync the service account
+        if [[ -v "current_accessKeys[$access_key]" ]]; then
+          echo "INFO: Access key '$access_key' already exists, syncing with minio..."
+          sync_minio_sa "$access_key" "$secret_key" "$_policy_file"
+        else
+          echo "INFO: Access key '$access_key' does not exist, creating in minio..."
+          create_minio_sa "$access_key" "$secret_key" "$_policy_file"
+        fi
+      fi
+
+      ## add this secret to the expected_kube_secrets array
+      expected_kube_secrets[$_secret_name]=1
+
+      rm -f "$_policy_file"
+    }
+
+    ## remove minio service accounts that are not in the 'desired_accessKeys' array
+    ## which is populated as we call 'create_minio_sa', 'sync_minio_sa', and 'generate_minio_sa'
+    function cleanup_unexpected_minio_sa() {
+      echo "INFO: Cleaning up unexpected minio service accounts..."
+
+      ## remove current access keys that are not in 'desired_accessKeys'
+      local _accessKey
+      for _accessKey in "${!current_accessKeys[@]}"; do
+        if [[ ! -v "desired_accessKeys[$_accessKey]" ]]; then
+          echo "INFO: Found unexpected service account '$_accessKey', removing..."
+          mc admin user svcacct rm "myminio" "$_accessKey" || {
+            echo "ERROR: Failed to remove access key '$_accessKey'"
+            exit 1
+          }
+        fi
+      done
+    }
+
+    ## remove kubernetes secrets with the GENERATED_LABEL that are not in the 'expected_kube_secrets' array
+    ## which is populated as we call 'generate_or_sync_minio_sa'
+    function cleanup_unexpected_kube_secrets() {
+      echo "INFO: Cleaning up unexpected kubernetes secrets..."
+
+      ## list secrets with GENERATED_LABEL in the current namespace
+      local _secrets
+      _secrets=$(
+        kubectl get secrets \
+          -l "$GENERATED_LABEL=true" \
+          -o jsonpath='{.items[*].metadata.name}'
+      )
+
+      ## remove secrets that are not in 'expected_kube_secrets'
+      local _secret_name
+      for _secret_name in $_secrets; do
+        if [[ ! -v "expected_kube_secrets[$_secret_name]" ]]; then
+          echo "INFO: Found unexpected secret '$_secret_name', removing..."
+          kubectl delete secret "$_secret_name" || {
+            echo "ERROR: Failed to remove secret '$_secret_name'"
+            exit 1
+          }
+        fi
+      done
+    }
+
+    #######################################
+    ## Main
+    #######################################
+
+    ## add an alias for the local minio server
+    mc alias set "myminio" \
+      {{ $minio_endpoint | replace `'` `'\''` | squote }} \
+      "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"
+
+    ## populate the global 'current_accessKeys' array
+    populate_current_accessKeys
+
+    {{- $found_existingSecrets := dict }}
+
+    {{- range $index, $sa := .Values.minio.rootUser.serviceAccounts }}
+    {{- $env__access_key := printf "${SA__%d__ACCESS_KEY}" $index }}
+    {{- $env__secret_key := printf "${SA__%d__SECRET_KEY}" $index }}
+    {{- $env__policy_json := printf "${SA__%d__POLICY_JSON}" $index }}
+    {{- $escaped__existing_secret := $sa.existingSecret | default "" | replace `'` `'\''` }}
+    {{- $escaped__access_key_key := $sa.existingSecretAccessKeyKey | default "access_key" | replace `'` `'\''` }}
+    {{- $escaped__secret_key_key := $sa.existingSecretSecretKeyKey | default "secret_key" | replace `'` `'\''` }}
+
+    {{- /* ensure this service account has a unique `existingSecret` (if non-empty) */ -}}
+    {{- if $sa.existingSecret }}
+    {{- if hasKey $found_existingSecrets $sa.existingSecret }}
+    {{- fail (printf "elements of `minio.rootUser.serviceAccounts` must have unique `existingSecret`, but '%s' appears more than once" $sa.existingSecret) }}
+    {{- else }}
+    {{- $_ := set $found_existingSecrets $sa.existingSecret true }}
+    {{- end }}
+    {{- end }}
+
+    {{- "\n" }}
+    ## service account #{{ $index }}
+    {{- if $sa.generateSecret }}
+
+    {{- /* CASE 1: generate new minio credentials and store in secret, or sync from previously generated secret */ -}}
+    {{- if $sa.existingSecret }}
+    echo {{ (printf `INFO: processing service account #%d (type: GENERATE_SECRET, secret: '%s')...` $index $sa.existingSecret) | replace `'` `'\''` | squote }}
+    generate_or_sync_minio_sa {{ $escaped__existing_secret | squote }} {{ $escaped__access_key_key | squote }} {{ $escaped__secret_key_key | squote }} {{ $env__policy_json | quote }}
+    {{- else }}
+    {{- fail (printf "elements of `minio.rootUser.serviceAccounts` that enable `generateSecret` must specify `existingSecret`, but element %d does not" $index) }}
+    {{- end }}
+
+    {{- else }}
+
+    {{- /* CASE 2: read credentials from existing secret, and sync with minio */ -}}
+    {{- if $sa.existingSecret }}
+    echo {{ (printf `INFO: processing service account #%d (type: EXISTING_SECRET, secret: '%s')...` $index $sa.existingSecret) | replace `'` `'\''` | squote }}
+    create_or_sync_minio_sa {{ $env__access_key | quote }} {{ $env__secret_key | quote }} {{ $env__policy_json | quote }}
+
+    {{- /* CASE 3: read credentials from secret populated by helm values */ -}}
+    {{- else }}
+    {{- if and $sa.accessKey $sa.secretKey }}
+    echo {{ (printf `INFO: processing service account #%d (type: STATIC_VALUES)...` $index) | replace `'` `'\''` | squote }}
+    create_or_sync_minio_sa {{ $env__access_key | quote }} {{ $env__secret_key | quote }} {{ $env__policy_json | quote }}
+    {{- else }}
+    {{- fail (printf "elements of `minio.rootUser.serviceAccounts` that use static definitions must have non-empty `accessKey` and `secretKey`, but element %d does not" $index) }}
+    {{- end }}
+    {{- end }}
+
+    {{- end }}
+    {{- end }}
+
+    ## run cleanup functions
+    cleanup_unexpected_minio_sa
+    cleanup_unexpected_kube_secrets
+
+    ## we were successful, send quit command to istio-proxy sidecar
+    curl -sf -XPOST "http://127.0.0.1:15020/quitquitquit"
+  {{- end }}
+{{- end }}

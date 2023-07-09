@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metadata-grpc-deployment
+spec:
+  template:
+    spec:
+      containers:
+        - name: container
+          env:
+            ## ================================
+            ## MySQL Secrets
+            ## ================================
+            - name: DBCONFIG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{< tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_name" . | quote >}}
+                  key: {{< tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_username_key" . | quote >}}
+            - name: DBCONFIG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{< tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_name" . | quote >}}
+                  key: {{< tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_password_key" . | quote >}}

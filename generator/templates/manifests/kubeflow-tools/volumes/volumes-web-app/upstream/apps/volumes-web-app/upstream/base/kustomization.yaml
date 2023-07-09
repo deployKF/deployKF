@@ -1,0 +1,64 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+commonLabels:
+  app: volumes-web-app
+  kustomize.component: volumes-web-app
+configMapGenerator:
+- envs:
+  - params.env
+  name: parameters
+images:
+- name: docker.io/kubeflownotebookswg/volumes-web-app
+  newName: docker.io/kubeflownotebookswg/volumes-web-app
+  newTag: v1.7.0
+kind: Kustomization
+namePrefix: volumes-web-app-
+namespace: kubeflow
+resources:
+- cluster-role-binding.yaml
+- cluster-role.yaml
+- deployment.yaml
+- service-account.yaml
+- service.yaml
+vars:
+- fieldref:
+    fieldPath: data.VWA_CLUSTER_DOMAIN
+  name: VWA_CLUSTER_DOMAIN
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: metadata.namespace
+  name: VWA_NAMESPACE
+  objref:
+    apiVersion: v1
+    kind: Service
+    name: service
+- fieldref:
+    fieldPath: data.VWA_USERID_HEADER
+  name: VWA_USERID_HEADER
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: data.VWA_USERID_PREFIX
+  name: VWA_USERID_PREFIX
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: data.VWA_PREFIX
+  name: VWA_PREFIX
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: data.VWA_APP_SECURE_COOKIES
+  name: VWA_APP_SECURE_COOKIES
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters

@@ -1,0 +1,8 @@
+apiVersion: v2
+name: deploykf-kyverno
+version: 1.0.0
+dependencies:
+  - alias: kyverno
+    name: {{< .Values.deploykf_dependencies.kyverno.charts.kyverno.name | quote >}}
+    version: {{< .Values.deploykf_dependencies.kyverno.charts.kyverno.version | quote >}}
+    repository: {{< .Values.deploykf_dependencies.kyverno.charts.kyverno.repository | quote >}}

@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argo-config
+  labels:
+    helm.sh/chart: {{ include "kubeflow-argo-workflows.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: argo
+data:
+  {{- if .Values.controller.restrictions.parallelism }}
+  parallelism: {{ .Values.controller.restrictions.parallelism | quote }}
+  {{- end }}
+
+  {{- if .Values.controller.restrictions.namespaceParallelism }}
+  namespaceParallelism: {{ .Values.controller.restrictions.namespaceParallelism | quote }}
+  {{- end }}
+
+  artifactRepository: |
+    ## if true, archive the container logs as an artifact
+    archiveLogs: true
+
+    ## configs for s3 object store
+    s3:
+      endpoint: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.endpoint | quote }}
+      insecure: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.not_use_ssl }}
+      bucket: {{ .Values.deployKF.pipelines.bucket.name | quote }}
+      region: {{ .Values.deployKF.pipelines.bucket.region | quote }}
+      keyFormat: {{ .Values.controller.artifactRepository.keyFormat | quote }}
+      {{- if .Values.deployKF.pipelines.objectStore.auth.fromEnv }}
+      useSDKCreds: true
+      {{- else }}
+      accessKeySecret:
+        name: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_name | quote }}
+        key: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.access_key_key | quote }}
+      secretKeySecret:
+        name: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_name | quote }}
+        key: {{ .Values.deployKF_helpers.kubeflow_pipelines.object_store.auth.secret_key_key | quote }}
+      {{- end }}
+
+  sso: |
+    ## the issuer of the OIDC provider
+    {{- if .Values.deployKF.gateway.tls.enabled }}
+    issuer: "https://{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/dex"
+    {{- else }}
+    issuer: "http://{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/dex"
+    {{- end }}
+
+    ## if TLS certificate verification is skipped for SSO endpoints
+    ## TODO: remove once argo-server supports using local CA files: https://github.com/argoproj/argo-workflows/issues/7198
+    {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
+    insecureSkipVerify: true
+    {{- else }}
+    insecureSkipVerify: false
+    {{- end }}
+
+    ## how long each session (JWT issued by argo) is valid for
+    sessionExpiry: {{ .Values.server.identity.sessionExpiry | quote }}
+
+    ## the Secret which contains the OIDC client id
+    clientId:
+      name: argo-server-sso
+      key: client_id
+
+    ## the Secret that contains the OIDC client secret
+    clientSecret:
+      {{- if .Values.server.identity.openid.clientSecret.existingSecret }}
+      name: {{ .Values.server.identity.openid.clientSecret.existingSecret | quote }}
+      key: {{ .Values.server.identity.openid.clientSecret.existingSecretKey | quote }}
+      {{- else }}
+      name: argo-server-sso
+      key: client_secret
+      {{- end }}
+
+    ## the OIDC redirect URL
+    {{- if .Values.deployKF.gateway.tls.enabled }}
+    redirectUrl: "https://argo-server.{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/oauth2/callback"
+    {{- else }}
+    redirectUrl: "http://argo-server.{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/oauth2/callback"
+    {{- end }}
+
+    ## additional OIDC scopes to request
+    scopes:
+      - groups
+      - email
+
+    ## RBAC Config
+    rbac:
+      enabled: true

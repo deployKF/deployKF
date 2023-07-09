@@ -1,0 +1,126 @@
+########################################
+## SHARED | deploykf-helpers
+########################################
+deployKF_helpers:
+  deploykf_profiles:
+    users_id_mapping: {{< tmpl.Exec "runtime/deploykf_profiles__users_id_mapping_json" >}}
+    profiles_users_access_mapping: {{< tmpl.Exec "runtime/deploykf_profiles__profiles_users_access_mapping_json" >}}
+    users_profiles_access_mapping: {{< tmpl.Exec "runtime/deploykf_profiles__users_profiles_access_mapping_json" >}}
+
+  kubeflow:
+    pipelines:
+      object_store:
+        profile:
+          cloned_secret_name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
+          generated_access_key_key: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_access_key_key" . | quote >}}
+          generated_secret_key_key: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_secret_key_key" . | quote >}}
+
+
+########################################
+## SHARED | deploykf
+########################################
+deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.deploykf_core.deploykf_profiles_generator.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
+  clusterDomain: cluster.local
+
+  minio:
+    namespace: {{< .Values.deploykf_opt.deploykf_minio.namespace | quote >}}
+
+  argoWorkflows:
+    enabled: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled | conv.ToBool >}}
+    namespace: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.namespace | quote >}}
+
+  kubeflow:
+    useridHeader: kubeflow-userid
+
+    pipelines:
+      enabled: {{< .Values.kubeflow_tools.pipelines.enabled | conv.ToBool >}}
+      namespace: kubeflow
+      pipelineUI:
+        namespace: kubeflow
+        serviceAccount: ml-pipeline-ui
+      objectStore:
+        useExternal: {{< .Values.kubeflow_tools.pipelines.objectStore.useExternal | conv.ToBool >}}
+        auth:
+          fromEnv: {{< .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv | conv.ToBool >}}
+
+  gateway:
+    namespace: {{< .Values.deploykf_core.deploykf_istio_gateway.namespace | quote >}}
+    serviceAccount: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.name | quote >}}
+    emailToLowercase: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.emailToLowercase | conv.ToBool >}}
+
+
+########################################
+## CONFIGS | profiles
+########################################
+
+## profile defaults
+##
+profileDefaults:
+
+  ## a common prefix to add to all profile names
+  ##
+  profileNamePrefix: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.profileNamePrefix | quote >}}
+
+  ## the default email to set as the owner of profiles
+  ##
+  ownerEmail: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.ownerEmail | quote >}}
+
+  ## the default access for members of profiles, when not explicitly specified
+  ##
+  memberAccess:
+
+    ## the Kubernetes RBAC role to bind to users in the profile namespace
+    ##  - "edit": binds "ClusterRole/kubeflow-edit" (can view/create/delete resources)
+    ##  - "view": binds "ClusterRole/kubeflow-view" (cam view resources)
+    ##
+    role: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.memberAccess.role | quote >}}
+
+    ## if the user can ~connect~ to kubeflow notebooks in the profile
+    ##
+    notebooksAccess: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.memberAccess.notebooksAccess | conv.ToBool >}}
+
+  ## the default list of plugins for profiles, when not explicitly specified
+  ##
+  plugins: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.plugins | toJSON >}}
+
+  ## the default resource quota for profiles, when not explicitly specified
+  ##  - spec for ResourceQuotaSpec:
+  ##    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#resourcequotaspec-v1-core
+  ##
+  resourceQuotaSpec: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.resourceQuotaSpec | toJSON >}}
+
+  ## the default tool configs for profiles
+  ##
+  tools:
+
+    ## the default Kubeflow Pipelines configs for profiles
+    ##
+    kubeflowPipelines:
+
+      ## the default Kubeflow Pipelines object store auth configs for profiles
+      ##
+      objectStoreAuth:
+        existingSecret: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret | quote >}}
+        existingSecretNamespace: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretNamespace | quote >}}
+        existingSecretAccessKeyKey: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretAccessKeyKey | quote >}}
+        existingSecretSecretKeyKey: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretSecretKeyKey | quote >}}
+
+## user entities
+##  - a list of users that can be referenced when defining profile members
+##
+users: {{< .Values.deploykf_core.deploykf_profiles_generator.users | toJSON >}}
+
+## group entities
+##  - a list of groups that can be referenced when defining profile members
+##
+groups: {{< .Values.deploykf_core.deploykf_profiles_generator.groups | toJSON >}}
+
+## profile definitions
+##  - a list of profile definitions to be generated
+##
+profiles: {{< .Values.deploykf_core.deploykf_profiles_generator.profiles | toJSON >}}

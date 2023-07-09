@@ -1,0 +1,25 @@
+{{- if and (.Values.mysql.persistence.enabled) (not .Values.mysql.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: deploykf-mysql-data
+  labels:
+    helm.sh/chart: {{ include "deploykf-mysql.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-mysql.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: mysql
+spec:
+  accessModes:
+    - {{ .Values.mysql.persistence.accessMode | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.mysql.persistence.size | quote }}
+  {{- if .Values.mysql.persistence.storageClass }}
+  {{- if eq "-" .Values.mysql.persistence.storageClass }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ .Values.mysql.persistence.storageClass | quote }}
+  {{- end }}
+  {{- end }}
+{{- end }}

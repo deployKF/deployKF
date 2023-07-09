@@ -1,0 +1,133 @@
+{{<- define "default_extra_resources" >}}
+rules:
+  ## these permissions are so that kyverno can generate resources within profile namespaces
+  - apiGroups: [ "" ]
+    resources: [ "services" ]
+  - apiGroups: [ "apps" ]
+    resources: [ "deployments" ]
+  - apiGroups: [ "security.istio.io" ]
+    resources: [ "authorizationpolicies" ]
+  - apiGroups: [ "networking.istio.io" ]
+    resources: [ "destinationrules" ]
+  ## there permissions are so that kyverno can mutate these resources for automatic restarts on secret changes
+  - apiGroups: [ "apps" ]
+    resources: [ "statefulsets" ]
+{{<- end >}}
+{{<- $extra_resources := ((tmpl.Exec "default_extra_resources" .) | yaml).rules >}}
+{{<- range $rule := .Values.deploykf_dependencies.kyverno.extraResourceRules >}}
+{{<- $extra_resources = append $rule $extra_resources >}}
+{{<- end ->}}
+
+
+########################################
+## SHARED | deploykf
+########################################
+deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.deploykf_dependencies.kyverno.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
+
+########################################
+## DEPENDENCY | kyverno
+########################################
+## as we reference the "kyverno" chart (https://kyverno.github.io/kyverno) in `dependencies` of Chart.yaml,
+## we must indent our values under `kyverno:` in this file
+kyverno:
+  fullnameOverride: kyverno
+
+  ## Cleanup cronjobs to prevent internal resources from stacking up in the cluster
+  cleanupJobs:
+
+    admissionReports:
+      enabled: true
+      schedule: "*/10 * * * *"
+      threshold: 10000
+      image:
+        registry: ~
+        repository: {{< .Values.deploykf_dependencies.kyverno.images.kubectl.repository | quote >}}
+        {{<- if .Values.deploykf_dependencies.kyverno.images.kubectl.tag >}}
+        tag: {{< .Values.deploykf_dependencies.kyverno.images.kubectl.tag | quote >}}
+        {{<- end >}}
+        pullPolicy: {{< .Values.deploykf_dependencies.kyverno.images.kubectl.pullPolicy | quote >}}
+
+    clusterAdmissionReports:
+      enabled: true
+      schedule: "*/10 * * * *"
+      threshold: 10000
+      image:
+        registry: ~
+        repository: {{< .Values.deploykf_dependencies.kyverno.images.kubectl.repository | quote >}}
+        {{<- if .Values.deploykf_dependencies.kyverno.images.kubectl.tag >}}
+        tag: {{< .Values.deploykf_dependencies.kyverno.images.kubectl.tag | quote >}}
+        {{<- end >}}
+        pullPolicy: {{< .Values.deploykf_dependencies.kyverno.images.kubectl.pullPolicy | quote >}}
+
+  ## Admission controller configuration
+  admissionController:
+    replicas: ~
+    initContainer:
+      image:
+        registry: ~
+        repository: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoInit.repository | quote >}}
+        {{<- if .Values.deploykf_dependencies.kyverno.images.kyvernoInit.tag >}}
+        tag: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoInit.tag | quote >}}
+        {{<- end >}}
+        pullPolicy: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoInit.pullPolicy | quote >}}
+    container:
+      image:
+        registry: ~
+        repository: {{< .Values.deploykf_dependencies.kyverno.images.kyverno.repository | quote >}}
+        {{<- if .Values.deploykf_dependencies.kyverno.images.kyverno.tag >}}
+        tag: {{< .Values.deploykf_dependencies.kyverno.images.kyverno.tag | quote >}}
+        {{<- end >}}
+        pullPolicy: {{< .Values.deploykf_dependencies.kyverno.images.kyverno.pullPolicy | quote >}}
+    rbac:
+      clusterRole:
+        extraResources: []
+
+  ## Background controller configuration
+  backgroundController:
+    enabled: true
+    replicas: ~
+    image:
+      registry: ~
+      repository: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoBackgroundController.repository | quote >}}
+      {{<- if .Values.deploykf_dependencies.kyverno.images.kyvernoBackgroundController.tag >}}
+      tag: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoBackgroundController.tag | quote >}}
+      {{<- end >}}
+      pullPolicy: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoBackgroundController.pullPolicy | quote >}}
+    rbac:
+      clusterRole:
+        extraResources: {{< $extra_resources | toJSON >}}
+
+  ## Cleanup controller configuration
+  cleanupController:
+    enabled: true
+    replicas: ~
+    image:
+      registry: ~
+      repository: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoCleanupController.repository | quote >}}
+      {{<- if .Values.deploykf_dependencies.kyverno.images.kyvernoCleanupController.tag >}}
+      tag: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoCleanupController.tag | quote >}}
+      {{<- end >}}
+      pullPolicy: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoCleanupController.pullPolicy | quote >}}
+    rbac:
+      clusterRole:
+        extraResources: {{< $extra_resources | toJSON >}}
+
+  ## Reports controller configuration
+  reportsController:
+    enabled: true
+    replicas: ~
+    image:
+      registry: ~
+      repository: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoReportsController.repository | quote >}}
+      {{<- if .Values.deploykf_dependencies.kyverno.images.kyvernoReportsController.tag >}}
+      tag: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoReportsController.tag | quote >}}
+      {{<- end >}}
+      pullPolicy: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoReportsController.pullPolicy | quote >}}
+    rbac:
+      clusterRole:
+        extraResources: []

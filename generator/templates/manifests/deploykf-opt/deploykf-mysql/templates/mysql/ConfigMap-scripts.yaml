@@ -1,0 +1,143 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deploykf-mysql-scripts
+  labels:
+    helm.sh/chart: {{ include "deploykf-mysql.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-mysql.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: mysql
+data:
+  custom_entrypoint.sh: |
+    #!/bin/bash
+
+    set -euo pipefail
+
+    ## DESCRIPTION:
+    ## - this script replaces the container entrypoint so is run each pod restart before the default entrypoint
+    ## - this script generates a mysql `init_file` to:
+    ##    - update the 'root'@'localhost' user
+    ##    - create/update the kubeflow user
+    ##    - create kubeflow databases (and grant access by kubeflow user)
+    ##    - create/update custom users
+    ##    - create custom databases (and grant access)
+    ## - we encode the username/password with base64 and use mysql's QUOTE() function to escape the values
+
+    ## update 'root'@'localhost' user
+    ROOT_PASSWORD_BASE64="$(echo -n "$MYSQL_ROOT_PASSWORD" | base64 -w0)"
+    echo "-- update 'root'@'localhost' user" > /docker-entrypoint-initdb.d/init.sql
+    echo "SET @escaped_root_password = QUOTE(CONVERT(FROM_BASE64('$ROOT_PASSWORD_BASE64') USING utf8mb4));" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @alter_stmt_string = CONCAT(\"ALTER USER 'root'@'localhost' IDENTIFIED BY \", @escaped_root_password);" >> /docker-entrypoint-initdb.d/init.sql
+    echo "PREPARE alter_stmt FROM @alter_stmt_string;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "EXECUTE alter_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "DEALLOCATE PREPARE alter_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+
+    ## create/update kubeflow user
+    KUBEFLOW_USERNAME_BASE64="$(echo -n "$MYSQL_KUBEFLOW_USERNAME" | base64 -w0)"
+    KUBEFLOW_PASSWORD_BASE64="$(echo -n "$MYSQL_KUBEFLOW_PASSWORD" | base64 -w0)"
+    echo "" >> /docker-entrypoint-initdb.d/init.sql
+    echo "-- create/update kubeflow user" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @escaped_kubeflow_username = QUOTE(CONVERT(FROM_BASE64('$KUBEFLOW_USERNAME_BASE64') USING utf8mb4));" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @escaped_kubeflow_password = QUOTE(CONVERT(FROM_BASE64('$KUBEFLOW_PASSWORD_BASE64') USING utf8mb4));" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @escaped_kubeflow_identifier = CONCAT(@escaped_kubeflow_username, \"@'%'\");" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @create_stmt_string = CONCAT('CREATE USER IF NOT EXISTS ', @escaped_kubeflow_identifier, ' IDENTIFIED BY ', @escaped_kubeflow_password);" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @alter_stmt_string = CONCAT('ALTER USER ', @escaped_kubeflow_identifier, ' IDENTIFIED BY ', @escaped_kubeflow_password);" >> /docker-entrypoint-initdb.d/init.sql
+    echo "PREPARE create_stmt FROM @create_stmt_string;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "PREPARE alter_stmt FROM @alter_stmt_string;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "EXECUTE create_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "EXECUTE alter_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "DEALLOCATE PREPARE create_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "DEALLOCATE PREPARE alter_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+
+    ## create kubeflow databases (and grant access by kubeflow user)
+    {{- if .Values.mysql.kubeflowDatabases }}
+    echo "" >> /docker-entrypoint-initdb.d/init.sql
+    echo "-- create kubeflow databases (and grant access by kubeflow user)" >> /docker-entrypoint-initdb.d/init.sql
+    {{- range $database := .Values.mysql.kubeflowDatabases }}
+    echo 'SET @database_name = CONCAT("`", CONVERT(FROM_BASE64("{{ $database.name | replace "`" "``" | b64enc }}") USING utf8mb4), "`");' >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @create_stmt_string = CONCAT('CREATE DATABASE IF NOT EXISTS ', @database_name);" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @grant_stmt_string = CONCAT('GRANT ALL PRIVILEGES ON ', @database_name, '.* TO ', @escaped_kubeflow_identifier);" >> /docker-entrypoint-initdb.d/init.sql
+    echo "PREPARE create_stmt FROM @create_stmt_string;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "PREPARE grant_stmt FROM @grant_stmt_string;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "EXECUTE create_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "EXECUTE grant_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "DEALLOCATE PREPARE create_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "DEALLOCATE PREPARE grant_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    {{- end }}
+    {{- end }}
+
+    ## create custom users
+    {{- range $index, $user := .Values.mysql.customUsers }}
+    echo "" >> /docker-entrypoint-initdb.d/init.sql
+    echo "-- update custom user {{ $index }}" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @escaped_hostname = QUOTE(CONVERT(FROM_BASE64('{{ $user.hostname | default "%" | b64enc }}') USING utf8mb4));" >> /docker-entrypoint-initdb.d/init.sql
+    USERNAME_BASE64="$(echo -n {{ printf "$MYSQL_USERNAME_%d" $index | quote }} | base64 -w0)"
+    echo "SET @escaped_username = QUOTE(CONVERT(FROM_BASE64('$USERNAME_BASE64') USING utf8mb4));" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @user_identifier = CONCAT(@escaped_username, '@', @escaped_hostname);" >> /docker-entrypoint-initdb.d/init.sql
+    {{- if $user.drop | default false }}
+    echo "SET @drop_stmt_string = CONCAT('DROP USER IF EXISTS ', @user_identifier);" >> /docker-entrypoint-initdb.d/init.sql
+    echo "PREPARE drop_stmt FROM @drop_stmt_string;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "EXECUTE drop_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "DEALLOCATE PREPARE drop_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    {{- else }}
+    PASSWORD_BASE64="$(echo -n {{ printf "$MYSQL_PASSWORD_%d" $index | quote }} | base64 -w0)"
+    echo "SET @escaped_password = QUOTE(CONVERT(FROM_BASE64('$PASSWORD_BASE64') USING utf8mb4));" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @create_stmt_string = CONCAT('CREATE USER IF NOT EXISTS ', @user_identifier, ' IDENTIFIED BY ', @escaped_password);" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @alter_stmt_string = CONCAT('ALTER USER ', @user_identifier, ' IDENTIFIED BY ', @escaped_password);" >> /docker-entrypoint-initdb.d/init.sql
+    echo "PREPARE create_stmt FROM @create_stmt_string;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "PREPARE alter_stmt FROM @alter_stmt_string;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "EXECUTE create_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "EXECUTE alter_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "DEALLOCATE PREPARE create_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "DEALLOCATE PREPARE alter_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    {{- end }}
+    {{- end }}
+
+    ## create custom databases (and grant access)
+    {{- range $db_index, $database := .Values.mysql.customDatabases }}
+    {{- if not $database.name }}
+    {{- fail (printf "each database in `mysql.customDatabases` must set `name`, but element %d does not" $db_index) }}
+    {{- end }}
+    echo "" >> /docker-entrypoint-initdb.d/init.sql
+    echo "-- create custom database {{ $db_index }}" >> /docker-entrypoint-initdb.d/init.sql
+    echo 'SET @database_name = CONCAT("`", CONVERT(FROM_BASE64("{{ $database.name | replace "`" "``" | b64enc }}") USING utf8mb4), "`");' >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @create_stmt_string = CONCAT('CREATE DATABASE IF NOT EXISTS ', @database_name);" >> /docker-entrypoint-initdb.d/init.sql
+    echo "PREPARE create_stmt FROM @create_stmt_string;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "EXECUTE create_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "DEALLOCATE PREPARE create_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    {{- range $owner_index, $owner := $database.grantAllPrivileges }}
+    ## grant all privileges to owner {{ $owner_index }} on database {{ $db_index }}
+    {{- if not $owner.username }}
+    {{- fail (printf "each owner in `mysql.customDatabases[%d].grantAllPrivileges` must set `username`, but element %d does not" $db_index $owner_index) }}
+    {{- end }}
+    {{- if not $owner.hostname }}
+    {{- fail (printf "each owner in `mysql.customDatabases[%d].grantAllPrivileges` must set `hostname`, but element %d does not" $db_index $owner_index) }}
+    {{- end }}
+    echo "" >> /docker-entrypoint-initdb.d/init.sql
+    echo "-- grant owner {{ $owner_index }} permissions on database {{ $db_index }}" >> /docker-entrypoint-initdb.d/init.sql
+    USERNAME_BASE64="$(echo -n {{ printf "$MYSQL_DATABASE_%d_OWNER_%d_USERNAME" $db_index $owner_index | quote }} | base64 -w0)"
+    HOSTNAME_BASE64="$(echo -n {{ printf "$MYSQL_DATABASE_%d_OWNER_%d_HOSTNAME" $db_index $owner_index | quote }} | base64 -w0)"
+    echo "SET @escaped_username = QUOTE(CONVERT(FROM_BASE64('$USERNAME_BASE64') USING utf8mb4));" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @escaped_hostname = QUOTE(CONVERT(FROM_BASE64('$HOSTNAME_BASE64') USING utf8mb4));" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @user_identifier = CONCAT(@escaped_username, '@', @escaped_hostname);" >> /docker-entrypoint-initdb.d/init.sql
+    echo "SET @grant_stmt_string = CONCAT('GRANT ALL PRIVILEGES ON ', @database_name, '.* TO ', @user_identifier);" >> /docker-entrypoint-initdb.d/init.sql
+    echo "PREPARE grant_stmt FROM @grant_stmt_string;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "EXECUTE grant_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    echo "DEALLOCATE PREPARE grant_stmt;" >> /docker-entrypoint-initdb.d/init.sql
+    {{- end }}
+    {{- end }}
+
+    echo "ENTRYPOINT - successfully generated 'init_file' at: /docker-entrypoint-initdb.d/init.sql"
+
+    ## because our script is under `/docker-entrypoint-initdb.d/` the mysql docker image will apply it
+    ## automatically on the first run (when no db has been initialized), but all subsequent runs require
+    ## us to specify it as the `--init-file` arg
+    MYSQL_DATADIR="/var/lib/mysql"
+    if [ -d "$MYSQL_DATADIR/mysql" ]; then
+        echo "ENTRYPOINT - database already initialized, starting mysql..."
+        exec /entrypoint.sh mysqld --init-file=/docker-entrypoint-initdb.d/init.sql
+    else
+        echo "ENTRYPOINT - database not yet initialized, starting mysql..."
+        exec /entrypoint.sh mysqld
+    fi

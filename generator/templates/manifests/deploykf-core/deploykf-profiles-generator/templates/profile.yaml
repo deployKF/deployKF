@@ -1,0 +1,94 @@
+{{- $found_profileNames := dict }}
+{{- range $index, $profile := .Values.profiles }}
+
+{{- /* ensure this profile has a unique `name` */ -}}
+{{- if $profile.name }}
+  {{- if hasKey $found_profileNames $profile.name }}
+    {{- fail (printf "elements of `profiles` must have unique `name`, but '%s' appears more than once" $profile.name) }}
+  {{- else }}
+    {{- $_ := set $found_profileNames $profile.name true }}
+  {{- end }}
+{{- else }}
+  {{- fail (printf "elements of `profiles` must have non-empty `name`, but element %d does not" $index) }}
+{{- end }}
+
+{{- /* get the profile's name */ -}}
+{{- $profile_name := printf "%s%s" $.Values.profileDefaults.profileNamePrefix $profile.name }}
+
+{{- /* get the profile's owner */ -}}
+{{- $profile_ownerEmail := $profile.ownerEmail | default $.Values.profileDefaults.ownerEmail }}
+{{- if not $profile_ownerEmail }}
+  {{- fail (printf "failed to generate profile '%s', ownerEmail must be non-empty" $profile_name) }}
+{{- end }}
+{{- if $.Values.deployKF.gateway.emailToLowercase }}
+  {{- $profile_ownerEmail = $profile_ownerEmail | lower }}
+{{- end }}
+
+{{- /* get the profile's plugins */ -}}
+{{- $profile_plugins := $profile.plugins | default $.Values.profileDefaults.plugins }}
+
+{{- /* get the profile's resourceQuotaSpec */ -}}
+{{- $profile_resourceQuotaSpec := $profile.resourceQuotaSpec | default $.Values.profileDefaults.resourceQuotaSpec }}
+---
+apiVersion: kubeflow.org/v1
+kind: Profile
+metadata:
+  name: {{ $profile_name | quote }}
+  annotations:
+    ## the profile resource must be created before other resources, as it creates the namespace
+    argocd.argoproj.io/sync-wave: "-10"
+  labels:
+    helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
+    app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+spec:
+  owner:
+    kind: User
+    name: {{ $profile_ownerEmail | quote }}
+  {{- if $profile_plugins }}
+  plugins: {{ $profile_plugins | toYaml | nindent 4 }}
+  {{- end }}
+  {{- if $profile_resourceQuotaSpec }}
+  resourceQuotaSpec: {{ $profile_resourceQuotaSpec | toYaml | nindent 4 }}
+  {{- else }}
+  resourceQuotaSpec: {}
+  {{- end }}
+---
+{{- /*
+The Kubeflow Profile Controller generates an `AuthorizationPolicy/ns-owner-access-istio` in each profile which dooes
+not check the source principal for its `request.headers[kubeflow-userid]` rule, this mean anyone can access any pod
+in the profile namespace by simply setting the "kubeflow-userid" header to the owner's email.
+
+This AuthorizationPolicy explicitly checks for traffic attemptign this bypass and denies it.
+
+TODO: this issue should be patched in a future release of the upstream Kubeflow Profile Controller
+*/}}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: ns-owner-access-istio--override
+  namespace: {{ $profile_name | quote }}
+  labels:
+    helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
+    app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
+    app.kubernetes.io/instance: {{ $.Release.Name }}
+    app.kubernetes.io/managed-by: {{ $.Release.Service }}
+spec:
+  action: DENY
+  rules:
+    ## deny requests with "kubeflow-userid" header set to "admin@example.com" if they do not come from safe sources
+    - from:
+        - source:
+            notPrincipals:
+              - "{{ $.Values.deployKF.clusterDomain }}/ns/{{ $.Values.deployKF.gateway.namespace }}/sa/{{ $.Values.deployKF.gateway.serviceAccount }}"
+              {{- if $.Values.deployKF.kubeflow.pipelines.enabled }}
+              ## the `ml-pipeline-ui` pod will proxy some requests into the user's namespace,
+              ## for example, to view logs on the object store
+              - "{{ $.Values.deployKF.clusterDomain }}/ns/{{ $.Values.deployKF.kubeflow.pipelines.pipelineUI.namespace }}/sa/{{ $.Values.deployKF.kubeflow.pipelines.pipelineUI.serviceAccount }}"
+              {{- end }}
+      when:
+        - key: request.headers[{{ $.Values.deployKF.kubeflow.useridHeader }}]
+          values:
+            - {{ $profile_ownerEmail | quote }}
+{{- end }}

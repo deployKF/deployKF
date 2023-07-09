@@ -1,0 +1,23 @@
+{{- if or .Values.dex.clients.oauth2Proxy.clientSecret.generateSecret .Values.dex.clients.minioConsole.clientSecret.generateSecret .Values.dex.clients.argoServer.clientSecret.generateSecret .Values.oauth2Proxy.cookie.secret.generateSecret }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: deploykf-auth-generate-jobs
+  labels:
+    helm.sh/chart: {{ include "deploykf-auth.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: generate
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-delete-policy: hook-succeeded,before-hook-creation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: deploykf-auth-generate-jobs
+subjects:
+  - kind: ServiceAccount
+    name: deploykf-auth-generate-jobs
+    namespace: {{ .Release.Namespace | quote }}
+{{- end }}

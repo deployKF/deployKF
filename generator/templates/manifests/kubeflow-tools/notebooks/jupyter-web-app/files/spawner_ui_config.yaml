@@ -1,0 +1,2 @@
+spawnerFormDefaults:
+{{< .Values.kubeflow_tools.notebooks.spawnerFormDefaults | toYAML | indent 2 >}}

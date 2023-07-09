@@ -1,0 +1,35 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: kubeflow
+
+resources:
+  ## upstream
+  - upstream/apps/tensorboard/tensorboard-controller/upstream/overlays/kubeflow
+
+  ## local
+  {{<- if .Values.kubeflow_tools.tensorboards.extraManifests >}}
+  - resources/extra-manifests.yaml
+  {{<- end >}}
+
+configMapGenerator:
+  - name: tensorboard-controller-config
+    behavior: merge
+    literals:
+      - ISTIO_GATEWAY="{{< .Values.deploykf_core.deploykf_istio_gateway.namespace >}}/{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name >}}"
+      - RWO_PVC_SCHEDULING="True"
+      - TENSORBOARD_IMAGE={{< .Values.kubeflow_tools.tensorboards.tensorboardImage | quote >}}
+
+images:
+  - name: docker.io/kubeflownotebookswg/tensorboard-controller
+    newName: {{< .Values.kubeflow_tools.tensorboards.images.tensorboardController.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.tensorboards.images.tensorboardController.tag >}}
+    newTag: {{< .Values.kubeflow_tools.tensorboards.images.tensorboardController.tag | quote >}}
+    {{<- end >}}
+  - name: gcr.io/kubebuilder/kube-rbac-proxy
+    newName: {{< .Values.kubeflow_tools.tensorboards.images.kubeRbacProxy.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.tensorboards.images.kubeRbacProxy.tag >}}
+    newTag: {{< .Values.kubeflow_tools.tensorboards.images.kubeRbacProxy.tag | quote >}}
+    {{<- end >}}

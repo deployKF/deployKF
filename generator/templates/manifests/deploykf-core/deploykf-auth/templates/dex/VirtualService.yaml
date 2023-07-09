@@ -1,0 +1,25 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: dex
+  labels:
+    helm.sh/chart: {{ include "deploykf-auth.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-auth.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: dex
+spec:
+  gateways:
+    - {{ .Values.deployKF.gateway.namespace }}/{{ .Values.deployKF.gateway.name }}
+  hosts:
+    - {{ .Values.deployKF.gateway.hostname | quote }}
+  http:
+    - name: dex-route
+      match:
+        - uri:
+            prefix: /dex/
+      route:
+        - destination:
+            host: dex.{{ .Release.Namespace }}.svc.{{ .Values.deployKF.clusterDomain }}
+            port:
+              number: 5556

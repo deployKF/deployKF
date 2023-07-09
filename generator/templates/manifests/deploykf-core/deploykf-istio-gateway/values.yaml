@@ -1,0 +1,118 @@
+########################################
+## SHARED | deploykf
+########################################
+deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.deploykf_core.deploykf_istio_gateway.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
+  clusterDomain: cluster.local
+
+  kubeflow:
+    namespace: kubeflow
+    useridHeader: kubeflow-userid
+    pipelines:
+      enabled: {{< .Values.kubeflow_tools.pipelines.enabled | conv.ToBool >}}
+      kfpV2:
+        defaultPipelineRoot: {{< .Values.kubeflow_tools.pipelines.kfpV2.defaultPipelineRoot | quote >}}
+      cache:
+        namespaceRedirect: {{< .Values.kubeflow_tools.pipelines.cache.namespaceRedirect | conv.ToBool >}}
+
+  certManager:
+    clusterIssuer:
+      issuerName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.issuerName | quote >}}
+
+  argoWorkflows:
+    enabled: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled | conv.ToBool >}}
+    namespace: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.namespace | quote >}}
+    artifactRepository:
+      keyFormat: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.artifactRepository.keyFormat | quote >}}
+
+  auth:
+    namespace: {{< .Values.deploykf_core.deploykf_auth.namespace | quote >}}
+
+  gateway:
+    name: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name | quote >}}
+    selectorLabels: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.selectorLabels | toJSON >}}
+    hostname: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
+    ports:
+      http: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
+      https: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
+    tls:
+      enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
+    enableProxyProtocol: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.enableProxyProtocol >}}
+    xffNumTrustedHops: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.xffNumTrustedHops >}}
+    emailToLowercase: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.emailToLowercase | conv.ToBool >}}
+
+  minio:
+    enabled: {{< .Values.deploykf_opt.deploykf_minio.enabled | conv.ToBool >}}
+    namespace: {{< .Values.deploykf_opt.deploykf_minio.namespace | quote >}}
+
+
+########################################
+## DEPENDENCY | istio-gateway
+########################################
+## we reference the "gateway" chart (https://istio-release.storage.googleapis.com/charts) in `dependencies` of Chart.yaml
+## we must indent our values under `gateway:` in this file
+gatewayEnabled: {{< .Values.deploykf_core.deploykf_istio_gateway.charts.istioGateway.enabled | conv.ToBool >}}
+gateway:
+  name: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.name | quote >}}
+
+  replicaCount: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.replicaCount >}}
+  autoscaling:
+    enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.enabled | conv.ToBool >}}
+    minReplicas: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.minReplicas >}}
+    maxReplicas: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.maxReplicas >}}
+    targetCPUUtilizationPercentage: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.targetCPUUtilizationPercentage >}}
+
+  serviceAccount:
+    name: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.name | quote >}}
+    annotations: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.annotations | toJSON >}}
+
+  service:
+    annotations: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.annotations | toJSON >}}
+    type: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.type | quote >}}
+    loadBalancerIP: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.loadBalancerIP | quote >}}
+    loadBalancerSourceRanges: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.loadBalancerSourceRanges | toJSON >}}
+    externalTrafficPolicy: ""
+    externalIPs: []
+    ports:
+      - name: status-port
+        port: 15021
+        protocol: TCP
+        targetPort: 15021
+      - name: http
+        port: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
+        protocol: TCP
+        targetPort: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
+      - name: https
+        port: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
+        protocol: TCP
+        targetPort: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 2000m
+      memory: 1024Mi
+
+  podAnnotations: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.podAnnotations | toJSON >}}
+
+  securityContext: ~
+  containerSecurityContext: ~
+
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+  # Pod environment variables
+  env: {}
+
+  # Labels to apply to all resources
+  labels: {}
+
+  # Annotations to apply to all resources
+  annotations: {}

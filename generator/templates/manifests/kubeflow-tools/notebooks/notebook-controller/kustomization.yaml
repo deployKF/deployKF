@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: kubeflow
+
+resources:
+  ## upstream
+  - upstream/apps/jupyter/notebook-controller/upstream/overlays/kubeflow
+
+  ## local
+  {{<- if .Values.kubeflow_tools.notebooks.extraManifests >}}
+  - resources/extra-manifests.yaml
+  {{<- end >}}
+
+configMapGenerator:
+  - name: config
+    behavior: merge
+    literals:
+      - USE_ISTIO="true"
+      - ISTIO_GATEWAY="{{< .Values.deploykf_core.deploykf_istio_gateway.namespace >}}/{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name >}}"
+      - CLUSTER_DOMAIN="cluster.local"
+      - ENABLE_CULLING={{< .Values.kubeflow_tools.notebooks.notebookCulling.enabled | conv.ToBool | quote >}}
+      - CULL_IDLE_TIME={{< .Values.kubeflow_tools.notebooks.notebookCulling.idleTime | quote >}}
+      - IDLENESS_CHECK_PERIOD={{< .Values.kubeflow_tools.notebooks.notebookCulling.idlenessCheckPeriod | quote >}}
+
+images:
+  - name: docker.io/kubeflownotebookswg/notebook-controller
+    newName: {{< .Values.kubeflow_tools.notebooks.images.notebookController.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.notebooks.images.notebookController.tag >}}
+    newTag: {{< .Values.kubeflow_tools.notebooks.images.jupyterWebApp.tag | quote >}}
+    {{<- end >}}

@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dkf-opt--deploykf-mysql
+  namespace: {{< .Values.argocd.namespace | quote >}}
+  labels:
+    app.kubernetes.io/name: deploykf-mysql
+    app.kubernetes.io/component: deploykf-opt
+    app.kubernetes.io/part-of: deploykf
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{< .Values.argocd.project | quote >}}
+  source:
+    repoURL: {{< .Values.argocd.source.repo.url | quote >}}
+    targetRevision: {{< .Values.argocd.source.repo.revision | quote >}}
+    path: {{< path.Join .Values.argocd.source.repo.path "manifests/deploykf-opt/deploykf-mysql" | quote >}}
+    helm:
+      ignoreMissingValueFiles: true
+      valueFiles:
+        - values-overrides.yaml
+  destination:
+    server: {{< .Values.argocd.destination.server | quote >}}
+    namespace: {{< .Values.deploykf_opt.deploykf_mysql.namespace | quote >}}
+  syncPolicy:
+    syncOptions:
+      ## ensure argo-cd does not remove the fields added by kyverno
+      - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    ## we use kyverno to trigger restarts by setting the "deploykf.org/restart-trigger" annotation when secrets change
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/template/metadata/annotations/deploykf.org~1restart-trigger
+    - group: apps
+      kind: StatefulSet
+      jsonPointers:
+        - /spec/template/metadata/annotations/deploykf.org~1restart-trigger

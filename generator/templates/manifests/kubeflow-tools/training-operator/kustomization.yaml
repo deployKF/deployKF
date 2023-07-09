@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: kubeflow
+
+resources:
+  ## upstream
+  - upstream/apps/training-operator/upstream/overlays/kubeflow
+
+  ## local
+  {{<- if .Values.kubeflow_tools.training_operator.extraManifests >}}
+  - resources/extra-manifests.yaml
+  {{<- end >}}
+
+images:
+  - name: kubeflow/training-operator
+    newName: {{< .Values.kubeflow_tools.training_operator.images.trainingOperator.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.training_operator.images.trainingOperator.tag >}}
+    newTag: {{< .Values.kubeflow_tools.training_operator.images.trainingOperator.tag | quote >}}
+    {{<- end >}}

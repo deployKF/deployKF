@@ -1,0 +1,37 @@
+{{- if gt (.Values.deployKF.gateway.xffNumTrustedHops | int) 0 }}
+################
+## This EnvoyFilter sets the number of hops from the right side of a `x-forwarded-for` HTTP header to trust
+## when envoy is determining the origin client's IP address.
+################
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: deploykf-istio-gateway--xff-num-trusted-hops
+  labels:
+    helm.sh/chart: {{ include "deploykf-istio-gateway.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-istio-gateway.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  workloadSelector:
+    labels:
+      {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
+  configPatches:
+    - applyTo: NETWORK_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+      patch:
+        operation: MERGE
+        value:
+          typed_config:
+            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#extensions-filters-network-http-connection-manager-v3-httpconnectionmanager
+            "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
+
+            ## the number of additional ingress proxy hops from the right side of the `x-forwarded-for` HTTP header
+            ## to trust when determining the origin client’s IP address
+            xff_num_trusted_hops: {{ .Values.deployKF.gateway.xffNumTrustedHops | int }}
+{{- end }}

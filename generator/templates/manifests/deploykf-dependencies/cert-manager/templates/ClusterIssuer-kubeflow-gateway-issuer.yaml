@@ -1,0 +1,9 @@
+{{- if and (.Values.deployKF.certManager.clusterIssuer.enabled) (eq .Values.deployKF.certManager.clusterIssuer.type "SELF_SIGNED") }}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .Values.deployKF.certManager.clusterIssuer.issuerName | quote }}
+spec:
+  ca:
+    secretName: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.caSecretName | quote }}
+{{- end }}

@@ -1,0 +1,11 @@
+bases:
+- ../crd
+- ../rbac
+- ../manager
+commonLabels:
+  app: tensorboard-controller
+  kustomize.component: tensorboard-controller
+namePrefix: tensorboard-controller-
+namespace: tensorboard-controller-system
+patchesStrategicMerge:
+- manager_auth_proxy_patch.yaml

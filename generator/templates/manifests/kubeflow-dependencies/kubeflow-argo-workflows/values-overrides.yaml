@@ -1,0 +1,1 @@
+{{<- template "deploykf.values_overrides" (coll.Merge . (dict "overrides_path" ".Values.kubeflow_dependencies.kubeflow_argo_workflows.valuesOverrides")) >}}

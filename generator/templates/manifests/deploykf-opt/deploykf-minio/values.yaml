@@ -1,0 +1,233 @@
+########################################
+## SHARED | deploykf-helpers
+########################################
+deployKF_helpers:
+  deploykf_gateway:
+    http_endpoint: {{< (tmpl.Exec "deploykf_gateway.http_endpoint" .) | quote >}}
+    https_endpoint: {{< (tmpl.Exec "deploykf_gateway.https_endpoint" .) | quote >}}
+    is_self_signed_cert: {{< (tmpl.Exec "deploykf_gateway.is_self_signed_cert" .) | conv.ToBool >}}
+
+  scripts:
+    generate_kubernetes_secret__sh: {{< (tmpl.Exec "helpers/generate_kubernetes_secret.sh" .) | quote >}}
+
+
+########################################
+## SHARED | deploykf
+########################################
+deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.deploykf_opt.deploykf_minio.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
+  clusterDomain: cluster.local
+
+  certManager:
+    clusterIssuer:
+      selfSigned:
+        injectedConfigMapName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
+
+  auth:
+    namespace: {{< .Values.deploykf_core.deploykf_auth.namespace | quote >}}
+
+  gateway:
+    namespace: {{< .Values.deploykf_core.deploykf_istio_gateway.namespace | quote >}}
+    serviceAccount: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.name | quote >}}
+    name: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name | quote >}}
+    hostname: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
+    tls:
+      enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
+
+
+########################################
+## COMPONENT | generate
+########################################
+generate:
+  ## configs for the kubectl container image
+  ##
+  kubectlImage:
+    repository: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.repository | quote >}}
+    tag: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
+
+
+########################################
+## COMPONENT | minio
+########################################
+minio:
+  ## configs for the minio container image
+  ##
+  image:
+    repository: {{< .Values.deploykf_opt.deploykf_minio.images.minio.repository | quote >}}
+    tag: {{< .Values.deploykf_opt.deploykf_minio.images.minio.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_opt.deploykf_minio.images.minio.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
+
+  ## configs for the mc container image
+  ##
+  mcImage:
+    repository: {{< .Values.deploykf_opt.deploykf_minio.images.minioMc.repository | quote >}}
+    tag: {{< .Values.deploykf_opt.deploykf_minio.images.minioMc.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_opt.deploykf_minio.images.minioMc.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
+
+  ## configs for the kubectl container image
+  ##
+  kubectlImage:
+    repository: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.repository | quote >}}
+    tag: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_opt.deploykf_minio.images.kubectl.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
+
+  ## resource requests/limits for the minio Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## persistence configs for minio
+  ##
+  persistence:
+    enabled: {{< .Values.deploykf_opt.deploykf_minio.persistence.enabled | conv.ToBool >}}
+
+    ## the name of an existing PersistentVolumeClaim to use
+    ## - if non-emtpy, you must manually create a PVC with this name
+    ##
+    existingClaim: {{< .Values.deploykf_opt.deploykf_minio.persistence.existingClaim | quote >}}
+
+    ## the sub-path within the PersistentVolume to mount, instead of the root
+    ##
+    subPath: {{< .Values.deploykf_opt.deploykf_minio.persistence.subPath | quote >}}
+
+    ## the name of the StorageClass requested by the PersistentVolumeClaim
+    ## - if set to "", then `PersistentVolumeClaim/spec.storageClassName` is omitted
+    ## - if set to "-", then `PersistentVolumeClaim/spec.storageClassName` is set to ""
+    ##
+    storageClass: {{< .Values.deploykf_opt.deploykf_minio.persistence.storageClass | quote >}}
+
+    ## the access mode of the PersistentVolumeClaim
+    ##
+    accessMode: {{< .Values.deploykf_opt.deploykf_minio.persistence.accessMode | quote >}}
+
+    ## the initial size for the PersistentVolumeClaim to request
+    ## - if your StorageClass has `allowVolumeExpansion=true`, kubernetes allows the
+    ##   PVC to grow in size as needed, starting from this value
+    ##
+    size: {{< .Values.deploykf_opt.deploykf_minio.persistence.size | quote >}}
+
+  ## root user configs for minio
+  ##
+  rootUser:
+    username: {{< .Values.deploykf_opt.deploykf_minio.rootUser.username | quote >}}
+    password: {{< .Values.deploykf_opt.deploykf_minio.rootUser.password | quote >}}
+    existingSecret: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecret | quote >}}
+    existingSecretUsernameKey: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretUsernameKey | quote >}}
+    existingSecretPasswordKey: {{< .Values.deploykf_opt.deploykf_minio.rootUser.existingSecretPasswordKey | quote >}}
+    generateSecret: {{< .Values.deploykf_opt.deploykf_minio.rootUser.generateSecret | conv.ToBool >}}
+    {{<- if and (.Values.deploykf_opt.deploykf_minio.rootUser.generateSecret) (not .Values.deploykf_opt.deploykf_minio.rootUser.existingSecret) >}}
+    {{< fail "`deploykf_opt.deploykf_minio.rootUser.existingSecret` must be non-empty if `deploykf_opt.deploykf_minio.rootUser.generateSecret` is true" >}}
+    {{<- end >}}
+
+    ## service accounts for the root user
+    ##  - these service accounts are created and/or updated by a post-install job
+    ##
+    {{<- $service_accounts := .Values.deploykf_opt.deploykf_minio.rootUser.serviceAccounts | default coll.Slice >}}
+    {{<- if and .Values.kubeflow_tools.pipelines.enabled (not .Values.kubeflow_tools.pipelines.objectStore.useExternal) >}}
+      {{<- /* --------------------------------------- */ ->}}
+      {{<- /* account for: kubeflow pipelines backend */ ->}}
+      {{<- /* --------------------------------------- */ ->}}
+      {{<- $secret_name := "generated--kubeflow-pipelines--backend-object-store-auth" >}}
+      {{<- $secret_access_key_key := "access_key" >}}
+      {{<- $secret_secret_key_key := "secret_key" >}}
+      {{<- $policy := tmpl.Exec "kubeflow_pipelines.object_store.auth.minio_policy" (dict "bucket_name" $.Values.kubeflow_tools.pipelines.bucket.name) | json >}}
+      {{<- $service_accounts = $service_accounts | append (dict "generateSecret" true "existingSecret" $secret_name "existingSecretAccessKeyKey" $secret_access_key_key "existingSecretSecretKeyKey" $secret_secret_key_key "policy" $policy) >}}
+      {{<- /* --------------------- */ ->}}
+      {{<- /* account for: profiles */ ->}}
+      {{<- /* --------------------- */ ->}}
+      {{<- $secret_name_template := .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret >}}
+      {{<- $secret_access_key_key := tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_access_key_key" $ >}}
+      {{<- $secret_secret_key_key := tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_secret_key_key" $ >}}
+      {{<- if not ($secret_name_template | strings.Contains "{profile_name}") >}}
+        {{<- fail (printf "if `kubeflow_tools.pipelines.objectStore.useExternal` is false, then `deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret` must contain '{profile_name}', but got '%s'" $secret_name_template) >}} 
+      {{<- end >}}
+      {{<- $secret_name_template = printf "generated--%s" $secret_name_template >}} 
+      {{<- range $profile := .Values.deploykf_core.deploykf_profiles_generator.profiles >}}
+        {{<- if not (and (has $profile "tools") (has $profile.tools "kubeflowPipelines") (has $profile.tools.kubeflowPipelines "objectStoreAuth")) >}}
+          {{<- $secret_name := $secret_name_template | strings.ReplaceAll "{profile_name}" $profile.name >}}
+          {{<- $policy := tmpl.Exec "kubeflow_pipelines.object_store.profile.minio_policy" (dict "profile_name" $profile.name "bucket_name" $.Values.kubeflow_tools.pipelines.bucket.name) | json >}}
+          {{<- $service_accounts = $service_accounts | append (dict "generateSecret" true "existingSecret" $secret_name "existingSecretAccessKeyKey" $secret_access_key_key "existingSecretSecretKeyKey" $secret_secret_key_key "policy" $policy) >}}
+        {{<- end >}}
+      {{<- end >}}
+    {{<- end >}}
+    serviceAccounts: {{< $service_accounts | toJSON >}}
+
+  ## identity configs for minio
+  ##
+  identity:
+
+    ## OpenID configs for minio
+    ##
+    openid:
+      displayName: "deployKF Auth"
+      policyClaim: {{< .Values.deploykf_opt.deploykf_minio.identity.openid.policyClaim | quote >}}
+      scopes: {{< .Values.deploykf_opt.deploykf_minio.identity.openid.scopes | quote >}}
+      clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientId | quote >}}
+      clientSecret:
+        value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.value | quote >}}
+        {{<- if .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecret >}}
+        existingSecret: "cloned--minio-openid-secret"
+        {{<- else >}}
+        existingSecret: ""
+        {{<- end >}}
+        existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecretKey | quote >}}
+
+  ## minio buckets
+  ##  - these buckets are created and/or updated by a post-install job
+  ##
+  {{<- $buckets := .Values.deploykf_opt.deploykf_minio.buckets | default coll.Slice >}}
+  {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
+    {{<- $buckets = $buckets | append (dict "name" .Values.kubeflow_tools.pipelines.bucket.name "versioning" false) >}}
+  {{<- end >}}
+  buckets: {{< $buckets | toJSON >}}
+
+  ## minio access policies
+  ##  - these policies are created and/or updated by a post-install job
+  ##
+  {{<- $policies := .Values.deploykf_opt.deploykf_minio.policies | default coll.Slice >}}
+  {{<- if and .Values.kubeflow_tools.pipelines.enabled (not .Values.kubeflow_tools.pipelines.objectStore.useExternal) >}}
+  {{<- if eq .Values.deploykf_opt.deploykf_minio.identity.openid.policyClaim "email" >}}
+    {{<- $users_id_mapping := tmpl.Exec "runtime/deploykf_profiles__users_id_mapping_json" | json >}}
+    {{<- $users_profiles_access_mapping := tmpl.Exec "runtime/deploykf_profiles__users_profiles_access_mapping_json" | json >}}
+    {{<- $bucket_name := .Values.kubeflow_tools.pipelines.bucket.name >}}
+    {{<- range $user_id, $profiles_access_mapping := $users_profiles_access_mapping >}}
+       {{<- /* get the minio policy name */ ->}}
+       {{<- $user := index $users_id_mapping $user_id >}}
+       {{<- $policy_name := $user.email >}}
+
+       {{<- /* get the minio policy document */ ->}}
+       {{<- $edit_profiles := coll.Slice >}}
+       {{<- $view_profiles := coll.Slice >}}
+       {{<- range $profile_name, $user_access := $profiles_access_mapping >}}
+         {{<- if eq $user_access.role "edit" >}}
+           {{<- $edit_profiles = $edit_profiles | append $profile_name >}}
+         {{<- else if eq $user_access.role "view" >}}
+           {{<- $view_profiles = $view_profiles | append $profile_name >}}
+         {{<- end >}}
+       {{<- end >}}
+       {{<- $policy := tmpl.Exec "kubeflow_pipelines.object_store.user.minio_policy" (dict "edit_profiles" $edit_profiles "view_profiles" $view_profiles "bucket_name" $bucket_name) | yaml >}}
+
+       {{<- /* add the minio policy to the list of policies */ ->}}
+       {{<- $policies = $policies | append (dict "name" $policy_name "policy" $policy) >}}
+    {{<- end >}}
+  {{<- end >}}
+  {{<- end >}}
+  policies: {{< $policies | toJSON >}}

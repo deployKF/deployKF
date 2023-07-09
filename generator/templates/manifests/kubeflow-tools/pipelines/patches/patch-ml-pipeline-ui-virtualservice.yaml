@@ -1,0 +1,31 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: ml-pipeline-ui
+  namespace: kubeflow
+spec:
+  gateways:
+    - {{< .Values.deploykf_core.deploykf_istio_gateway.namespace >}}/{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name >}}
+  http:
+    {{<- if .Values.kubeflow_dependencies.kubeflow_argo_workflows.artifactRepository.keyFormat | strings.HasPrefix `artifacts/{{ workflow.namespace }}/` >}}
+    ## this route is used in `EnvoyFilter/kubeflow-pipelines--redirect-artifact-namespaces` to redirect
+    ## artifact requests which use the wrong `?namespace=` query parameter
+    - name: ml-pipeline-ui-artifacts-route
+      match:
+        - uri:
+            prefix: /pipeline/artifacts/
+      route:
+        - destination:
+            host: ml-pipeline-ui.kubeflow.svc.cluster.local
+            port:
+              number: 80
+    {{<- end >}}
+    - match:
+        - uri:
+            prefix: /pipeline
+      route:
+        - destination:
+            host: ml-pipeline-ui.kubeflow.svc.cluster.local
+            port:
+              number: 80
+      timeout: 300s

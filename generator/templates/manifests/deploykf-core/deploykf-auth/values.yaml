@@ -1,0 +1,194 @@
+########################################
+## SHARED | deploykf-helpers
+########################################
+deployKF_helpers:
+  deploykf_gateway:
+    http_endpoint: {{< (tmpl.Exec "deploykf_gateway.http_endpoint" .) | quote >}}
+    https_endpoint: {{< (tmpl.Exec "deploykf_gateway.https_endpoint" .) | quote >}}
+    is_self_signed_cert: {{< (tmpl.Exec "deploykf_gateway.is_self_signed_cert" .) | conv.ToBool >}}
+
+  scripts:
+    generate_kubernetes_secret__sh: {{< (tmpl.Exec "helpers/generate_kubernetes_secret.sh" .) | quote >}}
+
+
+########################################
+## SHARED | deploykf
+########################################
+deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.deploykf_core.deploykf_auth.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
+  clusterDomain: cluster.local
+
+  certManager:
+    clusterIssuer:
+      selfSigned:
+        injectedConfigMapName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
+
+  istio:
+    namespace: {{< .Values.deploykf_dependencies.istio.namespace | quote >}}
+
+  gateway:
+    namespace: {{< .Values.deploykf_core.deploykf_istio_gateway.namespace | quote >}}
+    serviceAccount: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.name | quote >}}
+    name: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name | quote >}}
+    hostname: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
+    tls:
+      enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
+
+
+########################################
+## COMPONENT | generate
+########################################
+generate:
+  ## configs for the kubectl container image
+  ##
+  kubectlImage:
+    repository: {{< .Values.deploykf_core.deploykf_auth.images.kubectl.repository | quote >}}
+    tag: {{< .Values.deploykf_core.deploykf_auth.images.kubectl.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_core.deploykf_auth.images.kubectl.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
+
+
+########################################
+## COMPONENT | dex
+########################################
+dex:
+  ## configs for the dex container image
+  ##
+  image:
+    repository: {{< .Values.deploykf_core.deploykf_auth.images.dex.repository | quote >}}
+    tag: {{< .Values.deploykf_core.deploykf_auth.images.dex.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_core.deploykf_auth.images.dex.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 1001
+    gid: 1001
+
+  ## resource requests/limits for the dex Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## log level for the dex container
+  ##
+  logLevel: "info"
+
+  ## configs for token/key expiration
+  ##
+  expiry:
+    deviceRequests: "5m"
+    idTokens: {{< .Values.deploykf_core.deploykf_auth.dex.expiry.idToken | quote >}}
+    signingKeys: "6h"
+    refreshTokens:
+      reuseInterval: "30s"
+      validIfNotUsedFor: {{< .Values.deploykf_core.deploykf_auth.dex.expiry.refreshToken.idle | quote >}}
+      absoluteLifetime: {{< .Values.deploykf_core.deploykf_auth.dex.expiry.refreshToken.total | quote >}}
+
+  ## OpenID client configs for dex
+  ##
+  clients:
+
+    ## OpenID client for oauth2-proxy
+    ## - [WARNING] these configs must align with `oauth2Proxy.oidc.*`
+    ##
+    oauth2Proxy:
+      clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientId | quote >}}
+      clientSecret:
+        value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.value | quote >}}
+        existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.existingSecret | quote >}}
+        existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.existingSecretKey | quote >}}
+        generateSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.generateSecret | conv.ToBool >}}
+        {{<- if and (.Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.generateSecret) (not .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.existingSecret) >}}
+        {{< fail "`deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.existingSecret` must be non-empty if `deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.generateSecret` is true" >}}
+        {{<- end >}}
+
+    ## OpenID client for Minio Console
+    ##
+    minioConsole:
+      enabled: {{< .Values.deploykf_opt.deploykf_minio.enabled | conv.ToBool >}}
+      namespace: {{< .Values.deploykf_opt.deploykf_minio.namespace | quote >}}
+      clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientId | quote >}}
+      clientSecret:
+        value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.value | quote >}}
+        existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecret | quote >}}
+        existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecretKey | quote >}}
+        generateSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.generateSecret | conv.ToBool >}}
+        {{<- if and (.Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.generateSecret) (not .Values.deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecret) >}}
+        {{< fail "`deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.existingSecret` must be non-empty if `deploykf_core.deploykf_auth.dex.clients.minioConsole.clientSecret.generateSecret` is true" >}}
+        {{<- end >}}
+
+    ## OpenID client for Argo Server
+    ##
+    argoServer:
+      enabled: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled | conv.ToBool >}}
+      namespace: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.namespace | quote >}}
+      clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientId | quote >}}
+      clientSecret:
+        value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.value | quote >}}
+        existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecret | quote >}}
+        existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecretKey | quote >}}
+        generateSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.generateSecret | conv.ToBool >}}
+        {{<- if and (.Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.generateSecret) (not .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecret) >}}
+        {{< fail "`deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecret` must be non-empty if `deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.generateSecret` is true" >}}
+        {{<- end >}}
+
+  ## dex static passwords
+  ##
+  staticPasswords: {{< .Values.deploykf_core.deploykf_auth.dex.staticPasswords | toJSON >}}
+
+  ## dex connectors
+  ##
+  connectors: {{< .Values.deploykf_core.deploykf_auth.dex.connectors | toJSON >}}
+
+
+########################################
+## COMPONENT | oauth2-proxy
+########################################
+oauth2Proxy:
+  ## configs for the oauth2-proxy container image
+  ##
+  image:
+    repository: {{< .Values.deploykf_core.deploykf_auth.images.oauth2Proxy.repository | quote >}}
+    tag: {{< .Values.deploykf_core.deploykf_auth.images.oauth2Proxy.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_core.deploykf_auth.images.oauth2Proxy.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 65532
+    gid: 65532
+
+  ## resource requests/limits for the oauth2-proxy Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## OpenID configs for oauth2-proxy
+  ##
+  oidc:
+    clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientId | quote >}}
+    clientSecret:
+      value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.value | quote >}}
+      existingSecret: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.existingSecret | quote >}}
+      existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientSecret.existingSecretKey | quote >}}
+
+  ## cookie configs for oauth2-proxy
+  ##
+  cookie:
+    name: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.name | quote >}}
+    expire: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.expire | quote >}}
+    refresh: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.refresh | quote >}}
+    csrf:
+      expire: "15m"
+      perRequest: true
+    secret:
+      value: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.value | quote >}}
+      existingSecret: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.existingSecret | quote >}}
+      existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.existingSecretKey | quote >}}
+      generateSecret: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.generateSecret | conv.ToBool >}}
+      {{<- if and (.Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.generateSecret) (not .Values.deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.existingSecret) >}}
+      {{< fail "`deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.existingSecret` must be non-empty if `deploykf_core.deploykf_auth.oauth2Proxy.cookie.secret.generateSecret` is true" >}}
+      {{<- end >}}

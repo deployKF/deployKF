@@ -1,0 +1,147 @@
+{{- if .Values.deployKF.kubeflow.pipelines.cache.namespaceRedirect }}
+{{- $compatible_v1_keyFormat := .Values.deployKF.argoWorkflows.artifactRepository.keyFormat | hasPrefix "artifacts/{{ workflow.namespace }}/" }}
+{{- $compatible_v2_defaultPipelineRoot := .Values.deployKF.kubeflow.pipelines.kfpV2.defaultPipelineRoot | regexMatch `^[a-zA-Z0-9]+://(?:[^/]+)/v2/artifacts/{profile_name}.*` }}
+{{- if and .Values.deployKF.kubeflow.pipelines.enabled $compatible_v1_keyFormat }}
+################
+## This EnvoyFilter redirects artifact requests that use an incorrect `?namespace=` query parameter for an artifact.
+## This is required because bucket IAM policies restrict bucket access based on the namespace prefix.
+## NOTE: Kubeflow Pipelines will sometimes use an artifact which was cached by another namespace.
+## NOTE: the user might still not have access after the redirect if they are not a member of the correct namespace.
+################
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: deploykf-istio-gateway--kubeflow-pipelines-redirect-artifact-namespaces
+  labels:
+    helm.sh/chart: {{ include "deploykf-istio-gateway.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-istio-gateway.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  workloadSelector:
+    labels:
+      {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
+  configPatches:
+    ################################################################################
+    ## FILTER 1 - Empty global lua filter (needed to allow per-route lua filter)
+    ################################################################################
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
+                name: envoy.filters.http.lua.set_userid_header
+      patch:
+        operation: INSERT_AFTER
+        value:
+          name: envoy.filters.http.lua.kfp_redirect_artifact_namespaces
+          typed_config:
+            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto
+            "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+
+            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/configuration/http/http_filters/lua_filter#config-http-filters-lua
+            inlineCode: |
+              function envoy_on_request(request_handle)
+                -- empty lua function
+              end
+
+    ################################################################################
+    ## PATCH - Enable lua filter for the `ml-pipeline-ui-artifacts-route`
+    ################################################################################
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          vhost:
+            route:
+              ## HTTP route names are specified in VirtualServices
+              name: ml-pipeline-ui-artifacts-route
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            envoy.filters.http.lua.kfp_redirect_artifact_namespaces:
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/configuration/http/http_filters/lua_filter#config-http-filters-lua
+              source_code:
+                inline_string: |
+                  function extract_url_namespaces(url_path)
+                      -- extract namespace from object key
+                      local key_namespace
+                      if url_path:match("^/pipeline/artifacts/get") then
+                          -- FORMAT: "/pipeline/artifacts/get...&key=artifacts%2F<key_namespace>%2F..."
+                          key_namespace = url_path:match("[?&]key=artifacts%%2F([^%%]+)%%2F")
+
+                          {{- if $compatible_v2_defaultPipelineRoot }}
+                          -- try v2 format, if v1 format did not match
+                          if not key_namespace then
+                            -- FORMAT: "/pipeline/artifacts/get...&key=v2%2Fartifacts%2F<key_namespace>%2F..."
+                            key_namespace = url_path:match("[?&]key=v2%%2Fartifacts%%2F([^%%]+)%%2F")
+                          end
+                          {{- end }}
+                      else
+                          -- FORMAT: "/pipeline/artifacts/<object_store>/<bucket>/artifacts/<key_namespace>/..."
+                          key_namespace = url_path:match("^/pipeline/artifacts/[^/?&]+/[^/?&]+/artifacts/([^/?&]+)/")
+
+                          {{- if $compatible_v2_defaultPipelineRoot }}
+                          -- try v2 format, if v1 format did not match
+                          if not key_namespace then
+                            -- FORMAT: "/pipeline/artifacts/<object_store>/<bucket>/v2/artifacts/<key_namespace>/..."
+                            key_namespace = url_path:match("^/pipeline/artifacts/[^/?&]+/[^/?&]+/v2/artifacts/([^/?&]+)/")
+                          end
+                          {{- end }}
+                      end
+
+                      -- extract namespace from query, if key_namespace is not nil
+                      local query_namespace
+                      if key_namespace then
+                          -- FORMAT: "/pipeline/artifacts/...&namespace=<query_namespace>..."
+                          query_namespace = url_path:match("[?&]namespace=([^&]*)")
+                      end
+
+                      return key_namespace, query_namespace
+                  end
+
+                  function envoy_on_request(request_handle)
+                      local url_path = request_handle:headers():get(":path")
+                      local key_namespace, query_namespace = extract_url_namespaces(url_path)
+
+                      if key_namespace then
+                          local new_url_path
+
+                          -- CASE 1: query_namespace is set and does not match key_namespace
+                          if query_namespace and key_namespace ~= query_namespace then
+                              local match_str = "([?&])namespace=[^?&]*"
+                              local replace_str = "%1namespace=" .. key_namespace
+                              new_url_path = url_path:gsub(match_str, replace_str)
+
+                          -- CASE 2: query_namespace is unset
+                          elseif not query_namespace then
+
+                              -- CASE 2a: path already has a query parameter
+                              if url_path:match("[?]") then
+                                  new_url_path = url_path .. "&namespace=" .. key_namespace
+
+                              -- CASE 2b: path does not have a query parameter
+                              else
+                                  new_url_path = url_path .. "?namespace=" .. key_namespace
+                              end
+                          end
+
+                          -- redirect to new_url_path, if it was set
+                          if new_url_path then
+                              request_handle:respond(
+                                  { [":status"] = "302", ["location"] = new_url_path },
+                                    "Redirecting to correct namespace..."
+                              )
+                          end
+                      end
+                  end
+{{- end }}
+{{- end }}

@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: kubeflow
+
+resources:
+  ## upstream
+  - upstream/apps/tensorboard/tensorboards-web-app/upstream/overlays/istio
+
+patchesStrategicMerge:
+  - patches/patch-tensorboards-web-app-authorizationpolicy.yaml
+  - patches/patch-tensorboards-web-app-virtualservice.yaml
+
+configMapGenerator:
+  - name: parameters
+    behavior: merge
+    literals:
+      - TWA_PREFIX="/tensorboards"
+      - TWA_CLUSTER_DOMAIN="cluster.local"
+      - TWA_USERID_HEADER="kubeflow-userid"
+      - TWA_USERID_PREFIX=""
+      - TWA_APP_SECURE_COOKIES="true"
+
+images:
+  - name: docker.io/kubeflownotebookswg/tensorboards-web-app
+    newName: {{< .Values.kubeflow_tools.tensorboards.images.tensorboardsWebApp.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.tensorboards.images.tensorboardsWebApp.tag >}}
+    newTag: {{< .Values.kubeflow_tools.tensorboards.images.tensorboardsWebApp.tag | quote >}}
+    {{<- end >}}

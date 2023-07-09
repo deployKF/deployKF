@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profile-controller
+  labels:
+    helm.sh/chart: {{ include "deploykf-dashboard.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: profile-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: profile-controller
+  template:
+    metadata:
+      annotations:
+        checksum/configmap-namespace-labels: {{ include (print $.Template.BasePath "/profile-controller/ConfigMap-namespace-labels.yaml") . | sha256sum }}
+      labels:
+        app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: profile-controller
+    spec:
+      {{- if .Values.profileController.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.profileController.image.pullSecret }}
+      {{- end }}
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      serviceAccountName: profile-controller
+      securityContext: {}
+      containers:
+        - name: profile-controller
+          image: {{ .Values.profileController.image.repository }}:{{ .Values.profileController.image.tag }}
+          imagePullPolicy: {{ .Values.profileController.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.profileController.image.uid }}
+            runAsGroup: {{ .Values.profileController.image.gid }}
+          {{- if .Values.profileController.resources }}
+          resources:
+          {{- toYaml .Values.profileController.resources | nindent 12 }}
+          {{- end }}
+          command:
+            - /manager
+            - -userid-header
+            - {{ .Values.deployKF.kubeflow.useridHeader | quote }}
+            - -userid-prefix
+            - ""
+            {{- if .Values.profileController.workloadIdentity }}
+            - -workload-identity
+            - {{ .Values.profileController.workloadIdentity | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 9876
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            httpGet:
+              path: /healthz
+              port: http
+          readinessProbe:
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            httpGet:
+              path: /readyz
+              port: http
+          volumeMounts:
+            - name: namespace-labels
+              mountPath: /etc/profile-controller
+              readOnly: true
+      volumes:
+        - name: namespace-labels
+          configMap:
+            name: profile-controller-namespace-labels

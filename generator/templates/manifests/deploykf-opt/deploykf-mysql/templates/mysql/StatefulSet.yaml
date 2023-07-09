@@ -1,0 +1,212 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: deploykf-mysql
+  labels:
+    helm.sh/chart: {{ include "deploykf-mysql.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-mysql.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: mysql
+spec:
+  serviceName: deploykf-mysql
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "deploykf-mysql.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: mysql
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/mysql/ConfigMap-config.yaml") . | sha256sum }}
+        checksum/scripts: {{ include (print $.Template.BasePath "/mysql/ConfigMap-scripts.yaml") . | sha256sum }}
+        {{- if not .Values.mysql.rootUser.existingSecret }}
+        checksum/root-user: {{ include (print $.Template.BasePath "/mysql/Secret-root-user.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if .Values.mysql.customUsers }}
+        checksum/custom-users: {{ include (print $.Template.BasePath "/mysql/Secret-custom-users.yaml") . | sha256sum }}
+        {{- end }}
+        {{- if .Values.mysql.customDatabases }}
+        checksum/custom-databases: {{ include (print $.Template.BasePath "/mysql/Secret-custom-databases.yaml") . | sha256sum }}
+        {{- end }}
+      labels:
+        app.kubernetes.io/name: {{ include "deploykf-mysql.labels.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: mysql
+    spec:
+      {{- if .Values.mysql.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.mysql.image.pullSecret }}
+      {{- end }}
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      serviceAccountName: deploykf-mysql
+      {{- if .Values.mysql.podSecurityContext }}
+      securityContext:
+        {{- .Values.mysql.podSecurityContext | toYaml | nindent 8 }}
+      {{- else }}
+      securityContext: {}
+      {{- end }}
+      containers:
+        - name: mysql
+          image: {{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}
+          imagePullPolicy: {{ .Values.mysql.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.mysql.image.uid }}
+            runAsGroup: {{ .Values.mysql.image.gid }}
+          {{- if .Values.mysql.resources }}
+          resources:
+            {{- toYaml .Values.mysql.resources | toYaml | nindent 12 }}
+          {{- end }}
+          env:
+            - name: MYSQL_ROOT_HOST
+              ## only allow the root user to connect from localhost (for liveness probes)
+              value: "localhost"
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.mysql.rootUser.existingSecret }}
+                  name: {{ .Values.mysql.rootUser.existingSecret | quote }}
+                  key: {{ .Values.mysql.rootUser.existingSecretPasswordKey | quote }}
+                  {{- else }}
+                  name: deploykf-mysql-root-user
+                  key: password
+                  {{- end }}
+            - name: MYSQL_KUBEFLOW_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.mysql.kubeflowUser.existingSecret }}
+                  name: {{ .Values.mysql.kubeflowUser.existingSecret | quote }}
+                  key: {{ .Values.mysql.kubeflowUser.existingSecretUsernameKey | quote }}
+                  {{- else }}
+                  name: deploykf-mysql-kubeflow-user
+                  key: username
+                  {{- end }}
+            - name: MYSQL_KUBEFLOW_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.mysql.kubeflowUser.existingSecret }}
+                  name: {{ .Values.mysql.kubeflowUser.existingSecret | quote }}
+                  key: {{ .Values.mysql.kubeflowUser.existingSecretPasswordKey | quote }}
+                  {{- else }}
+                  name: deploykf-mysql-kubeflow-user
+                  key: password
+                  {{- end }}
+            {{- range $index, $user := .Values.mysql.customUsers }}
+            - name: {{ printf "MYSQL_USERNAME_%d" $index | quote }}
+              valueFrom:
+                secretKeyRef:
+                  {{- if $user.existingSecret }}
+                  name: {{ $user.existingSecret | quote }}
+                  key: {{ $user.existingSecretUsernameKey | default "username" | quote }}
+                  {{- else }}
+                  name: deploykf-mysql-custom-users
+                  key: {{ printf "%d_username" $index | quote }}
+                  {{- end }}
+            - name: {{ printf "MYSQL_PASSWORD_%d" $index | quote }}
+              valueFrom:
+                secretKeyRef:
+                  {{- if $user.existingSecret }}
+                  name: {{ $user.existingSecret | quote }}
+                  key: {{ $user.existingSecretPasswordKey | default "password" | quote }}
+                  {{- else }}
+                  name: deploykf-mysql-custom-users
+                  key: {{ printf "%d_password" $index | quote }}
+                  {{- end }}
+            {{- end }}
+            {{- range $db_index, $database := .Values.mysql.customDatabases }}
+            {{- range $owner_index, $owner := $database.grantAllPrivileges }}
+            - name: {{ printf "MYSQL_DATABASE_%d_OWNER_%d_USERNAME" $db_index $owner_index | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: deploykf-mysql-custom-databases
+                  key: {{ printf "%d_owner_%d_username" $db_index $owner_index | quote }}
+            - name: {{ printf "MYSQL_DATABASE_%d_OWNER_%d_HOSTNAME" $db_index $owner_index | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: deploykf-mysql-custom-databases
+                  key: {{ printf "%d_owner_%d_hostname" $db_index $owner_index | quote }}
+            {{- end }}
+            {{- end }}
+          command:
+            ## our custom entrypoint generates an init_file that configures the database on each startup
+            - /etc/mysql/scripts/custom_entrypoint.sh
+          args: []
+          ports:
+            - name: mysql
+              containerPort: 3306
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - mysqladmin status -uroot -p"${MYSQL_ROOT_PASSWORD}"
+          startupProbe:
+            failureThreshold: 10
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - mysqladmin status -uroot -p"${MYSQL_ROOT_PASSWORD}"
+          volumeMounts:
+            ## this mount ensures that /docker-entrypoint-initdb.d/ is writable by non-root,
+            ## as our custom entrypoint needs to generate the init_file here
+            - name: docker-entrypoint-initdb
+              mountPath: "/docker-entrypoint-initdb.d/"
+            - name: mysql-configs
+              mountPath: "/etc/mysql/conf.d"
+              readOnly: true
+            - name: mysql-scripts
+              mountPath: "/etc/mysql/scripts"
+              readOnly: true
+            {{- if .Values.mysql.persistence.enabled }}
+            - name: mysql-data
+              mountPath: "/var/lib/mysql"
+              {{- if .Values.mysql.persistence.subPath }}
+              subPath: {{ .Values.mysql.persistence.subPath | quote }}
+              {{- end }}
+            {{- else }}
+            - name: mysql-data
+              mountPath: "/var/lib/mysql"
+            {{- end }}
+      volumes:
+        - name: docker-entrypoint-initdb
+          emptyDir: {}
+        - name: mysql-configs
+          configMap:
+            name: deploykf-mysql-config
+        - name: mysql-scripts
+          configMap:
+            name: deploykf-mysql-scripts
+            items:
+              - key: custom_entrypoint.sh
+                path: custom_entrypoint.sh
+                mode: 0755
+        {{- if .Values.mysql.persistence.enabled }}
+        - name: mysql-data
+          persistentVolumeClaim:
+            {{- if .Values.mysql.persistence.existingClaim }}
+            claimName: {{ .Values.mysql.persistence.existingClaim | quote }}
+            {{- else }}
+            claimName: deploykf-mysql-data
+            {{- end }}
+        {{- else }}
+        - name: mysql-data
+          emptyDir: {}
+        {{- end }}

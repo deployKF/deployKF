@@ -1,0 +1,5 @@
+## prevent rendered `.gomplateignore` files being commited
+.gomplateignore
+
+## prevent runtime template folder being commited
+/runtime/

@@ -1,0 +1,64 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+commonLabels:
+  app: tensorboards-web-app
+  kustomize.component: tensorboards-web-app
+configMapGenerator:
+- envs:
+  - params.env
+  name: parameters
+images:
+- name: docker.io/kubeflownotebookswg/tensorboards-web-app
+  newName: docker.io/kubeflownotebookswg/tensorboards-web-app
+  newTag: v1.7.0
+kind: Kustomization
+namePrefix: tensorboards-web-app-
+namespace: kubeflow
+resources:
+- cluster-role-binding.yaml
+- cluster-role.yaml
+- deployment.yaml
+- service-account.yaml
+- service.yaml
+vars:
+- fieldref:
+    fieldPath: data.TWA_CLUSTER_DOMAIN
+  name: TWA_CLUSTER_DOMAIN
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: metadata.namespace
+  name: TWA_NAMESPACE
+  objref:
+    apiVersion: v1
+    kind: Service
+    name: service
+- fieldref:
+    fieldPath: data.TWA_USERID_HEADER
+  name: TWA_USERID_HEADER
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: data.TWA_USERID_PREFIX
+  name: TWA_USERID_PREFIX
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: data.TWA_PREFIX
+  name: TWA_PREFIX
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters
+- fieldref:
+    fieldPath: data.TWA_APP_SECURE_COOKIES
+  name: TWA_APP_SECURE_COOKIES
+  objref:
+    apiVersion: v1
+    kind: ConfigMap
+    name: parameters

@@ -1,0 +1,4 @@
+{{<- range $manifest := .Values.kubeflow_tools.poddefaults_webhook.extraManifests ->}}
+---
+{{< (tpl $manifest $) | data.YAML | data.ToYAML >}}
+{{<- end >}}

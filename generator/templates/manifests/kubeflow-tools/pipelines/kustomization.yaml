@@ -1,0 +1,181 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+## global namespace must be set due to:
+## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
+namespace: kubeflow
+
+resources:
+  ## upstream
+  - upstream/apps/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user
+
+  ## local
+  - resources/generate-profile-resources-clusterpolicy.yaml
+  - resources/restart-on-pipeline-configmap-update-clusterpolicy.yaml
+
+  {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+  - resources/clone-bucket-secret-clusterpolicy.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_tools.pipelines.extraManifests >}}
+  - resources/extra-manifests.yaml
+  {{<- end >}}
+
+  {{<- if tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_is_cloned" . >}}
+  - resources/clone-mysql-secret-clusterpolicy.yaml
+  {{<- else >}}
+  - resources/restart-on-mysql-secret-update-clusterpolicy.yaml
+  {{<- end >}}
+
+  {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+  {{<- if not (tmpl.Exec "kubeflow_pipelines.use_embedded_minio" .) >}}
+  {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.existingSecret >}}
+  - resources/pipelines-bucket-secret.yaml
+  {{<- end >}}
+  {{<- end >}}
+  {{<- end >}}
+
+  {{<- if not (tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" .) >}}
+  {{<- if not .Values.kubeflow_tools.pipelines.mysql.auth.existingSecret >}}
+  - resources/pipelines-mysql-secret.yaml
+  {{<- end >}}
+  {{<- end >}}
+  
+  {{<- if or .Values.kubeflow_tools.pipelines.kfpV2.minioFix .Values.kubeflow_tools.pipelines.kfpV2.launcherImage >}}
+  - resources/patch-v2-workflow-pods-clusterpolicy.yaml
+  {{<- end >}}
+
+patchesStrategicMerge:
+  - patches/patch-cache-server-deployment.yaml
+  - patches/patch-metadata-grpc-deployment-deployment.yaml
+  - patches/patch-metadata-grpc-virtualservice.yaml
+  - patches/patch-ml-pipeline-deployment.yaml
+  - patches/patch-ml-pipeline-persistenceagent-deployment.yaml
+  - patches/patch-ml-pipeline-serviceaccount.yaml
+  - patches/patch-ml-pipeline-ui-authorizationpolicy.yaml
+  - patches/patch-ml-pipeline-ui-deployment.yaml
+  - patches/patch-ml-pipeline-ui-serviceaccount.yaml
+  - patches/patch-ml-pipeline-ui-virtualservice.yaml
+
+  ## removals
+  - patches/removals/argo-workflows-resources.yaml
+  - patches/removals/metacontroller-resources.yaml
+  - patches/removals/minio-resources.yaml
+  - patches/removals/mysql-resources.yaml
+  - patches/removals/profile-controller-resources.yaml
+
+configurations:
+  - params.yaml
+
+configMapGenerator:
+  - name: pipeline-install-config
+    behavior: merge
+    literals:
+      ## ================================
+      ## UserID Configs
+      ## ================================
+      - USERID_HEADER="kubeflow-userid"
+      - USERID_PREFIX=""
+
+      ## ================================
+      ## App Configs
+      ## ================================
+      - appName="pipeline"
+      - autoUpdatePipelineDefaultVersion="true"
+      - cronScheduleTimezone="UTC"
+
+      ## ================================
+      ## Cache Configs
+      ## ================================
+      - cacheImage={{< .Values.kubeflow_tools.pipelines.cache.image | quote >}}
+      - cacheNodeRestrictions="false"
+      - MAXIMUM_CACHE_STALENESS={{< .Values.kubeflow_tools.pipelines.cache.maximumMaxCacheStaleness | quote >}}
+      - DEFAULT_CACHE_STALENESS={{< .Values.kubeflow_tools.pipelines.cache.defaultMaxCacheStaleness | quote >}}
+
+      ## ================================
+      ## Bucket Configs
+      ## ================================
+      - bucketName="{{< .Values.kubeflow_tools.pipelines.bucket.name >}}"
+      - bucketRegion="{{< .Values.kubeflow_tools.pipelines.bucket.region >}}"
+      ## NOTE: this is not actually used in our manifests to create `ConfigMap/kfp-launcher`
+      ##       as we have replaced the "kubeflow-pipelines-profile-controller" with kyverno,
+      ##       specifically our `ClusterPolicy/kubeflow-pipelines--generate-profile-resources`
+      ##       creates/syncs the `ConfigMap/kfp-launcher` in each profile namespace
+      - defaultPipelineRoot=""
+
+      ## ================================
+      ## Object Store Configs
+      ## ================================
+      - bucketSecure="{{< tmpl.Exec "kubeflow_pipelines.object_store.use_ssl" . >}}"
+      - bucketHost="{{< tmpl.Exec "kubeflow_pipelines.object_store.hostname" . >}}"
+      - bucketPort="{{< tmpl.Exec "kubeflow_pipelines.object_store.port" . >}}"
+      - bucketEndpoint="{{< tmpl.Exec "kubeflow_pipelines.object_store.endpoint" . >}}"
+
+      ## ================================
+      ## MySQL Configs
+      ## ================================
+      - ConMaxLifeTime="120s"
+      - dbHost="{{< tmpl.Exec "kubeflow_pipelines.mysql.hostname" . >}}"
+      - dbPort="{{< tmpl.Exec "kubeflow_pipelines.mysql.port" . >}}"
+      - cacheDb="{{< .Values.kubeflow_tools.pipelines.mysqlDatabases.cacheDatabase >}}"
+      - mlmdDb="{{< .Values.kubeflow_tools.pipelines.mysqlDatabases.metadataDatabase >}}"
+      - pipelineDb="{{< .Values.kubeflow_tools.pipelines.mysqlDatabases.pipelinesDatabase >}}"
+
+  - name: ml-pipeline-ui-configmap
+    behavior: merge
+    files:
+      - files/viewer-pod-template.json
+
+images:
+  - name: gcr.io/ml-pipeline/cache-server
+    newName: {{< .Values.kubeflow_tools.pipelines.images.kfpCacheServer.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.pipelines.images.kfpCacheServer.tag >}}
+    newTag: {{< .Values.kubeflow_tools.pipelines.images.kfpCacheServer.tag | quote >}}
+    {{<- end >}}
+  - name: gcr.io/ml-pipeline/metadata-envoy
+    newName: {{< .Values.kubeflow_tools.pipelines.images.kfpMetadataEnvoy.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.pipelines.images.kfpMetadataEnvoy.tag >}}
+    newTag: {{< .Values.kubeflow_tools.pipelines.images.kfpMetadataEnvoy.tag | quote >}}
+    {{<- end >}}
+  - name: gcr.io/ml-pipeline/metadata-writer
+    newName: {{< .Values.kubeflow_tools.pipelines.images.kfpMetadataWriter.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.pipelines.images.kfpMetadataWriter.tag >}}
+    newTag: {{< .Values.kubeflow_tools.pipelines.images.kfpMetadataWriter.tag | quote >}}
+    {{<- end >}}
+  - name: gcr.io/ml-pipeline/api-server
+    newName: {{< .Values.kubeflow_tools.pipelines.images.kfpApiServer.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.pipelines.images.kfpApiServer.tag >}}
+    newTag: {{< .Values.kubeflow_tools.pipelines.images.kfpApiServer.tag | quote >}}
+    {{<- end >}}
+  - name: gcr.io/ml-pipeline/persistenceagent
+    newName: {{< .Values.kubeflow_tools.pipelines.images.kfpPersistenceagent.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.pipelines.images.kfpPersistenceagent.tag >}}
+    newTag: {{< .Values.kubeflow_tools.pipelines.images.kfpPersistenceagent.tag | quote >}}
+    {{<- end >}}
+  - name: gcr.io/ml-pipeline/scheduledworkflow
+    newName: {{< .Values.kubeflow_tools.pipelines.images.kfpScheduledworkflow.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.pipelines.images.kfpScheduledworkflow.tag >}}
+    newTag: {{< .Values.kubeflow_tools.pipelines.images.kfpScheduledworkflow.tag | quote >}}
+    {{<- end >}}
+  - name: gcr.io/ml-pipeline/frontend
+    newName: {{< .Values.kubeflow_tools.pipelines.images.kfpFrontend.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.pipelines.images.kfpFrontend.tag >}}
+    newTag: {{< .Values.kubeflow_tools.pipelines.images.kfpFrontend.tag | quote >}}
+    {{<- end >}}
+  - name: gcr.io/ml-pipeline/viewer-crd-controller
+    newName: {{< .Values.kubeflow_tools.pipelines.images.kfpViewerCrdController.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.pipelines.images.kfpViewerCrdController.tag >}}
+    newTag: {{< .Values.kubeflow_tools.pipelines.images.kfpViewerCrdController.tag | quote >}}
+    {{<- end >}}
+  - name: gcr.io/ml-pipeline/visualization-server
+    newName: {{< .Values.kubeflow_tools.pipelines.images.kfpVisualizationServer.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.pipelines.images.kfpVisualizationServer.tag >}}
+    newTag: {{< .Values.kubeflow_tools.pipelines.images.kfpVisualizationServer.tag | quote >}}
+    {{<- end >}}
+
+  ## NOTE: this tag is not aligned to the other KFP images
+  - name: gcr.io/tfx-oss-public/ml_metadata_store_server
+    newName: {{< .Values.kubeflow_tools.pipelines.images.tfxMlMetadataStoreServer.repository | quote >}}
+    {{<- if .Values.kubeflow_tools.pipelines.images.tfxMlMetadataStoreServer.tag >}}
+    newTag: {{< .Values.kubeflow_tools.pipelines.images.tfxMlMetadataStoreServer.tag | quote >}}
+    {{<- end >}}

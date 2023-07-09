@@ -1,0 +1,79 @@
+{{<- $default_version := .Values.deploykf_dependencies.istio.charts.istioDaemon.version >}}
+{{<- $default_variant := .Values.deploykf_dependencies.istio.defaultImageVariant >}}
+{{<- $default_tag := $default_version >}}
+{{<- if $default_variant >}}
+{{<- $default_tag = printf "%s-%s" $default_version $default_variant >}}
+{{<- end >}}
+{{<- define "required_mesh_configs" >}}
+trustDomain: cluster.local
+defaultConfig:
+  proxyMetadata:
+    ## these configs enable the istio "DNS Proxying" feature
+    ##
+    ## we use this feature to allow Pods in the mesh to access the deploykf-istio-gateway without the traffic
+    ## leaving the mesh, this is achieved by creating a ServiceEntry for the gateway with its public DNS name,
+    ## causing istio to intercept traffic to the gateway and route it directly to the gateway Pods
+    ISTIO_META_DNS_CAPTURE: "true"
+    ISTIO_META_DNS_AUTO_ALLOCATE: "true"
+
+  ## this important config prevents race conditions between application containers and their injected sidecars
+  ##
+  ## that is, if an application starts before its sidecar, things might break:
+  ## - example 1: the application successfully connects to an external service (like a MySQL database),
+  ##   but once the sidecar begins intercepting all TCP traffic, the sidecar drops the connection or
+  ##   fails to translate the already open TCP socket, causing the application to misbehave
+  ## - example 2: the application attempts to access the gateway via a hostname which is not actually resolvable
+  ##   on the cluster's DNS, for example, when we use the istio "DNS Proxying" feature to expose the gateway within
+  ##   the mesh at deploykf.example.com, which we do not control on the public internet, so is unlikely
+  ##   to successfully resolve on the cluster's DNS
+  holdApplicationUntilProxyStarts: true
+{{<- end >}}
+{{<- $required_mesh_configs := (tmpl.Exec "required_mesh_configs" .) | yaml ->}}
+
+
+########################################
+## SHARED | deploykf
+########################################
+deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.deploykf_dependencies.istio.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
+
+########################################
+## SHARED | global
+########################################
+## the istio charts use `global` values to set configs for some shared configs
+## additionally, these values appear in `ConfigMap/istio-sidecar-injector` under the `values` key
+global:
+  istioNamespace: {{< .Values.deploykf_dependencies.istio.namespace | quote >}}
+  proxy:
+    image: {{< printf "%s:%s" .Values.deploykf_dependencies.istio.images.istioProxy.repository (.Values.deploykf_dependencies.istio.images.istioProxy.tag | default $default_tag) | quote >}}
+    clusterDomain: cluster.local
+  proxy_init:
+    image: {{< printf "%s:%s" .Values.deploykf_dependencies.istio.images.istioProxy.repository (.Values.deploykf_dependencies.istio.images.istioProxy.tag | default $default_tag) | quote >}}
+
+
+########################################
+## DEPENDENCY | istio-base
+########################################
+## we reference the "base" chart (https://istio-release.storage.googleapis.com/charts) in `dependencies` of Chart.yaml,
+## with an alias of "istio-base", so we must indent the values for "base" under `istio-base`
+istio-base: {}
+
+
+########################################
+## DEPENDENCY | istio-daemon
+########################################
+## we reference the "istiod" chart (https://istio-release.storage.googleapis.com/charts) in `dependencies` of Chart.yaml,
+## with an alias of "istio-daemon", so we must indent the values for "istiod" under `istio-daemon`
+istio-daemon:
+  pilot:
+    image: {{< printf "%s:%s" .Values.deploykf_dependencies.istio.images.istioPilot.repository (.Values.deploykf_dependencies.istio.images.istioPilot.tag | default $default_tag) | quote >}}
+
+  sidecarInjectorWebhook:
+    enableNamespacesByDefault: false
+    injectedAnnotations: {{< .Values.deploykf_dependencies.istio.sidecarInjectorWebhook.injectedAnnotations | toJSON >}}
+
+  meshConfig: {{< coll.Merge $required_mesh_configs .Values.deploykf_dependencies.istio.meshConfig | toJSON >}}

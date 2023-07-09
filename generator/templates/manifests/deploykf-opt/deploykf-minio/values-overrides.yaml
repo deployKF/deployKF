@@ -1,0 +1,1 @@
+{{<- template "deploykf.values_overrides" (coll.Merge . (dict "overrides_path" ".Values.deploykf_opt.deploykf_minio.valuesOverrides")) >}}

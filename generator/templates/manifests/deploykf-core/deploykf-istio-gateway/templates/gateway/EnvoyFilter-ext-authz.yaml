@@ -1,0 +1,138 @@
+################
+## This EnvoyFilter uses oauth2-proxy to authenticate all requests to the ingress gateway.
+## Secondarily, it sets the USERID_HEADER, from the `x-auth-request-email` returned by the upstream auth provider.
+################
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: deploykf-istio-gateway--ext-authz
+  labels:
+    helm.sh/chart: {{ include "deploykf-istio-gateway.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-istio-gateway.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  workloadSelector:
+    labels:
+      {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
+  configPatches:
+    ################################################################################
+    ## FILTER 1 - Set JWT `Authorization` header from oauth2-proxy
+    ################################################################################
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+      patch:
+        ## insert as the FIRST http filter in the chain
+        operation: INSERT_FIRST
+        value:
+          name: envoy.filters.http.ext_authz
+          typed_config:
+            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthz
+            "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+
+            ## if `false`, ext-authz will reject client requests and return a Forbidden response if the communication
+            ## with the authorization service has failed, or if the authorization service has returned a HTTP 5xx error.
+            failure_mode_allow: false
+
+            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-httpservice
+            http_service:
+              server_uri:
+                uri: "http://oauth2-proxy.{{ .Values.deployKF.auth.namespace }}.svc.{{ .Values.deployKF.clusterDomain }}:4180"
+                cluster: "outbound|4180||oauth2-proxy.{{ .Values.deployKF.auth.namespace }}.svc.{{ .Values.deployKF.clusterDomain }}"
+                timeout: 5.00s
+
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-authorizationrequest
+              authorization_request:
+                ## headers from the client request that are sent to oauth2-proxy (during authentication)
+                ## NOTE: envoy automatically adds: `Host`, `Method`, `Path`, `Content-Length`, `Authorization`
+                allowed_headers:
+                  patterns:
+                    - exact: cookie
+                      ignore_case: true
+                    - exact: x-forwarded-for
+                      ignore_case: true
+                    - exact: x-forwarded-host
+                      ignore_case: true
+                    - exact: x-forwarded-proto
+                      ignore_case: true
+
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-authorizationresponse
+              authorization_response:
+                ## headers from oauth2-proxy that overwrite those in the client request (on authentication success)
+                ## NOTE: the client never sees these headers, only the downstream apps
+                allowed_upstream_headers:
+                  patterns:
+                    - exact: authorization
+                      ignore_case: true
+                    - exact: x-auth-request-email
+                      ignore_case: true
+
+                ## headers from oauth2-proxy that are sent back in the client response (on authentication failure)
+                ## NOTE: envoy automatically adds: `Path`, `Status`, `Content-Length`, `WWWAuthenticate`, `Location`
+                allowed_client_headers:
+                  patterns:
+                    ## NOTE: this is needed for oauth2-proxy cookie_refresh to work
+                    - exact: set-cookie
+                      ignore_case: true
+
+                ## headers from oauth2-proxy that are sent back in the client response (on authentication success)
+                allowed_client_headers_on_success:
+                  patterns:
+                    ## NOTE: this is needed for oauth2-proxy cookie_refresh to work
+                    - exact: set-cookie
+                      ignore_case: true
+
+    ################################################################################
+    ## FILTER 2 - Set USERID_HEADER from `x-auth-request-email`
+    ################################################################################
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: envoy.filters.http.ext_authz
+      patch:
+        ## insert our filter just AFTER our `envoy.filters.http.ext_authz` filter
+        operation: INSERT_AFTER
+        value:
+          name: envoy.filters.http.lua.set_userid_header
+          typed_config:
+            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto
+            "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+
+            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/configuration/http/http_filters/lua_filter#config-http-filters-lua
+            inline_code: |
+              function envoy_on_request(request_handle)
+
+                -- extract value of 'x-auth-request-email' header
+                local x_auth_request_email = request_handle:headers():get("x-auth-request-email")
+
+                -- fail if 'x-auth-request-email' is not set or is empty
+                if (x_auth_request_email == nil or x_auth_request_email == "") then
+                  request_handle:respond(
+                    {[":status"] = "403"},
+                    "ExtAuthz did not set 'x-auth-request-email' header"
+                  )
+                end
+
+                {{- if .Values.deployKF.gateway.emailToLowercase }}
+                {{- "\n" }}
+                -- cast the value of 'x-auth-request-email' to lowercase
+                x_auth_request_email = string.lower(x_auth_request_email)
+                {{- end }}
+
+                -- set Kubeflow USERID_HEADER from 'x-auth-request-email'
+                request_handle:headers():replace(
+                  "{{ .Values.deployKF.kubeflow.useridHeader }}",
+                  x_auth_request_email
+                )
+
+              end

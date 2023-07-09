@@ -1,0 +1,474 @@
+## this ClusterPolicy replaces the `pipelines-profile-controller` from the upstream manifests
+## https://github.com/kubeflow/pipelines/tree/2.0.0-alpha.7/manifests/kustomize/base/installs/multi-user/pipelines-profile-controller
+{{<- $argocd_app_name := "kf-tools--pipelines" >}}
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: kubeflow-pipelines--generate-profile-resources
+  annotations:
+    ## kyverno policies with "generate" cant be updated: https://github.com/kyverno/kyverno/issues/7718
+    argocd.argoproj.io/sync-options: Replace=true
+spec:
+  generateExisting: true
+  rules:
+    ################################################################################
+    ## ConfigMap/metadata-grpc-configmap
+    ################################################################################
+    - name: ConfigMap--metadata-grpc-configmap
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: v1
+        kind: ConfigMap
+        name: metadata-grpc-configmap
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "ConfigMap" "{{ request.object.metadata.name }}" "metadata-grpc-configmap" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
+          data:
+            METADATA_GRPC_SERVICE_HOST: "metadata-grpc-service.kubeflow"
+            METADATA_GRPC_SERVICE_PORT: "8080"
+
+    ################################################################################
+    ## Deployment/ml-pipeline-visualizationserver
+    ################################################################################
+    - name: Deployment--ml-pipeline-visualizationserver
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: ml-pipeline-visualizationserver
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "apps" "Deployment" "{{ request.object.metadata.name }}" "ml-pipeline-visualizationserver" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app: ml-pipeline-visualizationserver
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
+          spec:
+            selector:
+              matchLabels:
+                app: ml-pipeline-visualizationserver
+            template:
+              metadata:
+                labels:
+                  app: ml-pipeline-visualizationserver
+              spec:
+                serviceAccountName: default-editor
+                containers:
+                  - name: ml-pipeline-visualizationserver
+                    ## NOTE: $(kfp-app-version) is a Kustomize variable which is replaced during Kustomize rendering
+                    image: {{< printf "%s:%s" .Values.kubeflow_tools.pipelines.images.kfpVisualizationServer.repository (.Values.kubeflow_tools.pipelines.images.kfpVisualizationServer.tag | default "$(kfp-app-version)") | quote >}}
+                    imagePullPolicy: IfNotPresent
+                    ports:
+                      - containerPort: 8888
+                    resources:
+                      requests:
+                        cpu: 50m
+                        memory: 200Mi
+                      limits:
+                        cpu: 500m
+                        memory: 1Gi
+
+    ################################################################################
+    ## DestinationRule/ml-pipeline-visualizationserver
+    ################################################################################
+    - name: DestinationRule--ml-pipeline-visualizationserver
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: networking.istio.io/v1alpha3
+        kind: DestinationRule
+        name: ml-pipeline-visualizationserver
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "networking.istio.io" "DestinationRule" "{{ request.object.metadata.name }}" "ml-pipeline-visualizationserver" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
+          spec:
+            host: ml-pipeline-visualizationserver
+            trafficPolicy:
+              tls:
+                mode: ISTIO_MUTUAL
+
+    ################################################################################
+    ## AuthorizationPolicy/ml-pipeline-visualizationserver
+    ################################################################################
+    - name: AuthorizationPolicy--ml-pipeline-visualizationserver
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: security.istio.io/v1beta1
+        kind: AuthorizationPolicy
+        name: ml-pipeline-visualizationserver
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "security.istio.io" "AuthorizationPolicy" "{{ request.object.metadata.name }}" "ml-pipeline-visualizationserver" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
+          spec:
+            selector:
+              matchLabels:
+                app: ml-pipeline-visualizationserver
+            rules:
+              - from:
+                  - source:
+                      principals:
+                        - cluster.local/ns/kubeflow/sa/ml-pipeline
+
+    ################################################################################
+    ## Service/ml-pipeline-visualizationserver
+    ################################################################################
+    - name: Service--ml-pipeline-visualizationserver
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: v1
+        kind: Service
+        name: ml-pipeline-visualizationserver
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "Service" "{{ request.object.metadata.name }}" "ml-pipeline-visualizationserver" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
+          spec:
+            selector:
+              app: ml-pipeline-visualizationserver
+            ports:
+              - name: http
+                port: 8888
+                protocol: TCP
+                targetPort: 8888
+
+    ################################################################################
+    ## Deployment/ml-pipeline-ui-artifact
+    ################################################################################
+    - name: Deployment--ml-pipeline-ui-artifact
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      context:
+        - name: tool_config
+          configMap:
+            name: profile-tools--kubeflow-pipelines
+            namespace: "{{ request.object.metadata.name }}"
+      generate:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: ml-pipeline-ui-artifact
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "apps" "Deployment" "{{ request.object.metadata.name }}" "ml-pipeline-ui-artifact" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app: ml-pipeline-ui-artifact
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
+          spec:
+            selector:
+              matchLabels:
+                app: ml-pipeline-ui-artifact
+            template:
+              metadata:
+                labels:
+                  app: ml-pipeline-ui-artifact
+              spec:
+                ## NOTE: we use 'default-editor' so this pod has the same access as workflow pods when using "AWS IRSA" or "GCP Workload Identity" plugins
+                serviceAccountName: default-editor
+                securityContext:
+                  ## NOTE: this is important for AWS IRSA
+                  fsGroup: 65534
+                containers:
+                  - name: ml-pipeline-ui-artifact
+                    ## NOTE: $(kfp-app-version) is a Kustomize variable which is replaced during Kustomize rendering
+                    image: {{< printf "%s:%s" .Values.kubeflow_tools.pipelines.images.kfpFrontend.repository (.Values.kubeflow_tools.pipelines.images.kfpFrontend.tag | default "$(kfp-app-version)") | quote >}}
+                    imagePullPolicy: IfNotPresent
+                    ports:
+                      - containerPort: 3000
+                    resources:
+                      requests:
+                        cpu: 10m
+                        memory: 70Mi
+                      limits:
+                        cpu: 100m
+                        memory: 500Mi
+                    env:
+                      ## ================================
+                      ## Minio - Object Store Configs
+                      ## ================================
+                      - name: MINIO_NAMESPACE
+                        ## must be empty, or kubeflow pipelines will attempt to append the namespace to MINIO_HOST
+                        value: ""
+                      - name: MINIO_HOST
+                        value: {{< tmpl.Exec "kubeflow_pipelines.object_store.hostname" . | quote >}}
+                      - name: MINIO_PORT
+                        value: {{< tmpl.Exec "kubeflow_pipelines.object_store.port" . | quote >}}
+                      - name: MINIO_SSL
+                        value: {{< tmpl.Exec "kubeflow_pipelines.object_store.use_ssl" . | quote >}}
+                      {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+                      - name: MINIO_ACCESS_KEY
+                        valueFrom:
+                          secretKeyRef:
+                            name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
+                            key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
+                      - name: MINIO_SECRET_KEY
+                        valueFrom:
+                          secretKeyRef:
+                            name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
+                            key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
+                      {{<- end >}}
+
+                      ## ================================
+                      ## S3 - Object Store Configs
+                      ## ================================
+                      - name: AWS_REGION
+                        value: {{< .Values.kubeflow_tools.pipelines.bucket.region | quote >}}
+                      - name: AWS_S3_ENDPOINT
+                        value: {{< tmpl.Exec "kubeflow_pipelines.object_store.endpoint" . | quote >}}
+                      {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+                      - name: AWS_ACCESS_KEY_ID
+                        valueFrom:
+                          secretKeyRef:
+                            name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
+                            key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
+                      - name: AWS_SECRET_ACCESS_KEY
+                        valueFrom:
+                          secretKeyRef:
+                            name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
+                            key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
+                      {{<- end >}}
+
+    ################################################################################
+    ## Service/ml-pipeline-ui-artifact
+    ################################################################################
+    - name: Service--ml-pipeline-ui-artifact
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: v1
+        kind: Service
+        name: ml-pipeline-ui-artifact
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "Service" "{{ request.object.metadata.name }}" "ml-pipeline-ui-artifact" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app: ml-pipeline-ui-artifact
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
+          spec:
+            selector:
+              app: ml-pipeline-ui-artifact
+            ports:
+              - name: http
+                port: 80
+                protocol: TCP
+                targetPort: 3000
+
+    ################################################################################
+    ## ConfigMap/artifact-repositories
+    ################################################################################
+    - name: ConfigMap--artifact-repositories
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      context:
+        - name: tool_config
+          configMap:
+            name: profile-tools--kubeflow-pipelines
+            namespace: "{{ request.object.metadata.name }}"
+      generate:
+        apiVersion: v1
+        kind: ConfigMap
+        name: artifact-repositories
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            annotations:
+              workflows.argoproj.io/default-artifact-repository: default-v1
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "ConfigMap" "{{ request.object.metadata.name }}" "artifact-repositories" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
+          data:
+            default-v1: |
+              archiveLogs: true
+              s3:
+                endpoint: {{< tmpl.Exec "kubeflow_pipelines.object_store.endpoint" . | quote >}}
+                insecure: {{< tmpl.Exec "kubeflow_pipelines.object_store.not_use_ssl" . >}}
+                bucket: {{< .Values.kubeflow_tools.pipelines.bucket.name | quote >}}
+                region: {{< .Values.kubeflow_tools.pipelines.bucket.region | quote >}}
+                ## NOTE: we must escape with "\{{" because Kyverno uses the same template delimiters as argo
+                keyFormat: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.artifactRepository.keyFormat | quote | replaceAll `{{` `\{{` >}}
+                {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+                useSDKCreds: true
+                {{<- else >}}
+                accessKeySecret:
+                  name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
+                  key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
+                secretKeySecret:
+                  name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
+                  key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
+                {{<- end >}}
+
+    ################################################################################
+    ## ConfigMap/kfp-launcher
+    ################################################################################
+    - name: ConfigMap--kfp-launcher
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: v1
+        kind: ConfigMap
+        name: kfp-launcher
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "ConfigMap" "{{ request.object.metadata.name }}" "kfp-launcher" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
+          data:
+            {{<- $defaultPipelineRoot := .Values.kubeflow_tools.pipelines.kfpV2.defaultPipelineRoot >}}
+            {{<- $defaultPipelineRoot := $defaultPipelineRoot | strings.ReplaceAll "{bucket_name}" .Values.kubeflow_tools.pipelines.bucket.name >}}
+            {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{profile_name}" "{{ request.object.metadata.name }}" >}}
+            defaultPipelineRoot: {{< $defaultPipelineRoot | quote >}}
+
+    {{<- if and .Values.kubeflow_tools.pipelines.profileResourceGeneration.kfpApiTokenPodDefault .Values.kubeflow_tools.poddefaults_webhook.enabled >}}
+    {{<- "\n" >}}
+    ################################################################################
+    ## PodDefault/kubeflow-pipelines-api-token
+    ################################################################################
+    - name: PodDefault--kubeflow-pipelines-api-token
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/enabled: "true"
+      generate:
+        apiVersion: kubeflow.org/v1alpha1
+        kind: PodDefault
+        name: kubeflow-pipelines-api-token
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        data:
+          metadata:
+            annotations:
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "kubeflow.org" "PodDefault" "{{ request.object.metadata.name }}" "kubeflow-pipelines-api-token" | quote >}}
+              argocd.argoproj.io/compare-options: "IgnoreExtraneous"
+              argocd.argoproj.io/sync-options: "Prune=false"
+            labels:
+              app.kubernetes.io/instance: {{< $argocd_app_name | quote >}}
+          spec:
+            desc: "Mount a serviceAccountToken to authenticate with Kubeflow Pipelines API"
+            env:
+              - name: KF_PIPELINES_SA_TOKEN_PATH
+                value: "/var/run/secrets/ml-pipeline/token"
+            selector:
+              matchLabels:
+                kubeflow-pipelines-api-token: "true"
+            volumeMounts:
+              - mountPath: "/var/run/secrets/ml-pipeline"
+                name: volume-ml-pipeline-token
+                readOnly: true
+            volumes:
+              - name: volume-ml-pipeline-token
+                projected:
+                  sources:
+                    - serviceAccountToken:
+                        audience: pipelines.kubeflow.org
+                        expirationSeconds: 7200
+                        path: token
+    {{<- end >}}

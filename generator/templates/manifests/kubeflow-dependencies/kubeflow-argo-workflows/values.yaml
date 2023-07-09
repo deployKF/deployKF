@@ -1,0 +1,161 @@
+########################################
+## SHARED | deploykf-helpers
+########################################
+deployKF_helpers:
+  deploykf_gateway:
+    http_endpoint: {{< (tmpl.Exec "deploykf_gateway.http_endpoint" .) | quote >}}
+    https_endpoint: {{< (tmpl.Exec "deploykf_gateway.https_endpoint" .) | quote >}}
+    is_self_signed_cert: {{< (tmpl.Exec "deploykf_gateway.is_self_signed_cert" .) | conv.ToBool >}}
+
+  kubeflow_pipelines:
+    use_embedded_minio: {{< (tmpl.Exec "kubeflow_pipelines.use_embedded_minio" .) | conv.ToBool >}}
+    object_store:
+      hostname: {{< (tmpl.Exec "kubeflow_pipelines.object_store.hostname" .) | quote >}}
+      port: {{< (tmpl.Exec "kubeflow_pipelines.object_store.port" .) | quote >}}
+      endpoint: {{< (tmpl.Exec "kubeflow_pipelines.object_store.endpoint" .) | quote >}}
+      not_use_ssl: {{< (tmpl.Exec "kubeflow_pipelines.object_store.not_use_ssl" .) | conv.ToBool >}}
+      auth:
+        source_secret_name: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.source_secret_name" .) | quote >}}
+        source_secret_namespace: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.source_secret_namespace" .) | quote >}}
+        secret_name: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_name" .) | quote >}}
+        access_key_key: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.access_key_key" .) | quote >}}
+        secret_key_key: {{< (tmpl.Exec "kubeflow_pipelines.object_store.auth.secret_key_key" .) | quote >}}
+
+
+########################################
+## SHARED | deploykf
+########################################
+deployKF:
+  extraManifests:
+    {{<- range $manifest := .Values.kubeflow_dependencies.kubeflow_argo_workflows.extraManifests >}}
+    - {{< (tpl $manifest $) | quote >}}
+    {{<- end >}}
+
+  clusterDomain: cluster.local
+
+  certManager:
+    clusterIssuer:
+      selfSigned:
+        injectedConfigMapName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.selfSigned.injectedConfigMapName | quote >}}
+
+  auth:
+    namespace: {{< .Values.deploykf_core.deploykf_auth.namespace | quote >}}
+
+  gateway:
+    namespace: {{< .Values.deploykf_core.deploykf_istio_gateway.namespace | quote >}}
+    serviceAccount: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.name | quote >}}
+    name: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name | quote >}}
+    hostname: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
+    tls:
+      enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
+
+  pipelines:
+    bucket:
+      name: {{< .Values.kubeflow_tools.pipelines.bucket.name | quote >}}
+      region: {{< .Values.kubeflow_tools.pipelines.bucket.region | quote >}}
+    objectStore:
+      auth:
+        fromEnv: {{< .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv | conv.ToBool >}}
+
+
+########################################
+## COMPONENT | workflow-controller
+########################################
+controller:
+  ## configs for the argo workflow-controller container image
+  ##
+  image:
+    repository: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoWorkflowController.repository | quote >}}
+    tag: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoWorkflowController.tag | quote >}}
+    pullPolicy: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoWorkflowController.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 8737
+    gid: 8737
+
+  ## configs for the argo executor container image
+  ##
+  executorImage:
+    repository: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoExecutor.repository | quote >}}
+    tag: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoExecutor.tag | quote >}}
+    pullPolicy: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoExecutor.pullPolicy | quote >}}
+
+  ## resource requests/limits for the argo workflow-controller Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## configs for the service account used by argo workflow controller
+  ##
+  serviceAccount:
+    create: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.controller.serviceAccount.create | conv.ToBool >}}
+    name: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.controller.serviceAccount.name | quote >}}
+    annotations: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.controller.serviceAccount.annotations | toJSON >}}
+
+  ## configs for the default artifact repository
+  ##
+  artifactRepository:
+
+    ## a format pattern to define how artifacts will be organized in the bucket
+    ##
+    keyFormat: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.artifactRepository.keyFormat | quote >}}
+
+  ## configs which restrict aspects of argo workflows
+  ##
+  restrictions:
+
+    ## the max total parallel workflows that can execute at the same time
+    parallelism: ~
+
+    ## the max workflows that can execute at the same time in a namespace
+    namespaceParallelism: ~
+
+
+########################################
+## COMPONENT | argo-server
+########################################
+server:
+  ## configs for the argo-server container image
+  ##
+  image:
+    repository: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoCli.repository | quote >}}
+    tag: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoCli.tag | quote >}}
+    pullPolicy: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.images.argoCli.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 8737
+    gid: 8737
+
+  ## resource requests/limits for the argo-server Pods
+  ## - spec for ResourceRequirements:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
+  ##
+  resources: {}
+
+  ## configs for the service account used by argo server
+  ##
+  serviceAccount:
+    create: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.server.serviceAccount.create | conv.ToBool >}}
+    name: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.server.serviceAccount.name | quote >}}
+    annotations: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.server.serviceAccount.annotations | toJSON >}}
+
+  ## identity configs for argo-server
+  ##
+  identity:
+
+    ## how long each session (JWT issued by argo) is valid for
+    ##
+    ## TODO: argo-server does not currently support refresh tokens: https://github.com/argoproj/argo-workflows/issues/5053
+    sessionExpiry: "2h"
+
+    ## OpenID configs for argo-server
+    ##
+    openid:
+      clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientId | quote >}}
+      clientSecret:
+        value: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.value | quote >}}
+        {{<- if .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecret >}}
+        existingSecret: "cloned--argo-server-openid-secret"
+        {{<- else >}}
+        existingSecret: ""
+        {{<- end >}}
+        existingSecretKey: {{< .Values.deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecretKey | quote >}}

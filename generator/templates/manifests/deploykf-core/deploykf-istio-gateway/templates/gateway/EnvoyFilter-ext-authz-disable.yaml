@@ -1,0 +1,211 @@
+################
+## This EnvoyFilter disables the `extensions.filters.http.ext_authz.v3.ExtAuthz` filter for specific routes.
+## This prevents oauth2-proxy from being queried about requests to those routes.
+## This is required to prevent a self-referential situation, like calling oauth2-proxy about its own requests.
+## This is also required to disable our authentication on services which provide their own, like minio.
+################
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: deploykf-istio-gateway--ext-authz-disable
+  labels:
+    helm.sh/chart: {{ include "deploykf-istio-gateway.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-istio-gateway.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  workloadSelector:
+    labels:
+      {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
+  configPatches:
+    {{- if .Values.deployKF.gateway.tls.enabled }}
+    ################################################################################
+    ## PATCH - Disable ext_authz for `https-redirect` route
+    ################################################################################
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          vhost:
+            route:
+              ## HTTP route names are specified in VirtualServices
+              name: https-redirect-route
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            ## the ExtAuthz filter is called "envoy.filters.http.ext_authz"
+            envoy.filters.http.ext_authz:
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+
+              ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
+              disabled: true
+
+            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
+            envoy.filters.http.lua.set_userid_header:
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+
+              ## if true, disables the Lua filter on this HTTP_ROUTE
+              disabled: true
+    {{- end }}
+
+    ################################################################################
+    ## PATCH - Disable ext_authz for `dex` route
+    ################################################################################
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          vhost:
+            route:
+              ## HTTP route names are specified in VirtualServices
+              name: dex-route
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            ## the ExtAuthz filter is called "envoy.filters.http.ext_authz"
+            envoy.filters.http.ext_authz:
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+
+              ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
+              disabled: true
+
+            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
+            envoy.filters.http.lua.set_userid_header:
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+
+              ## if true, disables the Lua filter on this HTTP_ROUTE
+              disabled: true
+
+    ################################################################################
+    ## PATCH - Disable ext_authz for `oauth2-proxy` route
+    ################################################################################
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          vhost:
+            route:
+              ## HTTP route names are specified in VirtualServices
+              name: oauth2-proxy-route
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            ## the ExtAuthz filter is called "envoy.filters.http.ext_authz"
+            envoy.filters.http.ext_authz:
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+
+              ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
+              disabled: true
+
+            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
+            envoy.filters.http.lua.set_userid_header:
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+
+              ## if true, disables the Lua filter on this HTTP_ROUTE
+              disabled: true
+
+    {{- if .Values.deployKF.argoWorkflows.enabled }}
+    ################################################################################
+    ## PATCH - Disable ext_authz for `argo-server-route` route
+    ################################################################################
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          vhost:
+            route:
+              ## HTTP route names are specified in VirtualServices
+              name: argo-server-route
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            ## the ExtAuthz filter is called "envoy.filters.http.ext_authz"
+            envoy.filters.http.ext_authz:
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+
+              ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
+              disabled: true
+
+            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
+            envoy.filters.http.lua.set_userid_header:
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+
+              ## if true, disables the Lua filter on this HTTP_ROUTE
+              disabled: true
+    {{- end }}
+
+    {{- if .Values.deployKF.minio.enabled }}
+    ################################################################################
+    ## PATCH - Disable ext_authz for `minio-api` route
+    ################################################################################
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          vhost:
+            route:
+              ## HTTP route names are specified in VirtualServices
+              name: minio-api-route
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            ## the ExtAuthz filter is called "envoy.filters.http.ext_authz"
+            envoy.filters.http.ext_authz:
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+
+              ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
+              disabled: true
+
+            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
+            envoy.filters.http.lua.set_userid_header:
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+
+              ## if true, disables the Lua filter on this HTTP_ROUTE
+              disabled: true
+
+    ################################################################################
+    ## PATCH - Disable ext_authz for `minio-console` route
+    ################################################################################
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          vhost:
+            route:
+              ## HTTP route names are specified in VirtualServices
+              name: minio-console-route
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            ## the ExtAuthz filter is called "envoy.filters.http.ext_authz"
+            envoy.filters.http.ext_authz:
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+
+              ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
+              disabled: true
+
+            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
+            envoy.filters.http.lua.set_userid_header:
+              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+
+              ## if true, disables the Lua filter on this HTTP_ROUTE
+              disabled: true
+    {{- end }}

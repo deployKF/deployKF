@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dkf-dep--kyverno
+  namespace: {{< .Values.argocd.namespace | quote >}}
+  labels:
+    app.kubernetes.io/name: kyverno
+    app.kubernetes.io/component: deploykf-dependencies
+    app.kubernetes.io/part-of: deploykf
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{< .Values.argocd.project | quote >}}
+  source:
+    repoURL: {{< .Values.argocd.source.repo.url | quote >}}
+    targetRevision: {{< .Values.argocd.source.repo.revision | quote >}}
+    path: {{< path.Join .Values.argocd.source.repo.path "manifests/deploykf-dependencies/kyverno" | quote >}}
+    helm:
+      ignoreMissingValueFiles: true
+      valueFiles:
+        - values-overrides.yaml
+  destination:
+    server: {{< .Values.argocd.destination.server | quote >}}
+    namespace: {{< .Values.deploykf_dependencies.kyverno.namespace | quote >}}
+  syncPolicy:
+    syncOptions:
+      ## kyverno will fail to sync if not using one of `Replace` or `ServerSideApply`
+      ## https://kyverno.io/docs/installation/platform-notes/#notes-for-argocd-users
+      - ServerSideApply=true

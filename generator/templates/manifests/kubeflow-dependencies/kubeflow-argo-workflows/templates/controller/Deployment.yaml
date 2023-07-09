@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argo-workflow-controller
+  labels:
+    helm.sh/chart: {{ include "kubeflow-argo-workflows.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: argo
+    app.kubernetes.io/sub-component: workflow-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: argo
+      app.kubernetes.io/sub-component: workflow-controller
+  template:
+    metadata:
+      annotations:
+        checksum/argo-config: {{ include (print $.Template.BasePath "/ConfigMap-argo-config.yaml") . | sha256sum }}
+      labels:
+        app.kubernetes.io/name: {{ include "kubeflow-argo-workflows.labels.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/component: argo
+        app.kubernetes.io/sub-component: workflow-controller
+    spec:
+      {{- if .Values.controller.image.pullSecret }}
+      imagePullSecrets:
+        - name: {{ .Values.controller.image.pullSecret }}
+      {{- end }}
+      priorityClassName: argo-workflow-controller
+      nodeSelector: {}
+      affinity: {}
+      tolerations: []
+      serviceAccountName: {{ .Values.controller.serviceAccount.name | quote }}
+      securityContext:
+        ## NOTE: this is important for AWS IRSA
+        fsGroup: {{ .Values.controller.image.gid }}
+      containers:
+        - name: workflow-controller
+          image: {{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}
+          imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.controller.image.uid }}
+            runAsGroup: {{ .Values.controller.image.gid }}
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          {{- if .Values.controller.resources }}
+          resources:
+            {{- toYaml .Values.controller.resources | nindent 12 }}
+          {{- end }}
+          command:
+            - "workflow-controller"
+          args:
+            - "--configmap"
+            - "argo-config"
+            - "--executor-image"
+            - {{ .Values.controller.executorImage.repository }}:{{ .Values.controller.executorImage.tag }}
+            - "--executor-image-pull-policy"
+            - {{ .Values.controller.executorImage.pullPolicy | quote }}
+          env:
+            - name: LEADER_ELECTION_IDENTITY
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            ## TODO: we must manually set `POD_NAMES=v1` until kubeflow-pipelines supports argo-workflows 3.4+
+            ##       https://github.com/kubeflow/pipelines/issues/8935
+            - name: POD_NAMES
+              value: v1
+          ports:
+            - name: http-pprof
+              containerPort: 6060
+              protocol: TCP
+            - name: http-metrics
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 90
+            periodSeconds: 60
+            timeoutSeconds: 30
+            failureThreshold: 3
+            httpGet:
+              path: /healthz
+              port: http-pprof

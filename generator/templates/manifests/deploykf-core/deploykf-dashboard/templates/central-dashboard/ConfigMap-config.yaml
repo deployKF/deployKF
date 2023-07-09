@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: central-dashboard-config
+  labels:
+    helm.sh/chart: {{ include "deploykf-dashboard.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: central-dashboard
+data:
+  links: |
+    {
+      {{- $json_keys := keys .Values.centralDashboard.navigation | sortAlpha }}
+      {{- $last_json_key := $json_keys | last }}
+      {{- range $json_key := $json_keys }}
+      {{ $json_key | quote }}: {{ get $.Values.centralDashboard.navigation $json_key | default list | toJson -}}
+      {{- /* we must not include a trailing comma, otherwise the JSON is not valid */}}
+      {{- if ne $json_key $last_json_key }},{{- end }}
+      {{- end }}
+    }
+  settings: |-
+    {
+      "DASHBOARD_FORCE_IFRAME": true
+    }
