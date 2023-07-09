@@ -10,7 +10,19 @@ GENERATOR_OUTPUT_PATH="./GENERATOR_OUTPUT"
 CUSTOM_VALUES_PATH="./sample-values.yaml"
 
 # clean the generator output directory
-rm -rf "$GENERATOR_OUTPUT_PATH"
+# NOTE: we only clean the output directory if a '.deploykf_output' marker file is present
+if [ -d "$GENERATOR_OUTPUT_PATH" ]; then
+  if [ -f "$GENERATOR_OUTPUT_PATH/.deploykf_output" ]; then
+    rm -rf "$GENERATOR_OUTPUT_PATH"
+  else
+    echo "ERROR: output directory '$GENERATOR_OUTPUT_PATH' is not safe to clean, no '.deploykf_output' marker found"
+    exit 1
+  fi
+fi
+
+# create the generator output directory and marker file
+mkdir -p "$GENERATOR_OUTPUT_PATH"
+echo -n "{}" > "$GENERATOR_OUTPUT_PATH/.deploykf_output"
 
 # suppress the generation of empty files
 export GOMPLATE_SUPPRESS_EMPTY=true
