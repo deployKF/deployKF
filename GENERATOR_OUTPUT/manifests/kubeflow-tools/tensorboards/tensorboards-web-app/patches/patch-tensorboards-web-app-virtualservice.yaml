@@ -1,8 +1,0 @@
-apiVersion: networking.istio.io/v1alpha3
-kind: VirtualService
-metadata:
-  name: tensorboards-web-app-tensorboards-web-app
-  namespace: kubeflow
-spec:
-  gateways:
-    - deploykf-istio-gateway/deploykf-gateway

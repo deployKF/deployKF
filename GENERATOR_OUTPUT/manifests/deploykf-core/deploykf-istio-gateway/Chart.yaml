@@ -1,9 +1,0 @@
-apiVersion: v2
-name: deploykf-istio-gateway
-version: 1.0.0
-dependencies:
-  - alias: gateway
-    condition: gatewayEnabled
-    name: "gateway"
-    version: "1.17.3"
-    repository: "https://istio-release.storage.googleapis.com/charts"

@@ -18,9 +18,9 @@ argocd:
   ##
   source:
     repo:
-      url: "https://github.com/deployKF/deployKF"
-      revision: "dev"
-      path: "./GENERATOR_OUTPUT/"
+      url: ""
+      revision: ""
+      path: ""
 
   ## the destination used for deployKF argocd applications
   ##

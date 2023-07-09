@@ -1,8 +1,0 @@
-configMapGenerator:
-- envs:
-  - params.env
-  name: config
-resources:
-- manager.yaml
-- service-account.yaml
-- service.yaml
