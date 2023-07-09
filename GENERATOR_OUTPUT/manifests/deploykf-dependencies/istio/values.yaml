@@ -13,10 +13,10 @@ deployKF:
 global:
   istioNamespace: "istio-system"
   proxy:
-    image: "docker.io/istio/proxyv2:1.17.2-distroless"
+    image: "docker.io/istio/proxyv2:1.17.3-distroless"
     clusterDomain: cluster.local
   proxy_init:
-    image: "docker.io/istio/proxyv2:1.17.2-distroless"
+    image: "docker.io/istio/proxyv2:1.17.3-distroless"
 
 
 ########################################
@@ -34,7 +34,7 @@ istio-base: {}
 ## with an alias of "istio-daemon", so we must indent the values for "istiod" under `istio-daemon`
 istio-daemon:
   pilot:
-    image: "docker.io/istio/pilot:1.17.2-distroless"
+    image: "docker.io/istio/pilot:1.17.3-distroless"
 
   sidecarInjectorWebhook:
     enableNamespacesByDefault: false

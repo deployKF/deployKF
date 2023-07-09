@@ -44,7 +44,7 @@ generate:
   ##
   kubectlImage:
     repository: "docker.io/bitnami/kubectl"
-    tag: "1.26.6-debian-11-r1"
+    tag: "1.26.6-debian-11-r8"
     pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 1000
@@ -59,7 +59,7 @@ dex:
   ##
   image:
     repository: "ghcr.io/dexidp/dex"
-    tag: "v2.36.0"
+    tag: "v2.37.0"
     pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 1001

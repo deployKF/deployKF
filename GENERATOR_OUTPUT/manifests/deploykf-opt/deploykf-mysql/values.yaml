@@ -21,7 +21,7 @@ generate:
   ##
   kubectlImage:
     repository: "docker.io/bitnami/kubectl"
-    tag: "1.26.6-debian-11-r1"
+    tag: "1.26.6-debian-11-r8"
     pullPolicy: "IfNotPresent"
     pullSecret: ""
     uid: 1000

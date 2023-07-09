@@ -47,12 +47,12 @@ deploykf_dependencies:
     charts:
       certManager:
         name: cert-manager
-        version: 1.11.2
+        version: 1.12.2
         repository: https://charts.jetstack.io
 
       trustManager:
         name: trust-manager
-        version: 0.4.0
+        version: 0.5.0
         repository: https://charts.jetstack.io
 
     ## image overrides
@@ -165,12 +165,14 @@ deploykf_dependencies:
     charts:
       istioBase:
         name: base
-        version: 1.17.2
+        ## NOTE: this version should be aligned with `deploykf_core.deploykf_istio_gateway.charts.istioGateway.version`
+        version: 1.17.3
         repository: https://istio-release.storage.googleapis.com/charts
 
       istioDaemon:
         name: istiod
-        version: 1.17.2
+        ## NOTE: this version should be aligned with `deploykf_core.deploykf_istio_gateway.charts.istioGateway.version`
+        version: 1.17.3
         repository: https://istio-release.storage.googleapis.com/charts
 
     ## image overrides
@@ -310,7 +312,7 @@ deploykf_core:
     images:
       dex:
         repository: ghcr.io/dexidp/dex
-        tag: v2.36.0
+        tag: v2.37.0
         pullPolicy: IfNotPresent
 
       oauth2Proxy:
@@ -320,7 +322,7 @@ deploykf_core:
 
       kubectl:
         repository: docker.io/bitnami/kubectl
-        tag: 1.26.6-debian-11-r1
+        tag: 1.26.6-debian-11-r8
         pullPolicy: IfNotPresent
 
     ## dex configs
@@ -529,7 +531,8 @@ deploykf_core:
         ##    otherwise deployKF will be unable to use them
         enabled: true
         name: gateway
-        version: 1.17.2
+        ## NOTE: this version should be aligned with `deploykf_dependencies.istio.charts.istioDaemon.version`
+        version: 1.17.3
         repository: https://istio-release.storage.googleapis.com/charts
 
     ## istio gateway configs
@@ -811,17 +814,17 @@ deploykf_opt:
     images:
       minio:
         repository: docker.io/minio/minio
-        tag: RELEASE.2023-06-29T05-12-28Z
+        tag: RELEASE.2023-07-07T07-13-57Z
         pullPolicy: IfNotPresent
 
       minioMc:
         repository: docker.io/minio/mc
-        tag: RELEASE.2023-06-28T21-54-17Z
+        tag: RELEASE.2023-07-07T05-25-51Z
         pullPolicy: IfNotPresent
 
       kubectl:
         repository: docker.io/bitnami/kubectl
-        tag: 1.26.6-debian-11-r1
+        tag: 1.26.6-debian-11-r8
         pullPolicy: IfNotPresent
 
     ## persistence configs
@@ -955,7 +958,7 @@ deploykf_opt:
 
       kubectl:
         repository: docker.io/bitnami/kubectl
-        tag: 1.26.6-debian-11-r1
+        tag: 1.26.6-debian-11-r8
         pullPolicy: IfNotPresent
 
     ## persistence configs
