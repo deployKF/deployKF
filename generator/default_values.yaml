@@ -4,13 +4,26 @@
 ##
 ## --------------------------------------------------------------------------------
 argocd:
+
+  ## the namespace in which argocd is deployed
+  ##
   namespace: argocd
+
+  ## the project used for deployKF argocd applications
+  ##
   project: default
+
+  ## the source used for deployKF argocd applications
+  ##  - NOTE: this is the git repo which contains your ~generated~ deployKF manifests folder
+  ##
   source:
     repo:
       url: ""
       revision: ""
       path: ""
+
+  ## the destination used for deployKF argocd applications
+  ##
   destination:
     server: https://kubernetes.default.svc
 
@@ -902,7 +915,8 @@ deploykf_opt:
         policyClaim: "email"
 
         ## sets `MINIO_IDENTITY_OPENID_SCOPES`
-        ## TODO: minio-console does not yet support refresh tokens: https://github.com/minio/console/issues/2643
+        ##  - NOTE: minio-console does not yet support refresh tokens, so "offline_access" is not used:
+        ##          https://github.com/minio/console/issues/2643
         scopes: "openid,email,groups,profile,offline_access"
 
     ## minio buckets

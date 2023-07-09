@@ -1,20 +1,31 @@
-## NOTE: these sample values represent a possible starting point for your custom values file,
-##       see `./generator/default_values.yaml` for a full list of available values and their descriptions
-
-
 ## --------------------------------------------------------------------------------
 ##
 ##                                      argocd
 ##
 ## --------------------------------------------------------------------------------
 argocd:
+
+  ## the namespace in which argocd is deployed
+  ##
   namespace: argocd
+
+  ## the project used for deployKF argocd applications
+  ##
   project: default
+
+  ## the source used for deployKF argocd applications
+  ##  - NOTE: this is the git repo which contains your ~generated~ deployKF manifests folder
+  ##
   source:
     repo:
-      url: https://github.com/deployKF/deployKF
-      revision: dev
-      path: ./GENERATOR_OUTPUT/
+      url: "https://github.com/deployKF/deployKF"
+      revision: "dev"
+      path: "./GENERATOR_OUTPUT/"
+
+  ## the destination used for deployKF argocd applications
+  ##
+  destination:
+    server: https://kubernetes.default.svc
 
 
 ## --------------------------------------------------------------------------------
@@ -587,7 +598,6 @@ kubeflow_tools:
       ##        - `ML_PIPELINE_SERVICE_HOST` and `ML_PIPELINE_SERVICE_PORT_GRPC`
       ##     - the value of `kubeflow_tools.pipelines.objectStore.useExternal` must be false
       ##
-      ## TODO: consider if true should be the default
       minioFix: true
 
       ## overrides the image of 'kfp-launcher' containers at runtime
