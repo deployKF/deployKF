@@ -47,7 +47,7 @@ deployKF is the best way to build reliable ML Platforms on Kubernetes.
 
 - deployKF supports the top [ML & Data tools](https://www.deploykf.org/reference/tools/) from both Kubeflow, and other projects
 - deployKF has a Helm-like interface, with central [values (configs)](https://www.deploykf.org/reference/deploykf-values/) for configuring all aspects of the deployment (no need to edit Kubernetes YAML directly)
-- deployKF does NOT install resources into your cluster, instead it generates [Argo CD Applications](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#applications) which you apply to your cluster and then [sync with the Argo CD UI](https://argo-cd.readthedocs.io/en/stable/getting_started/#syncing-via-ui)
+- deployKF does NOT install resources into your cluster, instead it generates [ArgoCD Applications](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#applications) which you apply to your cluster and then [sync with the ArgoCD UI](https://argo-cd.readthedocs.io/en/stable/getting_started/#syncing-via-ui)
 
 ### What tools does deployKF support?
 
@@ -84,100 +84,208 @@ We encourage participation from anyone who shares our mission of making it easy 
 
 For more details, see our [community page](https://www.deploykf.org/about/community/).
 
-## Usage
+## Getting Started
 
-For full details on how to get started with deployKF, please see the [getting started guide](https://www.deploykf.org/guides/getting-started/).
+For full details on how to get started with deployKF, please see the [getting started page](https://www.deploykf.org/guides/getting-started/).
 
-### Prerequisites
+### Requirements
 
-- the `deploykf` cli tool, [found in the `deployKF/cli` repo](https://github.com/deployKF/cli)
-- a Kubernetes cluster with [ArgoCD](https://argo-cd.readthedocs.io/en/stable/getting_started/) installed
-- a private git repo in which to store your generated manifests
+- the `deploykf` cli tool, found in [the `deployKF/cli` repo](https://github.com/deployKF/cli)
+- a Kubernetes cluster (__WARNING:__ we strongly recommend using a dedicated Kubernetes cluster for deployKF)
+- ArgoCD is [deployed on your cluster](https://argo-cd.readthedocs.io/en/stable/getting_started/)
+- a private git repo (in which to store your generated manifests)
 
-### Quickstart
+### Step 1: create your values file
 
-Get started with deployKF by following these steps:
+deployKF is configured using YAML files containing configs named "values" which behave similarly to those in Helm.
 
-1. prepare your private git repo:
-    1. create an initial `custom-values.yaml` file:
-        - _TIP: start by copying the [`sample-values.yaml`](sample-values.yaml) file, which includes a reasonable set of default values with all tools enabled_
-        - _TIP: refer to [`generator/default_values.yaml`](generator/default_values.yaml) for the full list of available values_
-        - _TIP: set `argocd.source.repo.url` and `argocd.source.repo.revision` to the correct values for your git repo_
-        - _TIP: change which of the [supported tools](https://www.deploykf.org/reference/tools/) are deployed by changing their `enabled` values_
-    2. generate your manifests:
-        - `deploykf generate --source-version "X.X.X" --values ./custom-values.yaml --output-dir ./GENERATOR_OUTPUT`
-        - _TIP: you may specify `--values` multiple times, they will be merged with later ones taking precedence_
-        - _TIP: any manual changes made in the `--output-dir` will be overwritten by the `deploykf generate` command, so please only make changes in your `--values` files_
-           - if you find something you need to change that is not yet possible with values please [raise an issue](https://github.com/deployKF/deployKF/issues)
-    3. commit the generated files to your private git repo: 
-        - `git add GENERATOR_OUTPUT`
-        - `git commit -m "my commit message"`
-        - `git push`
-2. manually apply the generated ArgoCD ["app of apps"](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/#app-of-apps-pattern) to your Kubernetes cluster:
-    - `kubectl apply --filename GENERATOR_OUTPUT/app-of-apps.yaml`
-3. go to your ArgoCD web interface, and sync the ArgoCD applications:
-    1. __WARNING:__ you should sync each "group" of applications in the following order, as they depend on each other
-    2. __app-of-apps__
-        1. `deploykf-app-of-apps`
-    3. __deploykf-dependencies:__ 
-        1. (group label: `app.kubernetes.io/component: deploykf-dependencies`)
-        1. `dkf-dep--kyverno`
-        2. `dkf-dep--cert-manager` (first sync will fail as trust-manager depends on cert-manager, so wait for cert-manager to be ready and sync again)
-        3. `dkf-dep--istio`
-    4. __deploykf-core:__ 
-        1. (group label: `app.kubernetes.io/component: deploykf-core`)
-        1. `dkf-core--deploykf-istio-gateway`
-        2. `dkf-core--deploykf-auth`
-        3. `dkf-core--deploykf-dashboard`
-        4. `dkf-core--deploykf-profiles-generator` (first sync will fail while profile namespaces are created, so wait for those namespace to be created and sync again)
-    5. __deploykf-opt:__ 
-        1. (group label: `app.kubernetes.io/component: deploykf-opt`)
-        1. `dkf-opt--deploykf-mysql`
-        2. `dkf-opt--deploykf-minio`
-    6. __deploykf-tools:__ 
-        1. (group label: `app.kubernetes.io/component: deploykf-tools`)
-        1. N/A
-    7. __kubeflow-dependencies:__ 
-        1. (group label: `app.kubernetes.io/component: kubeflow-dependencies`)
-        1. `kf-dep--argo-workflows`
-    8. __kubeflow-tools:__ 
-        1. (group label: `app.kubernetes.io/component: kubeflow-tools`)
-        1. `kf-tools--pipelines`
-        2. `kf-tools--poddefaults-webhook`
-        3. `kf-tools--notebooks--notebook-controller` 
-        4. `kf-tools--notebooks--jupyter-web-app`
-        5. `kf-tools--tensorboards--tensorboard-controller`
-        6. `kf-tools--tensorboards--tensorboards-web-app`
-        7. `kf-tools--volumes--volumes-web-app`
-        8. `kf-tools--training-operator`
-        9. `kf-tools--katib`
-4. access the Kubeflow UI through the Istio Gateway Service with `kubectl` port-forwarding:
-    1. add the following lines to your `/etc/hosts` file:
-        - `127.0.0.1 deploykf.example.com` 
-        - `127.0.0.1 argo-server.deploykf.example.com` 
-        - `127.0.0.1 minio-api.deploykf.example.com` 
-        - `127.0.0.1 minio-console.deploykf.example.com`
-    2. port forward the service using `kubectl` (default: `Service/kubeflow-gateway` in `Namespace/deploykf-istio-gateway`):
-        - `kubectl port-forward --namespace deploykf-istio-gateway Service/kubeflow-gateway 8080:8080 8443:8443`
-    3. open the dashboard in your browser:
-        - https://deploykf.example.com:8443/
-    4. use one of the following default credentials (if you have not changed them):
-        - super-admin:
-            - username: `admin@example.com`
-            - password: `admin`
-        - user-1:
-            - username: `user1@example.com`
-            - password: `user1`
-        - user-2:
-            - username: `user2@example.com`
-            - password: `user2`
-5. whenever you want to change your deployKF, you can repeat steps 1 and 3, to update your existing manifests
+deployKF has a very large number of configurable values (more than 1500), but you can start by defining a few important ones, and then grow your values file over time.
+
+We recommend you start by copying the [`sample-values.yaml`](sample-values.yaml) file, which includes reasonable defaults that should work on any Kubernetes cluster,
+the following values will need to be changed to match your environment:
+
+- `argocd.source.repo.url`:
+    - the URL of your manifest git repo
+    - for example, if you are using a GitHub repo named 'deployKF/examples', you might set this value to `https://github.com/deployKF/examples` or `git@github.com:deployKF/examples.git`
+    - _TIP: if you are using a private repo, you will need to [configure your ArgoCD with the appropriate credentials](https://argo-cd.readthedocs.io/en/stable/user-guide/private-repositories/)_
+- `argocd.source.repo.revision`:
+    - the git revision which contains your generated manifests
+    - for example, if you are using the 'main' branch of your repo, you might set this value to "main"
+- `argocd.source.repo.path`:
+    - the path within your repo where the generated manifests are stored
+    - for example, if you are using a folder named 'GENERATOR_OUTPUT' at the root of your repo, you might set this value to "./GENERATOR_OUTPUT/"
+
+For information about other values, you can refer to the following resources:
+
+- docstrings in [`generator/default_values.yaml`](generator/default_values.yaml), which contains defaults for all values
+- the [values reference page](https://www.deploykf.org/reference/deploykf-values/), which contains a list of all values with links to their docstrings
+- the "topics" section of the website, which has information about achieving specific goals, such as [using an external S3-compatible object store](https://www.deploykf.org/topics/production-usage/external-object-store/)
+
+> __TIP:__ for a refresher on YAML syntax, we recommend [Learn YAML in Y minutes](https://learnxinyminutes.com/docs/yaml/) and [YAML Multiline Strings](https://yaml-multiline.info/)
+
+### Step 2: generate your manifests
+
+You must generate your manifests and commit them to a git repo before ArgoCD can deploy them to your cluster.
+
+The `generate` command of the [`deploykf` CLI](https://github.com/deployKF/cli) creates a manifests folder for a specific version of deployKF and one or more values files:
+
+```shell
+deploykf generate \
+    --source-version X.X.X \
+    --values ./custom-values.yaml \
+    --output-dir ./GENERATOR_OUTPUT
+```
+
+> __TIP:__ if you specify `--values` multiple times, they will be merged with later ones taking precedence (note, YAML lists are not merged, they are replaced in full)
+
+> __TIP:__ any manual changes made in the `--output-dir` will be overwritten each time the `deploykf generate` command runs, so please only make changes in your `--values` files. 
+> If you find yourself needing to make manual changes, this indicates we might need a new value, so please [raise an issue](https://github.com/deployKF/deployKF/issues) to help us improve the project!
+
+> __TIP:__ after running `deploykf generate`, you will likely want to commit the changes to your repo:
+> 
+> ```shell
+> # for example, to directly commit changes to the 'main' branch of your repo
+> git add GENERATOR_OUTPUT
+> git commit -m "my commit message"
+> git push origin main
+> ```
+
+### Step 3: apply the manifests to your cluster
+
+The only manifest you need to apply manually is the ArgoCD ["app of apps"](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/#app-of-apps-pattern), which creates all the other ArgoCD applications:
+
+```shell
+kubectl apply --filename GENERATOR_OUTPUT/app-of-apps.yaml
+```
+
+> __TIP:__ ensure you have ArgoCD [installed on your cluster](https://argo-cd.readthedocs.io/en/stable/getting_started/) before applying this manifest
+
+### Step 4: access the ArgoCD web interface
+
+If this is the first time you are using ArgoCD, you will need to retrieve the initial password for the `admin` user:
+
+```shell
+echo $(kubectl -n argocd get secret/argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+```
+
+This `kubectl` command will port-forward the `argocd-server` Service to your local machine:
+
+```shell
+kubectl port-forward --namespace "argocd" svc/argocd-server 8090:https
+```
+
+You should now see the ArgoCD interface at https://localhost:8090, where you can log in with the `admin` user and the password you retrieved in the previous step.
+
+### Step 5: sync the deployKF ArgoCD applications
+
+You can now sync the ArgoCD applications which make up deployKF.
+
+> __WARNING:__ you must sync each "group" of applications in the following order, as they depend on each other
+
+1. __app-of-apps__:
+    - APP NAME: `deploykf-app-of-apps`
+2. __deploykf-dependencies:__
+    - GROUP LABEL: `app.kubernetes.io/component: deploykf-dependencies`
+    - APP NAMES:
+       - `dkf-dep--kyverno`
+       - `dkf-dep--cert-manager` 
+           - _TIP: the first sync will fail as trust-manager depends on cert-manager, so wait for cert-manager to be ready and sync again_
+       - `dkf-dep--istio`
+3. __deploykf-core:__
+    - GROUP LABEL: `app.kubernetes.io/component: deploykf-core`
+    - APP NAMES:
+       - `dkf-core--deploykf-istio-gateway`
+       - `dkf-core--deploykf-auth`
+       - `dkf-core--deploykf-dashboard`
+       - `dkf-core--deploykf-profiles-generator` 
+           - _TIP: the first sync will fail while profile namespaces are created, so wait for those namespace to be created and sync again_
+4. __deploykf-opt:__ 
+    - GROUP LABEL: `app.kubernetes.io/component: deploykf-opt`
+    - APP NAMES:
+       - `dkf-opt--deploykf-mysql`
+       - `dkf-opt--deploykf-minio`
+5. __deploykf-tools:__ 
+    - GROUP LABEL: `app.kubernetes.io/component: deploykf-tools`
+    - APP NAMES:
+       - N/A
+6. __kubeflow-dependencies:__ 
+    - GROUP LABEL: `app.kubernetes.io/component: kubeflow-dependencies`
+    - APP NAMES:
+       - `kf-dep--argo-workflows`
+7. __kubeflow-tools:__ 
+    - GROUP LABEL: `app.kubernetes.io/component: kubeflow-tools`
+    - APP NAMES:
+       - `kf-tools--pipelines`
+       - `kf-tools--poddefaults-webhook`
+       - `kf-tools--notebooks--notebook-controller` 
+       - `kf-tools--notebooks--jupyter-web-app`
+       - `kf-tools--tensorboards--tensorboard-controller`
+       - `kf-tools--tensorboards--tensorboards-web-app`
+       - `kf-tools--volumes--volumes-web-app`
+       - `kf-tools--training-operator`
+       - `kf-tools--katib`
+
+> __TIP:__ you may also sync the applications with the [`argocd` CLI](https://argo-cd.readthedocs.io/en/stable/cli_installation/), but at first, we recommend syncing with the web interface, so you can debug any issues:
+> 
+> ```shell
+> # expose ArgoCD api server
+> kubectl port-forward svc/argocd-server -n argocd 8090:https
+> 
+> # get the admin password (if you have not changed it)
+> argocd "admin" initial-password -n argocd
+> 
+> # login to ArgoCD
+> ARGOCD_PASSWORD="YOUR_PASSWORD_HERE"
+> argocd login localhost:8090 --username "admin" --password "$ARGOCD_PASSWORD" --insecure
+> 
+> # sync the apps
+> argocd app sync "deploykf-app-of-apps"
+> argocd app sync -l "app.kubernetes.io/component=deploykf-dependencies"
+> argocd app sync -l "app.kubernetes.io/component=deploykf-core"
+> argocd app sync -l "app.kubernetes.io/component=deploykf-opt"
+> argocd app sync -l "app.kubernetes.io/component=deploykf-tools"
+> argocd app sync -l "app.kubernetes.io/component=kubeflow-dependencies"
+> argocd app sync -l "app.kubernetes.io/component=kubeflow-tools"
+> ```
+
+### Step 6: access the deployKF web interface
+
+If you have not configured a public Service for your `deploykf-istio-gateway`, you may access the deployKF web interface with `kubectl` port-forwarding.
+
+First, you will need to add some lines to your `/etc/hosts` file (this is needed because Istio uses the `Host` header to route requests to the correct VirtualService).
+
+For example, if you have set the `deploykf_core.deploykf_istio_gateway.gateway.hostname` value to `"deploykf.example.com"`, you would add the following lines:
+
+```shell
+127.0.0.1 deploykf.example.com
+127.0.0.1 argo-server.deploykf.example.com
+127.0.0.1 minio-api.deploykf.example.com
+127.0.0.1 minio-console.deploykf.example.com
+```
+
+This `kubectl` command will port-forward the `deploykf-gateway` Service to your local machine:
+
+```shell
+kubectl port-forward --namespace "deploykf-istio-gateway" svc/deploykf-gateway 8080:http 8443:https
+```
+
+You should now see the deployKF dashboard at https://deploykf.example.com:8443/, where you can use one of the following credentials (if you have not changed them):
+
+- Super Admin:
+    - username: `admin@example.com`
+    - password: `admin`
+- User 1:
+    - username: `user1@example.com`
+    - password: `user1`
+- User 2:
+    - username: `user2@example.com`
+    - password: `user2`
 
 ## Troubleshooting
 
 ### ERROR: pods fail with "too many open files"
 
-This error has been [discussed in upstream kubeflow repos](https://github.com/kubeflow/manifests/issues/2087), to resolve it you will need to increase your system's open/watched file limits.
+This error has been [discussed in the upstream kubeflow repo](https://github.com/kubeflow/manifests/issues/2087), to resolve it you will need to increase your system's open/watched file limits.
 
 On linux, you may need to increase the `fs.inotify.max_user_*` sysctl values, here are some values which users have reported to work:
 

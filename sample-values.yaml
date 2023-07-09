@@ -14,12 +14,27 @@ argocd:
   project: default
 
   ## the source used for deployKF argocd applications
-  ##  - NOTE: this is the git repo which contains your ~generated~ deployKF manifests folder
   ##
   source:
+
+    ## configs specifying the git repo which contains your generated manifests
+    ##
     repo:
+      ## the URL of your manifest git repo
+      ##  - for example, if you are using a GitHub repo named 'deployKF/examples', you might set this value
+      ##    to "https://github.com/deployKF/examples" or "git@github.com:deployKF/examples.git"
+      ##
       url: ""
+
+      ## the git revision which contains your generated manifests
+      ##  - for example, if you are using the 'main' branch of your repo, you might set this value to "main"
+      ##
       revision: ""
+
+      ## the path within your repo where the generated manifests are stored
+      ##  - for example, if you are using a folder named 'GENERATOR_OUTPUT' at the root of your repo,
+      ##    you might set this value to "./GENERATOR_OUTPUT/"
+      ##
       path: ""
 
   ## the destination used for deployKF argocd applications
