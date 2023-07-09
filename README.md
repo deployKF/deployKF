@@ -53,48 +53,48 @@ Get started with deployKF by following these steps:
 
 1. prepare your private git repo:
     1. create an initial `custom-values.yaml` file:
-        - ~~start by using the interactive `deploykf init-values --source-version "X.X.X"` command~~ _(not yet implemented)_
-        - start by copying the [`sample-values.yaml`](sample-values.yaml) file, which includes a reasonable set of default values with all tools enabled
-    2. customize your `custom-values.yaml` file:
+        - _TIP: start by copying the [`sample-values.yaml`](sample-values.yaml) file, which includes a reasonable set of default values with all tools enabled_
         - _TIP: refer to [`generator/default_values.yaml`](generator/default_values.yaml) for the full list of available values_
         - _TIP: set `argocd.source.repo.url` and `argocd.source.repo.revision` to the correct values for your git repo_
         - _TIP: change which of the [supported tools](https://www.deploykf.org/reference/tools/) are deployed by changing their `enabled` values_
-    3. generate your manifests:
+    2. generate your manifests:
+        - `deploykf generate --source-version "X.X.X" --values ./custom-values.yaml --output-dir ./GENERATOR_OUTPUT`
         - _TIP: you may specify `--values` multiple times, they will be merged with later ones taking precedence_
-        - from an official release version:
-            - `deploykf generate --source-version "X.X.X" --values ./custom-values.yaml --output-dir ./GENERATOR_OUTPUT`
-        - from a local development folder:
-            - `deploykf generate --source-path "./generator" --values ./custom-values.yaml --output-dir ./GENERATOR_OUTPUT`
-    4. commit the generated files (and any other files you may want) to your private git repo: 
+        - _TIP: any manual changes made in the `--output-dir` will be overwritten by the `deploykf generate` command, so please only make changes in your `--values` files_
+           - if you find something you need to change that is not yet possible with values please [raise an issue](https://github.com/deployKF/deployKF/issues)
+    3. commit the generated files to your private git repo: 
         - `git add GENERATOR_OUTPUT`
         - `git commit -m "my commit message"`
         - `git push`
 2. manually apply the generated ArgoCD ["app of apps"](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/#app-of-apps-pattern) to your Kubernetes cluster:
     - `kubectl apply --filename GENERATOR_OUTPUT/app-of-apps.yaml`
 3. go to your ArgoCD web interface, and sync the ArgoCD applications:
-    1. (_WARNING: you __MUST SYNC THE APPLICATIONS IN THE ORDER LISTED BELOW__, as some applications depend on others_)
+    1. __WARNING:__ you should sync each "group" of applications in the following order, as they depend on each other
     2. __app-of-apps__
         1. `deploykf-app-of-apps`
-    3. __deploykf-dependencies__ _(label: `app.kubernetes.io/component: deploykf-dependencies`)_
+    3. __deploykf-dependencies:__ 
+        1. (group label: `app.kubernetes.io/component: deploykf-dependencies`)
         1. `dkf-dep--kyverno`
-        2. `dkf-dep--cert-manager`
-            - _WARNING: first sync may fail as trust-manager depends on cert-manager, so once cert-manager pods are up, terminate the first hung sync (under "SYNC STATUS"), and sync again_
+        2. `dkf-dep--cert-manager` (first sync will fail as trust-manager depends on cert-manager, so wait for cert-manager to be ready and sync again)
         3. `dkf-dep--istio`
-            - _WARNING: first sync may fail, so wait and sync again_
-    4. __deploykf-core__ _(label: `app.kubernetes.io/component: deploykf-core`)_
+    4. __deploykf-core:__ 
+        1. (group label: `app.kubernetes.io/component: deploykf-core`)
         1. `dkf-core--deploykf-istio-gateway`
         2. `dkf-core--deploykf-auth`
         3. `dkf-core--deploykf-dashboard`
-        4. `dkf-core--deploykf-profiles-generator`
-            - _WARNING: first sync may fail as profile namespaces will not immediately be created, so wait for those namespace to be created, and sync again_
-    5. __deploykf-opt__ _(label: `app.kubernetes.io/component: deploykf-opt`)_
+        4. `dkf-core--deploykf-profiles-generator` (first sync will fail while profile namespaces are created, so wait for those namespace to be created and sync again)
+    5. __deploykf-opt:__ 
+        1. (group label: `app.kubernetes.io/component: deploykf-opt`)
         1. `dkf-opt--deploykf-mysql`
         2. `dkf-opt--deploykf-minio`
-    6. __deploykf-tools__ _(label: `app.kubernetes.io/component: deploykf-tools`)_
+    6. __deploykf-tools:__ 
+        1. (group label: `app.kubernetes.io/component: deploykf-tools`)
         1. N/A
-    7. __kubeflow-dependencies__ _(label: `app.kubernetes.io/component: kubeflow-dependencies`)_
+    7. __kubeflow-dependencies:__ 
+        1. (group label: `app.kubernetes.io/component: kubeflow-dependencies`)
         1. `kf-dep--argo-workflows`
-    8. __kubeflow-tools__ _(label: `app.kubernetes.io/component: kubeflow-tools`)_
+    8. __kubeflow-tools:__ 
+        1. (group label: `app.kubernetes.io/component: kubeflow-tools`)
         1. `kf-tools--pipelines`
         2. `kf-tools--poddefaults-webhook`
         3. `kf-tools--notebooks--notebook-controller` 
@@ -104,7 +104,7 @@ Get started with deployKF by following these steps:
         7. `kf-tools--volumes--volumes-web-app`
         8. `kf-tools--training-operator`
         9. `kf-tools--katib`
-4. access the Kubeflow UI through the Istio Gateway Service:
+4. access the Kubeflow UI through the Istio Gateway Service with `kubectl` port-forwarding:
     1. add the following lines to your `/etc/hosts` file:
         - `127.0.0.1 deploykf.example.com` 
         - `127.0.0.1 argo-server.deploykf.example.com` 
@@ -112,14 +112,19 @@ Get started with deployKF by following these steps:
         - `127.0.0.1 minio-console.deploykf.example.com`
     2. port forward the service using `kubectl` (default: `Service/kubeflow-gateway` in `Namespace/deploykf-istio-gateway`):
         - `kubectl port-forward --namespace deploykf-istio-gateway Service/kubeflow-gateway 8080:8080 8443:8443`
-    3. open the Kubeflow UI in your browser:
+    3. open the dashboard in your browser:
         - https://deploykf.example.com:8443/
-    4. use the following default credentials (if you have not changed them):
-        - username: `admin@example.com`
-        - password: `admin`
-5. whenever you want to update your Kubeflow deployment, you can repeat steps 1-4, to update your existing manifests
-    - _TIP: any manual changes made in the `--output-dir` will be overwritten by the `deploykf generate` command, so please only make changes in your `--values` files_
-       - if you have changes that are not yet possible to make with a `--values` file, please [raise an issue](https://github.com/deployKF/deployKF/issues)
+    4. use one of the following default credentials (if you have not changed them):
+        - super-admin:
+            - username: `admin@example.com`
+            - password: `admin`
+        - user-1:
+            - username: `user1@example.com`
+            - password: `user1`
+        - user-2:
+            - username: `user2@example.com`
+            - password: `user2`
+5. whenever you want to change your deployKF, you can repeat steps 1 and 3, to update your existing manifests
 
 ## Troubleshooting
 
