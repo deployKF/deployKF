@@ -15,10 +15,13 @@
 <br>
 
 <p align="center">
-  <b>deployKF</b> effortlessly integrates <a href="https://www.kubeflow.org/" target="_blank" rel="noopener">Kubeflow</a> and leading MLOps tools on <a href="https://kubernetes.io/" target="_blank" rel="noopener">Kubernetes</a>, compose your open ML platform today!
+  <a href="https://www.deploykf.org/" target="_blank" rel="noopener"><b>deployKF</b></a> effortlessly integrates <a href="https://www.kubeflow.org/" target="_blank" rel="noopener">Kubeflow</a> and leading MLOps tools on <a href="https://kubernetes.io/" target="_blank" rel="noopener">Kubernetes</a>, compose your open ML platform today!
 </p>
 
 <div align="center">
+  <a href="https://github.com/deployKF/deployKF/releases">
+    <img alt="Downloads" src="https://img.shields.io/github/downloads/deployKF/deployKF/total?style=flat-square&color=28a745">
+  </a>
   <a href="https://github.com/deployKF/deployKF/fork">
     <img alt="Contributors" src="https://img.shields.io/github/forks/deployKF/deployKF?style=flat-square&color=28a745">
   </a>
@@ -45,9 +48,9 @@
 
 deployKF is the best way to build reliable ML Platforms on Kubernetes.
 
-- deployKF supports the top [ML & Data tools](https://www.deploykf.org/reference/tools/) from both Kubeflow, and other projects
-- deployKF has a Helm-like interface, with central [values (configs)](https://www.deploykf.org/reference/deploykf-values/) for configuring all aspects of the deployment (no need to edit Kubernetes YAML directly)
-- deployKF does NOT install resources into your cluster, instead it generates [ArgoCD Applications](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#applications) which you apply to your cluster and then [sync with the ArgoCD UI](https://argo-cd.readthedocs.io/en/stable/getting_started/#syncing-via-ui)
+- deployKF supports leading [MLOps & Data tools](https://www.deploykf.org/reference/tools/) from both Kubeflow, and other projects
+- deployKF has a Helm-like interface, with [values](https://www.deploykf.org/reference/deploykf-values/) for configuring all aspects of the deployment (no need to edit Kubernetes YAML)
+- deployKF does NOT install resources directly in your cluster, instead it generates [ArgoCD Applications](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#applications) to provide native GitOps support
 
 ### What tools does deployKF support?
 
@@ -59,7 +62,7 @@ For a more complete list of planned tools, please see the [future tools page](ht
 ### Who makes deployKF?
 
 deployKF was originally created by [Mathew Wicks](https://www.linkedin.com/in/mathewwicks/) ([GitHub: @thesuperzapper](https://github.com/thesuperzapper)), a Kubeflow lead and maintainer of the popular [Apache Airflow Helm Chart](https://github.com/airflow-helm/charts).
-However, deployKF is now a community-led project, and welcomes contributions from anyone who wants to help.
+However, deployKF is now a community-led project that welcomes contributions from anyone who wants to help.
 
 For commercial services related to deployKF, please see the [support page](https://www.deploykf.org/about/support/#commercial-support).
 
@@ -70,10 +73,10 @@ If you are using deployKF, please consider adding your organization to our [list
 
 ### What is the difference between Kubeflow and deployKF?
 
-deployKF and Kubeflow are two different projects, but they are related:
+Kubeflow and deployKF are two different but related projects:
       
 - deployKF is a tool for deploying Kubeflow and other MLOps tools on Kubernetes as a cohesive platform.
-- Kubeflow is a project that develops many MLOps tools, including Kubeflow Pipelines, Kubeflow Notebooks, Katib, and more.
+- Kubeflow is a project that develops MLOps tools, including Kubeflow Pipelines, Kubeflow Notebooks, Katib, and more.
 
 For more details, see our [comparison between Kubeflow and deployKF](https://www.deploykf.org/about/kubeflow-vs-deploykf/).
 
@@ -131,10 +134,12 @@ The `generate` command of the [`deploykf` CLI](https://github.com/deployKF/cli) 
 
 ```shell
 deploykf generate \
-    --source-version X.X.X \
+    --source-version 0.1.0 \
     --values ./custom-values.yaml \
     --output-dir ./GENERATOR_OUTPUT
 ```
+
+> __TIP:__ the `--source-version` can be any valid deployKF version, see the [changelog](https://www.deploykf.org/releases/changelog-deploykf/) for a list of versions
 
 > __TIP:__ if you specify `--values` multiple times, they will be merged with later ones taking precedence (note, YAML lists are not merged, they are replaced in full)
 
@@ -152,7 +157,9 @@ deploykf generate \
 
 ### Step 3: apply the manifests to your cluster
 
-The only manifest you need to apply manually is the ArgoCD ["app of apps"](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/#app-of-apps-pattern), which creates all the other ArgoCD applications:
+The only manifest you need to manually apply is the ArgoCD ["app of apps"](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/#app-of-apps-pattern), which creates all the other ArgoCD applications.
+
+The `app-of-apps.yaml` manifest is generated at the root of your `--output-dir` folder, so you can apply it with:
 
 ```shell
 kubectl apply --filename GENERATOR_OUTPUT/app-of-apps.yaml
@@ -187,23 +194,23 @@ You can now sync the ArgoCD applications which make up deployKF.
 2. __deploykf-dependencies:__
     - GROUP LABEL: `app.kubernetes.io/component: deploykf-dependencies`
     - APP NAMES:
-       - `dkf-dep--kyverno`
        - `dkf-dep--cert-manager` 
            - _TIP: the first sync will fail as trust-manager depends on cert-manager, so wait for cert-manager to be ready and sync again_
        - `dkf-dep--istio`
+       - `dkf-dep--kyverno`
 3. __deploykf-core:__
     - GROUP LABEL: `app.kubernetes.io/component: deploykf-core`
     - APP NAMES:
-       - `dkf-core--deploykf-istio-gateway`
        - `dkf-core--deploykf-auth`
        - `dkf-core--deploykf-dashboard`
+       - `dkf-core--deploykf-istio-gateway`
        - `dkf-core--deploykf-profiles-generator` 
            - _TIP: the first sync will fail while profile namespaces are created, so wait for those namespace to be created and sync again_
 4. __deploykf-opt:__ 
     - GROUP LABEL: `app.kubernetes.io/component: deploykf-opt`
     - APP NAMES:
-       - `dkf-opt--deploykf-mysql`
        - `dkf-opt--deploykf-minio`
+       - `dkf-opt--deploykf-mysql`
 5. __deploykf-tools:__ 
     - GROUP LABEL: `app.kubernetes.io/component: deploykf-tools`
     - APP NAMES:
@@ -215,27 +222,27 @@ You can now sync the ArgoCD applications which make up deployKF.
 7. __kubeflow-tools:__ 
     - GROUP LABEL: `app.kubernetes.io/component: kubeflow-tools`
     - APP NAMES:
+       - `kf-tools--katib`
+       - `kf-tools--notebooks--jupyter-web-app`
+       - `kf-tools--notebooks--notebook-controller` 
        - `kf-tools--pipelines`
        - `kf-tools--poddefaults-webhook`
-       - `kf-tools--notebooks--notebook-controller` 
-       - `kf-tools--notebooks--jupyter-web-app`
        - `kf-tools--tensorboards--tensorboard-controller`
        - `kf-tools--tensorboards--tensorboards-web-app`
-       - `kf-tools--volumes--volumes-web-app`
        - `kf-tools--training-operator`
-       - `kf-tools--katib`
+       - `kf-tools--volumes--volumes-web-app`
 
 > __TIP:__ you may also sync the applications with the [`argocd` CLI](https://argo-cd.readthedocs.io/en/stable/cli_installation/), but at first, we recommend syncing with the web interface, so you can debug any issues:
 > 
 > ```shell
-> # expose ArgoCD api server
+> # expose ArgoCD API server
 > kubectl port-forward svc/argocd-server -n argocd 8090:https
 > 
 > # get the admin password (if you have not changed it)
 > argocd "admin" initial-password -n argocd
 > 
-> # login to ArgoCD
-> ARGOCD_PASSWORD="YOUR_PASSWORD_HERE"
+> # log in to ArgoCD
+> ARGOCD_PASSWORD="<YOUR_PASSWORD_HERE>"
 > argocd login localhost:8090 --username "admin" --password "$ARGOCD_PASSWORD" --insecure
 > 
 > # sync the apps
