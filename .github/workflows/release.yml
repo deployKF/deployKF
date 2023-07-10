@@ -1,0 +1,72 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+*"
+
+permissions:
+  contents: write
+
+jobs:
+  build_and_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Zip Generator Artifact
+        env:
+          GITHUB_REF: ${{ github.ref }}
+        run: |
+          TAG_VERSION=$(echo "$GITHUB_REF" | sed 's|refs/tags/v||')
+          ZIP_NAME="deploykf-${TAG_VERSION}-generator.zip"
+          
+          # zip the "generator" folder
+          zip -r "$ZIP_NAME" generator
+          
+          # move the zip file to the "out" folder
+          mkdir -p out
+          mv "$ZIP_NAME" out/
+          cd out
+          
+          # compute the sha256 checksum
+          sha256sum "$ZIP_NAME" > "$ZIP_NAME.sha256"
+
+      - name: Create GitHub Release and Upload Release Assets
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            const { repo: { owner, repo }, ref: tag_ref } = context;
+            const tag_name = tag_ref.replace('refs/tags/', '');
+            const tag_version = tag_ref.replace('refs/tags/v', '');
+            
+            // Create a draft release
+            const response = await github.rest.repos.createRelease({
+              owner: owner,
+              repo: repo,
+              tag_name: tag_name,
+              name: `deployKF - ${tag_version}`,
+              draft: true,
+              prerelease: tag_name.includes('-'),
+            });
+            const { id: release_id } = response.data;
+
+            // Upload each binary and checksum file
+            const globber = await glob.create('./out/*');
+            for await (const file of globber.globGenerator()) {
+              const asset_name = path.basename(file);
+              const asset_path = `./out/${asset_name}`;
+            
+              core.info(`Uploading ${asset_name}`);
+              await github.rest.repos.uploadReleaseAsset({
+                owner: owner,
+                repo: repo,
+                release_id: release_id,
+                name: asset_name,
+                data: fs.readFileSync(asset_path),
+              });
+            }
