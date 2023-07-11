@@ -105,7 +105,8 @@ deployKF is configured using YAML files containing configs named "values" which 
 deployKF has a very large number of configurable values (more than 1500), but you can start by defining a few important ones, and then grow your values file over time.
 
 We recommend you start by copying the [`sample-values.yaml`](sample-values.yaml) file, which includes reasonable defaults that should work on any Kubernetes cluster.
-The following values will need to be changed to match your environment:
+
+The following values will always need to be changed to match your environment:
 
 | Value                                                                                                                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |-------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -143,7 +144,7 @@ The `generate` command of the [`deploykf` CLI](https://github.com/deployKF/cli) 
 
 ```shell
 deploykf generate \
-    --source-version 0.1.0 \
+    --source-version "0.1.0" \
     --values ./custom-values.yaml \
     --output-dir ./GENERATOR_OUTPUT
 ```
@@ -157,12 +158,12 @@ git commit -m "my commit message"
 git push origin main
 ```
 
+> __WARNING:__ any manual changes made in the `--output-dir` will be overwritten each time the `deploykf generate` command runs, so please only make changes in your `--values` files. 
+> If you find yourself needing to make manual changes, this indicates we might need a new value, so please [raise an issue](https://github.com/deployKF/deployKF/issues) to help us improve the project!
+
 > __TIP:__ the `--source-version` can be any valid deployKF version, see the [changelog](https://www.deploykf.org/releases/changelog-deploykf/) for a list of versions
 
 > __TIP:__ if you specify `--values` multiple times, they will be merged with later ones taking precedence (note, YAML lists are not merged, they are replaced in full)
-
-> __TIP:__ any manual changes made in the `--output-dir` will be overwritten each time the `deploykf generate` command runs, so please only make changes in your `--values` files. 
-> If you find yourself needing to make manual changes, this indicates we might need a new value, so please [raise an issue](https://github.com/deployKF/deployKF/issues) to help us improve the project!
 
 ### Step 3: Apply app-of-apps
 
@@ -179,7 +180,8 @@ kubectl apply --filename GENERATOR_OUTPUT/app-of-apps.yaml
 If this is the first time you are using ArgoCD, you will need to retrieve the initial password for the `admin` user:
 
 ```shell
-echo $(kubectl -n argocd get secret/argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
+echo $(kubectl -n argocd get secret/argocd-initial-admin-secret \
+  -o jsonpath="{.data.password}" | base64 -d)
 ```
 
 This `kubectl` command will port-forward the `argocd-server` Service to your local machine:
@@ -233,12 +235,13 @@ You can now sync the ArgoCD applications which make up deployKF.
 
 ### Step 6: Access deployKF
 
-If you have not configured a public Service for your `deploykf-istio-gateway`, you may access the deployKF web interface with `kubectl` port-forwarding.
+If you have not [configured a public Service](https://github.com/deployKF/deployKF/blob/v0.1.0/generator/default_values.yaml#L621-L628) for your `deploykf-istio-gateway`, you may access the deployKF web interface with `kubectl` port-forwarding.
 
-First, you will need to add some lines to your `/etc/hosts` file (this is needed because Istio uses the `Host` header to route requests to the correct VirtualService).
-For example, if you have set the `deploykf_core.deploykf_istio_gateway.gateway.hostname` value to `"deploykf.example.com"`, you would add the following lines:
+First, you will need to add some lines to your `/etc/hosts` file (this is needed because Istio uses the "Host" header to route requests to the correct VirtualService).
 
-```shell
+For example, if you have set the [`deploykf_core.deploykf_istio_gateway.gateway.hostname`](https://github.com/deployKF/deployKF/blob/v0.1.0/generator/default_values.yaml#L571) value to `"deploykf.example.com"`, you would add the following lines:
+
+```
 127.0.0.1 deploykf.example.com
 127.0.0.1 argo-server.deploykf.example.com
 127.0.0.1 minio-api.deploykf.example.com
@@ -248,7 +251,9 @@ For example, if you have set the `deploykf_core.deploykf_istio_gateway.gateway.h
 This `kubectl` command will port-forward the `deploykf-gateway` Service to your local machine:
 
 ```shell
-kubectl port-forward --namespace "deploykf-istio-gateway" svc/deploykf-gateway 8080:http 8443:https
+kubectl port-forward \
+  --namespace "deploykf-istio-gateway" \
+  svc/deploykf-gateway 8080:http 8443:https
 ```
 
 You should now see the deployKF dashboard at [https://deploykf.example.com:8443/](https://deploykf.example.com:8443/), where you can use one of the following credentials (if you have not changed them):
