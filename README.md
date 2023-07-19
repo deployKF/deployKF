@@ -87,6 +87,19 @@ We encourage participation from anyone who shares our mission of making it easy 
 
 For more details, see our [community page](https://www.deploykf.org/about/community/).
 
+## Media
+
+<div align="center">
+  <h3>
+    <a href="https://www.youtube.com/watch?v=VggtaOgtBJo" target="_blank" rel="noopener">
+      Intro / Demo - Kubeflow Community Call - July 2023
+    </a>
+  </h3>
+  <a href="https://www.youtube.com/watch?v=VggtaOgtBJo" target="_blank" rel="noopener">
+    <img src="https://i.ytimg.com/vi/VggtaOgtBJo/maxresdefault.jpg" width="50%">
+  </a>
+</div>
+
 ## Getting Started
 
 For full details on how to get started with deployKF, please see the [getting started page](https://www.deploykf.org/guides/getting-started/).
