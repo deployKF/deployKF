@@ -88,6 +88,14 @@ minio:
     uid: 1000
     gid: 1000
 
+  ## the securityContext configs for minio Pods
+  ## - spec for PodSecurityContext:
+  ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podsecuritycontext-v1-core
+  ##
+  podSecurityContext:
+    ## sets filesystem owner group of in mounted volumes, ensuring pod has permissions to read data
+    fsGroup: 1000
+
   ## resource requests/limits for the minio Pods
   ## - spec for ResourceRequirements:
   ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#resourcerequirements-v1-core
