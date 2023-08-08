@@ -44,7 +44,12 @@ spec:
       affinity: {}
       tolerations: []
       serviceAccountName: deploykf-minio
+      {{- if .Values.minio.podSecurityContext }}
+      securityContext:
+        {{- .Values.minio.podSecurityContext | toYaml | nindent 8 }}
+      {{- else }}
       securityContext: {}
+      {{- end }}
       initContainers: []
       containers:
         - name: minio
