@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-repo-server
+spec:
+  template:
+    spec:
+      initContainers:
+        - name: deploykf-plugin-setup--kubectl
+          image: docker.io/bitnami/kubectl:1.26.7
+          command:
+            - "/bin/sh"
+            - "-c"
+          args:
+            - |
+              echo "copying 'kubectl' binary to shared volume..."
+              cp -f "$(which kubectl)" /tools/kubectl
+          volumeMounts:
+            - name: deploykf-plugin-tools
+              mountPath: /tools
+
+        - name: deploykf-plugin-setup--helm
+          image: docker.io/alpine/helm:3.12.2
+          command:
+            - "/bin/sh"
+            - "-c"
+          args:
+            - |
+              echo "copying 'helm' binary to shared volume..."
+              cp -f "$(which helm)" /tools/helm
+          volumeMounts:
+            - name: deploykf-plugin-tools
+              mountPath: /tools
+
+        - name: deploykf-plugin-setup--deploykf
+          image: ghcr.io/deploykf/cli:0.1.1
+          command:
+            - "/bin/sh"
+            - "-c"
+          args:
+            - |
+              echo "copying 'deploykf' binary to shared volume..."
+              cp -f "$(which deploykf)" /tools/deploykf
+          volumeMounts:
+            - name: deploykf-plugin-tools
+              mountPath: /tools
+
+      containers:
+        - name: deploykf-plugin
+          image: docker.io/ubuntu:23.04
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+          command:
+            - "/var/run/argocd/argocd-cmp-server"
+          args:
+            - "--loglevel"
+            - "info"
+          env:
+            - name: HELM_CACHE_HOME
+              value: "/helm-working-dir"
+            - name: HELM_CONFIG_HOME
+              value: "/helm-working-dir"
+            - name: HELM_DATA_HOME
+              value: "/helm-working-dir"
+          volumeMounts:
+            ## argocd-repo-server
+            - name: var-files
+              mountPath: /var/run/argocd
+            - name: plugins
+              mountPath: /home/argocd/cmp-server/plugins
+            - name: deploykf-plugin-tools
+              mountPath: /usr/local/bin
+
+            ## deploykf
+            - name: deploykf-plugin-config
+              mountPath: /home/argocd/cmp-server/config/plugin.yaml
+              subPath: plugin.yaml
+            - name: deploykf-plugin-assets
+              mountPath: /.deploykf/assets
+
+            ## helm
+            - name: helm-working-dir
+              mountPath: /helm-working-dir
+      volumes:
+        - name: deploykf-plugin-config
+          configMap:
+            name: argocd-deploykf-plugin
+        - name: deploykf-plugin-tools
+          emptyDir: {}
+        - name: deploykf-plugin-assets
+          persistentVolumeClaim:
+            claimName: argocd-deploykf-plugin-assets

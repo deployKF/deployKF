@@ -1,3 +1,4 @@
+{{<- $generator_folder_path := "manifests/kubeflow-tools/tensorboards/tensorboard-controller" >}}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -11,10 +12,15 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: {{< .Values.argocd.project | quote >}}
+  {{<- if .Values.argocd.source.plugin.enabled >}}
+  {{<- $output_kustomize_path := $generator_folder_path >}}
+  source: {{< tmpl.Exec "argocd.plugin_source.kustomize" (dict "output_kustomize_path" $output_kustomize_path) | yaml | toJSON >}}
+  {{<- else >}}
   source:
     repoURL: {{< .Values.argocd.source.repo.url | quote >}}
     targetRevision: {{< .Values.argocd.source.repo.revision | quote >}}
-    path: {{< path.Join .Values.argocd.source.repo.path "manifests/kubeflow-tools/tensorboards/tensorboard-controller" | quote >}}
+    path: {{< path.Join .Values.argocd.source.repo.path $generator_folder_path | quote >}}
+  {{<- end >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: kubeflow

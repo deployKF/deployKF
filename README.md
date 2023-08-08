@@ -106,10 +106,10 @@ For full details on how to get started with deployKF, please see the [getting st
 
 ### Requirements
 
-- the `deploykf` cli tool, found in [the `deployKF/cli` repo](https://github.com/deployKF/cli)
+- your local machine has the [`deploykf` CLI installed](https://www.deploykf.org/guides/install-deploykf-cli/)
 - a Kubernetes cluster (__WARNING:__ we strongly recommend using a dedicated Kubernetes cluster for deployKF)
-- ArgoCD is [deployed on your cluster](https://argo-cd.readthedocs.io/en/stable/getting_started/)
-- a private git repo (in which to store your generated manifests)
+- the Kubernetes cluster has [ArgoCD installed](https://argo-cd.readthedocs.io/en/stable/getting_started/)
+- a private git repo for your generated manifests (__NOTE:__ not required when using the [deployKF ArgoCD Plugin](./argocd-plugin))
 
 ### Step 1: Create values file
 
@@ -119,7 +119,7 @@ deployKF has a very large number of configurable values (more than 1500), but yo
 
 We recommend you start by copying the [`sample-values.yaml`](sample-values.yaml) file, which includes reasonable defaults that should work on any Kubernetes cluster.
 
-The following values will always need to be changed to match your environment:
+If you are not using the [deployKF ArgoCD Plugin](./argocd-plugin), you will need to set the following values:
 
 | Value                                                                                                                   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 |-------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -152,6 +152,8 @@ For information about other values, you can refer to the following resources:
 ### Step 2: Generate manifests
 
 You must generate your manifests and commit them to a git repo before ArgoCD can deploy them to your cluster.
+
+> __TIP:__ the [deployKF ArgoCD Plugin](./argocd-plugin) removes the need to generate and commit manifests to a git repo
 
 The `generate` command of the [`deploykf` CLI](https://github.com/deployKF/cli) creates a manifests folder for a specific version of deployKF and one or more values files:
 

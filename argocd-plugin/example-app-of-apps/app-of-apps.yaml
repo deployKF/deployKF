@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: deploykf-app-of-apps
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: deploykf-app-of-apps
+    app.kubernetes.io/part-of: deploykf
+spec:
+  project: "default"
+  source:
+    ## any valid git repository
+    ##  - note, this does NOT need to be the deployKF repository, we are only using it
+    ##    to access the './sample-values.yaml' file for the `values_files` parameter
+    ##
+    repoURL: "https://github.com/deployKF/deployKF.git"
+    targetRevision: "v0.1.1"
+    path: "."
+
+    ## plugin configuration
+    ##
+    plugin:
+      name: "deploykf"
+      parameters:
+
+        ## the deployKF generator version
+        ##  - available versions: https://github.com/deployKF/deployKF/releases
+        ##
+        - name: "source_version"
+          string: "0.1.1"
+
+        ## paths to values files within the `repoURL` repository
+        ##
+        - name: "values_files"
+          array:
+            - "./sample-values.yaml"
+
+        ## a string containing the contents of a values file
+        ##
+        - name: "values"
+          string: |
+            ## --------------------------------------------------------------------------------
+            ##
+            ##                                  deploykf-core
+            ##
+            ## --------------------------------------------------------------------------------
+            deploykf_core:
+              
+              ## --------------------------------------
+              ##        deploykf-istio-gateway
+              ## --------------------------------------
+              deploykf_istio_gateway:
+            
+                ## istio gateway configs
+                gateway:
+                  hostname: deploykf.example.com
+
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: "argocd"

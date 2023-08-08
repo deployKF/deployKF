@@ -1,0 +1,204 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ConfigManagementPlugin
+metadata:
+  name: deploykf
+spec:
+  parameters:
+    static:
+      - name: output_kustomize_path
+        title: OUTPUT - KUSTOMIZE PATH
+        tooltip: the path under 'deploykf generate --output-dir' at which to run 'kusomtize build'
+        collectionType: string
+
+      - name: output_helm_path
+        title: OUTPUT - HELM PATH
+        tooltip: the path under 'deploykf generate --output-dir' at which to run 'helm template'
+        collectionType: string
+      - name: output_helm_values_files
+        title: OUTPUT - HELM VALUES FILES
+        tooltip: a list of paths under 'output_helm_path' with values files to use with 'helm template'
+        collectionType: array
+
+      - name: source_version
+        title: SOURCE VERSION
+        tooltip: the '--source-version' to use with with the 'deploykf generate' command (mutually exclusive with `source_path`)
+        collectionType: string
+      - name: source_path
+        title: SOURCE PATH
+        tooltip: the '--source-path' to use with the 'deploykf generate' command (mutually exclusive with `source_version`)
+        collectionType: string
+
+      - name: values_files
+        title: VALUES FILES
+        tooltip: a list of paths (under the configured repo path) of '--values' files to use with 'deploykf generate'
+        collectionType: array
+      - name: values
+        title: VALUES
+        tooltip: a string containing the contents of a '--values' file to use with 'deploykf generate'
+        collectionType: string
+
+  init:
+    command:
+      - "/bin/bash"
+      - "-c"
+    args:
+      - |
+        set -eo pipefail
+        
+        ## ensure exactly one of 'source_version' or 'source_path' was provided
+        if [[ -n "$PARAM_SOURCE_VERSION" && -n "$PARAM_SOURCE_PATH" ]]; then
+            echo "ERROR: both 'source_version' and 'source_path' were set, but we require exactly one" >&2
+            exit 1
+        elif [[ -z "$PARAM_SOURCE_VERSION" && -z "$PARAM_SOURCE_PATH" ]]; then
+            echo "ERROR: neither of 'source_version' of 'source_path' were set, but we require exactly one" >&2
+            exit 1
+        fi
+        
+        ## ensure exactly one of 'output_kustomize_path' or 'output_helm_path' was provided
+        if [[ -n "$PARAM_OUTPUT_KUSTOMIZE_PATH" && -n "$PARAM_OUTPUT_HELM_PATH" ]]; then
+            echo "ERROR: both 'output_kustomize_path' and 'output_helm_path' were set, but we require exactly one" >&2
+            exit 1
+        fi
+        
+        ## if no paths are set, default to the argocd app-of-apps
+        if [[ -z "$PARAM_OUTPUT_KUSTOMIZE_PATH" && -z "$PARAM_OUTPUT_HELM_PATH" ]]; then
+            PARAM_OUTPUT_KUSTOMIZE_PATH="./argocd/"
+        fi
+        
+        DKF_ARGS=()
+        
+        ## set 'deploykf --output-dir' argument
+        OUTPUT_DIR="./__PLUGIN_GENERATOR_OUTPUT__"
+        DKF_ARGS+=("--output-dir" "$OUTPUT_DIR")
+        
+        ## set 'deploykf --source-version' argument
+        if [[ -n "$PARAM_SOURCE_VERSION" ]]; then
+            DKF_ARGS+=("--source-version" "$PARAM_SOURCE_VERSION")
+        fi
+        
+        ## set 'deploykf --source-path' argument
+        if [[ -n "$PARAM_SOURCE_PATH" ]]; then
+            DKF_ARGS+=("--source-path" "$PARAM_SOURCE_PATH")
+        fi
+        
+        ## set 'deploykf --values' argument for each 'values_files' path
+        for env_var in ${!PARAM_VALUES_FILES_@}
+        do
+            VALUES_FILE_PATH="${!env_var}"
+            if [[ ! -f "$VALUES_FILE_PATH" ]]; then
+                echo "ERROR: the provided values file '$VALUES_FILE_PATH' does not exist" >&2
+                exit 1
+            fi
+            DKF_ARGS+=("--values" "$VALUES_FILE_PATH")
+        done
+        
+        ## set 'deploykf --values' argument for the provided 'values' string
+        if [[ -n "$PARAM_VALUES" ]]; then
+            USER_VALUES_FILE_PATH="./__PLUGIN_USER_VALUES__.yaml"
+            echo "$PARAM_VALUES" > "$USER_VALUES_FILE_PATH"
+            DKF_ARGS+=("--values" "$USER_VALUES_FILE_PATH")
+        fi
+        
+        ## set 'deploykf --values' argument for values required by the plugin
+        REQUIRED_VALUES='{"argocd":{"source":{"plugin":{"enabled":true}}}}'
+        REQUIRED_VALUES_FILE_PATH="./__PLUGIN_REQUIRED_VALUES__.yaml"
+        echo "$REQUIRED_VALUES" > "$REQUIRED_VALUES_FILE_PATH"
+        DKF_ARGS+=("--values" "$REQUIRED_VALUES_FILE_PATH")
+        
+        ## run the deploykf generator
+        deploykf generate "${DKF_ARGS[@]}"
+        
+        ## ensure the provided 'output_kustomize_path' exists
+        if [[ -n "$PARAM_OUTPUT_KUSTOMIZE_PATH" ]]; then
+            OUTPUT_KUSTOMIZE_PATH=$(realpath "$OUTPUT_DIR/$PARAM_OUTPUT_KUSTOMIZE_PATH")
+            if [[ ! -d "$OUTPUT_KUSTOMIZE_PATH" ]]; then
+                echo "ERROR: the provided 'output_kustomize_path' '$OUTPUT_KUSTOMIZE_PATH' does not exist" >&2
+                exit 1
+            fi
+        fi
+        
+        ## ensure the provided 'output_helm_path' exists
+        if [[ -n "$PARAM_OUTPUT_HELM_PATH" ]]; then
+            OUTPUT_HELM_PATH=$(realpath "$OUTPUT_DIR/$PARAM_OUTPUT_HELM_PATH")
+            if [[ ! -d "$OUTPUT_HELM_PATH" ]]; then
+                echo "ERROR: the provided 'output_helm_path' '$OUTPUT_HELM_PATH' does not exist" >&2
+                exit 1
+            fi
+        
+            ## add the helm repos for the chart dependencies
+            helm dependency list --max-col-width 10000 "$OUTPUT_HELM_PATH" | awk 'NR>1 {print $1,$3}' | while read -r name url; do
+                if [[ -n "$name" && -n "$url" ]]; then
+                    helm repo add "$name" "$url" --insecure-skip-tls-verify
+                fi
+            done
+        
+            ## pull the helm chart dependencies
+            helm dependency build "$OUTPUT_HELM_PATH"
+        fi
+
+  generate:
+    command:
+      - "/bin/bash"
+      - "-c"
+    args:
+      - |
+        set -eo pipefail
+        
+        ## if no paths are set, default to the argocd app-of-apps
+        if [[ -z "$PARAM_OUTPUT_KUSTOMIZE_PATH" && -z "$PARAM_OUTPUT_HELM_PATH" ]]; then
+            PARAM_OUTPUT_KUSTOMIZE_PATH="./argocd/"
+        fi
+        
+        OUTPUT_DIR="./__PLUGIN_GENERATOR_OUTPUT__"
+        
+        ## CASE 1: generator output path is a Kustomize directory
+        ##         use 'kubectl kustomize' to render the manifests to stdout
+        if [[ -n "$PARAM_OUTPUT_KUSTOMIZE_PATH" ]]; then
+            OUTPUT_KUSTOMIZE_PATH=$(realpath "$OUTPUT_DIR/$PARAM_OUTPUT_KUSTOMIZE_PATH")
+            kubectl kustomize "$OUTPUT_KUSTOMIZE_PATH"
+        fi
+        
+        ## CASE 2: generator output path is a Helm chart
+        ##         use 'helm template' to render the chart to stdout
+        if [[ -n "$PARAM_OUTPUT_HELM_PATH" ]]; then
+            OUTPUT_HELM_PATH=$(realpath "$OUTPUT_DIR/$PARAM_OUTPUT_HELM_PATH")
+            HELM_ARGS=()
+        
+            ## set 'helm template --name-template' argument
+            if [[ -n "$ARGOCD_APP_NAME" ]]; then
+                HELM_ARGS+=("--name-template" "$ARGOCD_APP_NAME")
+            fi
+        
+            ## set 'helm template --namespace' argument
+            if [[ -n "$ARGOCD_APP_NAMESPACE" ]]; then
+                HELM_ARGS+=("--namespace" "$ARGOCD_APP_NAMESPACE")
+            fi
+        
+            ## set 'helm template --kube-version' argument
+            if [[ -n "$KUBE_VERSION" ]]; then
+                HELM_ARGS+=("--kube-version" "$KUBE_VERSION")
+            fi
+        
+            ## set 'helm template --values' argument for each 'output_helm_values_files' path
+            for env_var in ${!PARAM_OUTPUT_HELM_VALUES_FILES_@}
+            do
+                HELM_VALUES_FILE_PATH=$(realpath "$OUTPUT_HELM_PATH/${!env_var}")
+                if [[ -f "$HELM_VALUES_FILE_PATH" ]]; then
+                    HELM_ARGS+=("--values" "$HELM_VALUES_FILE_PATH")
+                fi
+            done
+        
+            ## set 'helm template --api-versions' arguments
+            ## NOTE: the KUBE_API_VERSIONS env-var is a comma-separated list of API versions
+            if [[ -n "$KUBE_API_VERSIONS" ]]; then
+                IFS=',' read -ra KUBE_API_VERSIONS_ARRAY <<< "$KUBE_API_VERSIONS"
+                for KUBE_API_VERSION in "${KUBE_API_VERSIONS_ARRAY[@]}"; do
+                    HELM_ARGS+=("--api-versions" "$KUBE_API_VERSION")
+                done
+            fi
+            
+            ## set 'helm template --include-crds' argument
+            HELM_ARGS+=("--include-crds")
+        
+            helm template "$OUTPUT_HELM_PATH" "${HELM_ARGS[@]}"
+        fi
