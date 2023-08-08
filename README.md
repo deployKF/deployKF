@@ -279,6 +279,15 @@ You should now see the deployKF dashboard at [https://deploykf.example.com:8443/
 | User 1                | `user1@example.com` | `user1`  |
 | User 2                | `user2@example.com` | `user2`  |
 
+> __WARNING:__ 
+> 
+> Changing the owner of a profile [requires manual steps](https://github.com/kubeflow/kubeflow/issues/6576)! 
+> Therefore, it's common to leave `admin@example.com` as the owner of all profiles and simply give it a strong password.
+> (Even once you integrate your identity provider)
+>
+> The `admin@example.com` user does not have access to the "MinIO Console" or "Argo Workflows Server" interfaces,
+> this is because it is not a "member" of any profile in the default values.
+
 ## Troubleshooting
 
 ### ERROR: pods fail with "too many open files"
