@@ -288,6 +288,14 @@ You should now see the deployKF dashboard at [https://deploykf.example.com:8443/
 > The `admin@example.com` user does not have access to the "MinIO Console" or "Argo Workflows Server" interfaces,
 > this is because it is not a "member" of any profile in the default values.
 
+### Step 7: Use the platform
+
+Now that you have a working ML Platform, you might want to dive into some of the following topics:
+
+| Topic                         | Description                                                                                                                                                                                                                              |
+|-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| GitOps for Kubeflow Pipelines | We provide a reference implementation for managing Kubeflow Pipelines (i.e. definitions, schedules) with GitOps, see [`deployKF/kubeflow-pipelines-gitops`](https://github.com/deployKF/kubeflow-pipelines-gitops) for more information. |
+
 ## Troubleshooting
 
 ### ERROR: pods fail with "too many open files"
