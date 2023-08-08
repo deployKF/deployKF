@@ -3,6 +3,23 @@
 
 ## --------------------------------------------------------------------------------
 ##
+##                                      argocd
+##
+## --------------------------------------------------------------------------------
+{{<- if .Values.argocd.appNamePrefix >}}
+  {{<- if .Values.argocd.destination.name >}}
+    {{<- if eq .Values.argocd.destination.name "in-cluster" >}}
+      {{< fail "`argocd.destination.name` can not be 'in-cluster' if `argocd.appNamePrefix` is set, a single cluster can only have one instance of deployKF" >}}
+    {{<- end >}}
+  {{<- else >}}
+    {{<- if eq .Values.argocd.destination.server "https://kubernetes.default.svc" >}}
+      {{< fail "`argocd.destination.server` can not be 'https://kubernetes.default.svc' if `argocd.appNamePrefix` is set, a single cluster can only have one instance of deployKF" >}}
+    {{<- end >}}
+  {{<- end >}}
+{{<- end >}}
+
+## --------------------------------------------------------------------------------
+##
 ##                              kubeflow-dependencies
 ##
 ## --------------------------------------------------------------------------------

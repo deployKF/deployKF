@@ -1,6 +1,6 @@
 ## this ClusterPolicy replaces the `pipelines-profile-controller` from the upstream manifests
 ## https://github.com/kubeflow/pipelines/tree/2.0.0-alpha.7/manifests/kustomize/base/installs/multi-user/pipelines-profile-controller
-{{<- $argocd_app_name := "kf-tools--pipelines" >}}
+{{<- $argocd_app_name := print .Values.argocd.appNamePrefix "kf-tools--pipelines" >}}
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
 metadata:

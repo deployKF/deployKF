@@ -5,6 +5,13 @@
 ## --------------------------------------------------------------------------------
 argocd:
 
+  ## a prefix to use for argocd application names
+  ##  - allows a single instance of argocd to manage deployKF across multiple clusters
+  ##  - if non-empty, `argocd.destination` must be a remote cluster, this is because
+  ##    a single cluster can only have one instance of deployKF
+  ##
+  appNamePrefix: ""
+
   ## the namespace in which argocd is deployed
   ##
   namespace: argocd
@@ -47,9 +54,11 @@ argocd:
       path: ""
 
   ## the destination used for deployKF argocd applications
+  ##  - the value of `destination.name` takes precedence over `destination.server`
   ##
   destination:
     server: https://kubernetes.default.svc
+    name: ""
 
 
 ## --------------------------------------------------------------------------------
