@@ -1,3 +1,4 @@
+{{<- if not .Values.argocd.source.plugin.enabled >}}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -21,3 +22,4 @@ spec:
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: {{< .Values.argocd.namespace | quote >}}
+{{<- end >}}

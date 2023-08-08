@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: argocd-deploykf-plugin-assets
+spec:
+  accessModes:
+    ## TIP: if you have an HA argocd-repo-server deployment, you will need to make this a ReadWriteMany volume
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  ## TIP: you may need to set this if you do not have a default storage class
+  #storageClassName: ""

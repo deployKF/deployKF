@@ -1,3 +1,4 @@
+{{<- $generator_folder_path := "manifests/deploykf-core/deploykf-dashboard" >}}
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -11,14 +12,20 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: {{< .Values.argocd.project | quote >}}
+  {{<- if .Values.argocd.source.plugin.enabled >}}
+  {{<- $output_helm_path := $generator_folder_path >}}
+  {{<- $output_helm_values_files := coll.Slice "values-overrides.yaml" >}}
+  source: {{< tmpl.Exec "argocd.plugin_source.helm" (dict "output_helm_path" $output_helm_path "output_helm_values_files" $output_helm_values_files) | yaml | toJSON >}}
+  {{<- else >}}
   source:
     repoURL: {{< .Values.argocd.source.repo.url | quote >}}
     targetRevision: {{< .Values.argocd.source.repo.revision | quote >}}
-    path: {{< path.Join .Values.argocd.source.repo.path "manifests/deploykf-core/deploykf-dashboard" | quote >}}
+    path: {{< path.Join .Values.argocd.source.repo.path $generator_folder_path | quote >}}
     helm:
       ignoreMissingValueFiles: true
       valueFiles:
         - values-overrides.yaml
+  {{<- end >}}
   destination:
     server: {{< .Values.argocd.destination.server | quote >}}
     namespace: {{< .Values.deploykf_core.deploykf_dashboard.namespace | quote >}}

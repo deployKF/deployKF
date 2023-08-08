@@ -17,6 +17,15 @@ argocd:
   ##
   source:
 
+    ## plugin configs
+    ##
+    plugin:
+
+      ## if the argocd plugin is being used
+      ##  - note, this value is automatically set to true when using the plugin
+      ##
+      enabled: false
+
     ## configs specifying the git repo which contains your generated manifests
     ##
     repo:
