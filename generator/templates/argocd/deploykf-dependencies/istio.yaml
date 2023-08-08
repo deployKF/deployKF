@@ -7,7 +7,7 @@ metadata:
   labels:
     app.kubernetes.io/name: istio
     app.kubernetes.io/component: deploykf-dependencies
-    app.kubernetes.io/part-of: deploykf
+    app.kubernetes.io/part-of: {{< print .Values.argocd.appNamePrefix "deploykf" | quote >}}
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -27,7 +27,11 @@ spec:
         - values-overrides.yaml
   {{<- end >}}
   destination:
+    {{<- if .Values.argocd.destination.name >}}
+    name: {{< .Values.argocd.destination.name | quote >}}
+    {{<- else >}}
     server: {{< .Values.argocd.destination.server | quote >}}
+    {{<- end >}}
     namespace: {{< .Values.deploykf_dependencies.istio.namespace | quote >}}
   ignoreDifferences:
     ## istio patches the `failurePolicy` from "Ignore" to "Fail" once the webhook is up

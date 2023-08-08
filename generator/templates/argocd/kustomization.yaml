@@ -101,3 +101,17 @@ resources:
   {{<- if .Values.kubeflow_tools.volumes.enabled >}}
   - kubeflow-tools/volumes--volumes-web-app.yaml
   {{<- end >}}
+
+{{<- if .Values.argocd.appNamePrefix >}}
+transformers:
+  - |
+    apiVersion: builtin
+    kind: PrefixSuffixTransformer
+    metadata:
+      name: argocd-app-name-prefix
+    prefix: {{< .Values.argocd.appNamePrefix | quote >}}
+    fieldSpecs:
+      - apiVersion: argoproj.io/v1alpha1
+        kind: Application
+        path: metadata/name
+{{<- end >}}

@@ -2,11 +2,11 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: deploykf-app-of-apps
+  name: {{< print .Values.argocd.appNamePrefix "deploykf-app-of-apps" | quote >}}
   namespace: {{< .Values.argocd.namespace | quote >}}
   labels:
     app.kubernetes.io/name: deploykf-app-of-apps
-    app.kubernetes.io/part-of: deploykf
+    app.kubernetes.io/part-of: {{< print .Values.argocd.appNamePrefix "deploykf" | quote >}}
 spec:
   project: {{< .Values.argocd.project | quote >}}
   source:
@@ -20,6 +20,10 @@ spec:
     targetRevision: {{< .Values.argocd.source.repo.revision | quote >}}
     path: {{< path.Join .Values.argocd.source.repo.path "argocd" | quote >}}
   destination:
+    {{<- if .Values.argocd.destination.name >}}
+    name: {{< .Values.argocd.destination.name | quote >}}
+    {{<- else >}}
     server: {{< .Values.argocd.destination.server | quote >}}
+    {{<- end >}}
     namespace: {{< .Values.argocd.namespace | quote >}}
 {{<- end >}}
