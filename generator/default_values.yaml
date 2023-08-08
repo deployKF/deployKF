@@ -528,6 +528,17 @@ deploykf_core:
       ##
       externalLinks: []
 
+      ## links that appear in the home page
+      ##  - a list of extra links to appear in the dashboard
+      ##  - each element is a map with the following keys:
+      ##     - `text`: the text that appears in the homepage (example: "deployKF Website")
+      ##     - `desc`: the description which appears below (example: "The tool that deployed your ML platform!")
+      ##     - `link`: the url to navigate to when the link is clicked (example: "https://deploykf.org")
+      ##
+      documentationItems:
+        - text: deployKF Website
+          desc: The tool that deployed your ML platform!
+          link: https://github.com/deployKF/deployKF
 
   ## --------------------------------------
   ##        deploykf-istio-gateway

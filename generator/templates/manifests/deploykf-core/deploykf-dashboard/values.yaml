@@ -149,9 +149,11 @@ centralDashboard:
     ## documentation links that appear in the home page
     ##
     documentationItems:
-      - text: deployKF Website
-        desc: The tool that deployed your ML platform!
-        link: https://github.com/deployKF/deployKF
+      {{<- range $externalLink := .Values.deploykf_core.deploykf_dashboard.navigation.documentationItems >}}
+      - text: {{< $externalLink.text | quote >}}
+        desc: {{< $externalLink.desc | quote >}}
+        link: {{< $externalLink.link | quote >}}
+      {{<- end >}}
       {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
       - text: Kubeflow Pipelines Documentation
         desc: Documentation for Kubeflow Pipelines
