@@ -33,7 +33,7 @@ spec:
               mountPath: /tools
 
         - name: deploykf-plugin-setup--deploykf
-          image: ghcr.io/deploykf/cli:0.1.1
+          image: ghcr.io/deploykf/cli:0.1.2
           command:
             - "/bin/sh"
             - "-c"
@@ -47,7 +47,7 @@ spec:
 
       containers:
         - name: deploykf-plugin
-          image: docker.io/ubuntu:23.04
+          image: docker.io/buildpack-deps:bookworm-curl
           securityContext:
             runAsNonRoot: true
             runAsUser: 999
