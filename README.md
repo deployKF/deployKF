@@ -107,9 +107,17 @@ For full details on how to get started with deployKF, please see the [getting st
 ### Requirements
 
 - your local machine has the [`deploykf` CLI installed](https://www.deploykf.org/guides/install-deploykf-cli/)
-- a Kubernetes cluster (__WARNING:__ we strongly recommend using a dedicated Kubernetes cluster for deployKF)
+- a Kubernetes cluster (see [version compatibility](https://www.deploykf.org/releases/version-matrix/#deploykf-dependencies))
 - the Kubernetes cluster has [ArgoCD installed](https://argo-cd.readthedocs.io/en/stable/getting_started/)
-- a private git repo for your generated manifests (__NOTE:__ not required when using the [deployKF ArgoCD Plugin](./argocd-plugin))
+- a private git repo, for manifests (optional if using the [deployKF ArgoCD Plugin](https://github.com/deployKF/deployKF/tree/main/argocd-plugin))
+
+> __WARNING:__
+> 
+> deployKF is a complex tool, and only __one instance__ can be deployed on a Kubernetes cluster at a time. 
+> It is strongly recommended that you create a __dedicated Kubernetes cluster__ for your deployment of deployKF.
+> 
+> If you are unable to create a new Kubernetes cluster, you may consider using [vcluster](https://github.com/loft-sh/vcluster) to create a virtual Kubernetes cluster within an existing one.
+> This approach has additional benefits because deployKF uses cluster-wide components (e.g. Istio) and namespaces for user/team profiles, so is not well suited to multi-tenant clusters.
 
 ### Step 1: Create values file
 
