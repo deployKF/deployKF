@@ -167,7 +167,7 @@ The `generate` command of the [`deploykf` CLI](https://github.com/deployKF/cli) 
 
 ```shell
 deploykf generate \
-    --source-version "0.1.0" \
+    --source-version "0.1.1" \
     --values ./custom-values.yaml \
     --output-dir ./GENERATOR_OUTPUT
 ```
