@@ -5,6 +5,10 @@ metadata:
 spec:
   template:
     spec:
+      securityContext:
+        ## NOTE: this is required because we use a PVC for plugin assets but run as a non-root user,
+        ##       which can result in permission errors for some types of StorageClass
+        fsGroup: 999
       initContainers:
         - name: deploykf-plugin-setup--kubectl
           image: docker.io/bitnami/kubectl:1.26.7
