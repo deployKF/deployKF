@@ -43,3 +43,6 @@ Sessionx.vim
 .hg/
 .hgignore
 .svn/
+
+## Chart Forks
+forks/

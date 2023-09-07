@@ -84,6 +84,27 @@ cert-manager:
       {{<- end >}}
       pullPolicy: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerCtl.pullPolicy | quote >}}
 
+    jobAnnotations:
+      ## this job will block the main sync wave until the webhook is ready to create certificates,
+      ## by default this hook would run PostSync (helm: post-install), which is too late
+      argocd.argoproj.io/hook: Sync
+      argocd.argoproj.io/sync-wave: "1"
+      argocd.argoproj.io/hook-delete-policy: HookSucceeded,BeforeHookCreation
+
+    rbac:
+      annotations:
+        ## we ensure the RBAC resources have earlier sync-wave than the job
+        argocd.argoproj.io/hook: Sync
+        argocd.argoproj.io/sync-wave: "0"
+        argocd.argoproj.io/hook-delete-policy: HookSucceeded,BeforeHookCreation
+
+    serviceAccount:
+      annotations:
+        ## we ensure the ServiceAccount resources have earlier sync-wave than the job
+        argocd.argoproj.io/hook: Sync
+        argocd.argoproj.io/sync-wave: "0"
+        argocd.argoproj.io/hook-delete-policy: HookSucceeded,BeforeHookCreation
+
 
 ########################################
 ## DEPENDENCY | trust-manager
@@ -108,5 +129,13 @@ trust-manager:
     pullPolicy: {{< .Values.deploykf_dependencies.cert_manager.images.trustManagerDefaultPackage.pullPolicy | quote >}}
 
   app:
+    certificateAnnotations:
+      ## we must sync cert-manager resources after cert-manager itself
+      argocd.argoproj.io/sync-wave: "10"
+
+    deploymentAnnotations:
+      ## we must sync the trust-manager deployment after its certificate is ready
+      argocd.argoproj.io/sync-wave: "20"
+
     trust:
       namespace: {{< .Values.deploykf_dependencies.cert_manager.namespace | quote >}}

@@ -1,0 +1,19 @@
+{{- if .Values.app.metrics.service.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "trust-manager.name" . }}-metrics
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ include "trust-manager.name" . }}
+{{ include "trust-manager.labels" . | indent 4 }}
+spec:
+  type: {{ .Values.app.metrics.service.type }}
+  ports:
+    - port: {{ .Values.app.metrics.port }}
+      targetPort: {{ .Values.app.metrics.port }}
+      protocol: TCP
+      name: metrics
+  selector:
+    app: {{ include "trust-manager.name" . }}
+{{- end }}

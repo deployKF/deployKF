@@ -3,6 +3,10 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.caIssuerName | quote }}
+  annotations:
+    ## we must sync cert-manager resources after cert-manager itself
+    ## NOTE: this Certificate must come AFTER the 'selfsigned-ca-issuer' Issuer
+    argocd.argoproj.io/sync-wave: "11"
 spec:
   isCA: true
   commonName: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.caIssuerName | quote }}
