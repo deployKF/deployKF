@@ -6,6 +6,7 @@ THIS_SCRIPT_PATH=$(cd "$(dirname "$0")" && pwd)
 cd "$THIS_SCRIPT_PATH"
 
 GENERATOR_SOURCE_PATH="./generator"
+GENERATOR_RUNTIME_PATH="$GENERATOR_SOURCE_PATH/runtime"
 GENERATOR_OUTPUT_PATH="./GENERATOR_OUTPUT"
 CUSTOM_VALUES_PATH="./sample-values.yaml"
 
@@ -24,12 +25,15 @@ fi
 mkdir -p "$GENERATOR_OUTPUT_PATH"
 echo -n "{}" > "$GENERATOR_OUTPUT_PATH/.deploykf_output"
 
-# suppress the generation of empty files
-export GOMPLATE_SUPPRESS_EMPTY=true
+# create the runtime directory
+mkdir -p "$GENERATOR_RUNTIME_PATH"
 
 # populate the runtime templates
-echo -n "$GENERATOR_SOURCE_PATH/templates" > "$GENERATOR_SOURCE_PATH/runtime/input_dir"
-echo -n "$GENERATOR_OUTPUT_PATH" > "$GENERATOR_SOURCE_PATH/runtime/output_dir"
+echo -n "$GENERATOR_SOURCE_PATH/templates" > "$GENERATOR_RUNTIME_PATH/input_dir"
+echo -n "$GENERATOR_OUTPUT_PATH" > "$GENERATOR_RUNTIME_PATH/output_dir"
+
+# suppress the generation of empty files
+export GOMPLATE_SUPPRESS_EMPTY=true
 
 # PHASE 1: render our `.gomplateignore_template` files
 gomplate \
