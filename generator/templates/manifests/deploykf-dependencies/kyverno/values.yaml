@@ -37,6 +37,21 @@ deployKF:
 kyverno:
   fullnameOverride: kyverno
 
+  ## Kyverno feature flags
+  features:
+
+    ## Sets the webhook failurePolicy to ignore (for the "resource" webhook only)
+    forceFailurePolicyIgnore:
+      ## TODO: remove once kyverno correctly removes webhooks on uninstall
+      ##       https://github.com/kyverno/kyverno/issues/8390
+      enabled: true
+
+  ## A pre-delete hook to remove all Kyverno webhooks from the cluster
+  webhooksCleanup:
+    ## NOTE: we disable this because it is not supported by Argo CD:
+    ##       https://github.com/kyverno/kyverno/issues/8390
+    enabled: false
+
   ## Cleanup cronjobs to prevent internal resources from stacking up in the cluster
   cleanupJobs:
 
@@ -45,7 +60,7 @@ kyverno:
       schedule: "*/10 * * * *"
       threshold: 10000
       image:
-        registry: ~
+        registry: ""
         repository: {{< .Values.deploykf_dependencies.kyverno.images.kubectl.repository | quote >}}
         {{<- if .Values.deploykf_dependencies.kyverno.images.kubectl.tag >}}
         tag: {{< .Values.deploykf_dependencies.kyverno.images.kubectl.tag | quote >}}
@@ -57,7 +72,7 @@ kyverno:
       schedule: "*/10 * * * *"
       threshold: 10000
       image:
-        registry: ~
+        registry: ""
         repository: {{< .Values.deploykf_dependencies.kyverno.images.kubectl.repository | quote >}}
         {{<- if .Values.deploykf_dependencies.kyverno.images.kubectl.tag >}}
         tag: {{< .Values.deploykf_dependencies.kyverno.images.kubectl.tag | quote >}}
@@ -69,7 +84,7 @@ kyverno:
     replicas: ~
     initContainer:
       image:
-        registry: ~
+        registry: ""
         repository: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoInit.repository | quote >}}
         {{<- if .Values.deploykf_dependencies.kyverno.images.kyvernoInit.tag >}}
         tag: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoInit.tag | quote >}}
@@ -77,7 +92,7 @@ kyverno:
         pullPolicy: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoInit.pullPolicy | quote >}}
     container:
       image:
-        registry: ~
+        registry: ""
         repository: {{< .Values.deploykf_dependencies.kyverno.images.kyverno.repository | quote >}}
         {{<- if .Values.deploykf_dependencies.kyverno.images.kyverno.tag >}}
         tag: {{< .Values.deploykf_dependencies.kyverno.images.kyverno.tag | quote >}}
@@ -92,7 +107,7 @@ kyverno:
     enabled: true
     replicas: ~
     image:
-      registry: ~
+      registry: ""
       repository: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoBackgroundController.repository | quote >}}
       {{<- if .Values.deploykf_dependencies.kyverno.images.kyvernoBackgroundController.tag >}}
       tag: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoBackgroundController.tag | quote >}}
@@ -100,14 +115,19 @@ kyverno:
       pullPolicy: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoBackgroundController.pullPolicy | quote >}}
     rbac:
       clusterRole:
-        extraResources: {{< $extra_resources | toJSON >}}
+        extraResources:
+          {{<- range $extra_resource := $extra_resources >}}
+          - apiGroups: {{< $extra_resource.apiGroups | toJSON >}}
+            resources: {{< $extra_resource.resources | toJSON >}}
+            verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+          {{<- end >}}
 
   ## Cleanup controller configuration
   cleanupController:
     enabled: true
     replicas: ~
     image:
-      registry: ~
+      registry: ""
       repository: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoCleanupController.repository | quote >}}
       {{<- if .Values.deploykf_dependencies.kyverno.images.kyvernoCleanupController.tag >}}
       tag: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoCleanupController.tag | quote >}}
@@ -115,14 +135,18 @@ kyverno:
       pullPolicy: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoCleanupController.pullPolicy | quote >}}
     rbac:
       clusterRole:
-        extraResources: {{< $extra_resources | toJSON >}}
+        extraResources:
+          {{<- range $extra_resource := $extra_resources >}}
+          - apiGroups: {{< $extra_resource.apiGroups | toJSON >}}
+            resources: {{< $extra_resource.resources | toJSON >}}
+          {{<- end >}}
 
   ## Reports controller configuration
   reportsController:
     enabled: true
     replicas: ~
     image:
-      registry: ~
+      registry: ""
       repository: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoReportsController.repository | quote >}}
       {{<- if .Values.deploykf_dependencies.kyverno.images.kyvernoReportsController.tag >}}
       tag: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoReportsController.tag | quote >}}
