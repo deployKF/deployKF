@@ -1,0 +1,35 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "trust-manager.name" . }}
+  namespace: {{ .Release.Namespace }}
+  #################### BEGIN CHANGE ####################
+  annotations:
+    {{- toYaml .Values.app.certificateAnnotations | nindent 4 }}
+  ##################### END CHANGE #####################
+  labels:
+{{ include "trust-manager.labels" . | indent 4 }}
+
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "trust-manager.name" . }}
+  namespace: {{ .Release.Namespace }}
+  #################### BEGIN CHANGE ####################
+  annotations:
+    {{- toYaml .Values.app.certificateAnnotations | nindent 4 }}
+  ##################### END CHANGE #####################
+  labels:
+{{ include "trust-manager.labels" . | indent 4 }}
+spec:
+  dnsNames:
+  - "{{ include "trust-manager.name" . }}.{{ .Release.Namespace }}.svc"
+  secretName: {{ include "trust-manager.name" . }}-tls
+  revisionHistoryLimit: 1
+  issuerRef:
+    name: {{ include "trust-manager.name" . }}
+    kind: Issuer
+    group: cert-manager.io

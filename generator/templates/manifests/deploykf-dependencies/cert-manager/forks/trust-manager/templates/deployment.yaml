@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "trust-manager.name" . }}
+  namespace: {{ .Release.Namespace }}
+  #################### BEGIN CHANGE ####################
+  annotations:
+    {{- toYaml .Values.app.deploymentAnnotations | nindent 4 }}
+  ##################### END CHANGE #####################
+  labels:
+{{ include "trust-manager.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "trust-manager.name" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "trust-manager.name" . }}
+    spec:
+      serviceAccountName: {{ include "trust-manager.name" . }}
+      {{- if .Values.defaultPackage.enabled }}
+      initContainers:
+      - name: cert-manager-package-debian
+        image: "{{ .Values.defaultPackageImage.repository }}:{{ .Values.defaultPackageImage.tag }}"
+        imagePullPolicy: {{ .Values.defaultPackageImage.pullPolicy }}
+        args:
+          - "/copyandmaybepause"
+          - "/debian-package"
+          - "/packages"
+        volumeMounts:
+        - mountPath: /packages
+          name: packages
+          readOnly: false
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+      {{- end }}
+      containers:
+      - name: {{ include "trust-manager.name" . }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.app.webhook.port }}
+        - containerPort: {{ .Values.app.metrics.port }}
+        readinessProbe:
+          httpGet:
+            port: {{ .Values.app.readinessProbe.port }}
+            path: {{ .Values.app.readinessProbe.path }}
+          initialDelaySeconds: 3
+          periodSeconds: 7
+        command: ["trust-manager"]
+        args:
+          - "--log-level={{.Values.app.logLevel}}"
+          - "--metrics-port={{.Values.app.metrics.port}}"
+          - "--readiness-probe-port={{.Values.app.readinessProbe.port}}"
+          - "--readiness-probe-path={{.Values.app.readinessProbe.path}}"
+            # trust
+          - "--trust-namespace={{.Values.app.trust.namespace}}"
+            # webhook
+          - "--webhook-host={{.Values.app.webhook.host}}"
+          - "--webhook-port={{.Values.app.webhook.port}}"
+          - "--webhook-certificate-dir=/tls"
+          {{- if .Values.defaultPackage.enabled }}
+          - "--default-package-location=/packages/cert-manager-package-debian.json"
+          {{- end }}
+        volumeMounts:
+        - mountPath: /tls
+          name: tls
+          readOnly: true
+        - mountPath: /packages
+          name: packages
+          readOnly: true
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          {{- if .Values.app.securityContext.seccompProfileEnabled }}
+          seccompProfile:
+            type: RuntimeDefault
+          {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with  .Values.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: packages
+        emptyDir: {}
+      - name: tls
+        secret:
+          defaultMode: 420
+          secretName: {{ include "trust-manager.name" . }}-tls

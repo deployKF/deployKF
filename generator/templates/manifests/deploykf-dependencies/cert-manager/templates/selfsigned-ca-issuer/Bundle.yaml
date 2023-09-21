@@ -3,6 +3,10 @@ apiVersion: trust.cert-manager.io/v1alpha1
 kind: Bundle
 metadata:
   name: {{ .Values.deployKF.certManager.clusterIssuer.selfSigned.injectedConfigMapName | quote }}
+  annotations:
+    ## we must sync trust-manager resources after trust-manager itself
+    ## NOTE: this Bundle must come AFTER the 'selfsigned-ca-issuer' Certificate
+    argocd.argoproj.io/sync-wave: "30"
 spec:
   sources:
     - secret:

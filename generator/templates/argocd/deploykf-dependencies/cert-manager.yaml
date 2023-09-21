@@ -33,3 +33,11 @@ spec:
     server: {{< .Values.argocd.destination.server | quote >}}
     {{<- end >}}
     namespace: {{< .Values.deploykf_dependencies.cert_manager.namespace | quote >}}
+  syncPolicy:
+    ## retry is needed because cert-manager can take time to generate certificates
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 6m

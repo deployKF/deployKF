@@ -1,0 +1,134 @@
+# -- Number of replicas of trust to run.
+replicaCount: 1
+
+# -- For Private docker registries, authentication is needed. Registry secrets are applied to the service account
+imagePullSecrets: []
+
+image:
+  # -- Target image repository.
+  repository: quay.io/jetstack/trust-manager
+  # -- Target image version tag.
+  tag: v0.5.0
+  # -- Kubernetes imagePullPolicy on Deployment.
+  pullPolicy: IfNotPresent
+
+defaultPackage:
+  # -- Whether to load the default trust package during pod initialization and include it in main container args. This container enables the 'useDefaultCAs' source on Bundles.
+  enabled: true
+
+defaultPackageImage:
+  # -- Repository for the default package image. This image enables the 'useDefaultCAs' source on Bundles.
+  repository: quay.io/jetstack/cert-manager-package-debian
+  # -- Tag for the default package image
+  tag: "20210119.0"
+  # -- imagePullPolicy for the default package image
+  pullPolicy: IfNotPresent
+
+app:
+  #################### BEGIN CHANGE ####################
+  # -- Annotations for the trust-manager Deployment
+  deploymentAnnotations: {}
+  # -- Annotations for the Certificate/Issuer resources created by trust-manager
+  certificateAnnotations: {}
+  ##################### END CHANGE #####################
+
+  # -- Verbosity of trust logging; takes a value from 1-5, with higher being more verbose
+  logLevel: 1
+
+  metrics:
+    # -- Port for exposing Prometheus metrics on 0.0.0.0 on path '/metrics'.
+    port: 9402
+    # -- Service to expose metrics endpoint.
+    service:
+      # -- Create a Service resource to expose metrics endpoint.
+      enabled: true
+      # -- Service type to expose metrics.
+      type: ClusterIP
+      # -- ServiceMonitor resource for this Service.
+      servicemonitor:
+        enabled: false
+        prometheusInstance: default
+        interval: 10s
+        scrapeTimeout: 5s
+        labels: {}
+
+  readinessProbe:
+    # -- Container port on which to expose trust HTTP readiness probe using default network interface.
+    port: 6060
+    # -- Path on which to expose trust HTTP readiness probe using default network interface.
+    path: "/readyz"
+
+  trust:
+    # -- Namespace used as trust source. Note that the namespace _must_ exist
+    # before installing trust-manager.
+    namespace: cert-manager
+
+  webhook:
+    # -- Host that the webhook listens on.
+    host: 0.0.0.0
+    # -- Port that the webhook listens on.
+    port: 6443
+    # -- Timeout of webhook HTTP request.
+    timeoutSeconds: 5
+    # -- Type of Kubernetes Service used by the Webhook
+    service:
+      type: ClusterIP
+
+  securityContext:
+    # -- If false, disables the default seccomp profile, which might be required to run on certain platforms
+    seccompProfileEnabled: true
+
+resources: {}
+  # -- Kubernetes pod resource limits for trust.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # -- Kubernetes pod memory resource requests for trust.
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+# -- Configure the nodeSelector; defaults to any Linux node (trust-manager doesn't support Windows nodes)
+nodeSelector:
+  kubernetes.io/os: linux
+
+# Kubernetes Affinty; see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#affinity-v1-core
+# for example:
+#   affinity:
+#     nodeAffinity:
+#      requiredDuringSchedulingIgnoredDuringExecution:
+#        nodeSelectorTerms:
+#        - matchExpressions:
+#          - key: foo.bar.com/role
+#            operator: In
+#            values:
+#            - master
+# -- Kubernetes Affinty; see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#affinity-v1-core
+affinity: {}
+
+# List of Kubernetes Tolerations, if required; see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core
+# for example:
+#   tolerations:
+#   - key: foo.bar.com/role
+#     operator: Equal
+#     value: master
+#     effect: NoSchedule
+# -- List of Kubernetes Tolerations; see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#toleration-v1-core
+tolerations: []
+
+# List of Kubernetes TopologySpreadConstraints; see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#topologyspreadconstraint-v1-core
+# for example:
+#   topologySpreadConstraints:
+#   - maxSkew: 2
+#     topologyKey: topology.kubernetes.io/zone
+#     whenUnsatisfiable: ScheduleAnyway
+#     labelSelector:
+#       matchLabels:
+#         app.kubernetes.io/instance: cert-manager
+#         app.kubernetes.io/component: controller
+# -- List of Kubernetes TopologySpreadConstraints; see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.27/#topologyspreadconstraint-v1-core
+topologySpreadConstraints: []
+
+crds:
+  # -- Whether or not to install the crds.
+  enabled: true
