@@ -8,4 +8,4 @@ cd "$THIS_SCRIPT_PATH"
 ARGOCD_NAMESPACE="argocd"
 
 # apply the argocd apps
-kubectl apply -f ./example-app-of-apps/app-of-apps.yaml --namespace "$ARGOCD_NAMESPACE"
+kubectl apply -f ./app-of-apps.yaml --namespace "$ARGOCD_NAMESPACE"
