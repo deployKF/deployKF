@@ -33,6 +33,14 @@ spec:
     server: {{< .Values.argocd.destination.server | quote >}}
     {{<- end >}}
     namespace: kubeflow
+  syncPolicy:
+    ## retry is needed because the profile controller takes a few seconds to provision the namespaces
+    retry:
+      limit: 4
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
   ignoreDifferences:
     ## `rules` are aggregated when `aggregationRule.clusterRoleSelectors` is set
     - group: rbac.authorization.k8s.io
