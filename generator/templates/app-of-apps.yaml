@@ -20,10 +20,7 @@ spec:
     targetRevision: {{< .Values.argocd.source.repo.revision | quote >}}
     path: {{< path.Join .Values.argocd.source.repo.path "argocd" | quote >}}
   destination:
-    {{<- if .Values.argocd.destination.name >}}
-    name: {{< .Values.argocd.destination.name | quote >}}
-    {{<- else >}}
-    server: {{< .Values.argocd.destination.server | quote >}}
-    {{<- end >}}
+    ## NOTE: even if the internal apps target a remote cluster, the apps themselves should be in the Argo CD cluster
+    server: "https://kubernetes.default.svc"
     namespace: {{< .Values.argocd.namespace | quote >}}
 {{<- end >}}
