@@ -127,8 +127,8 @@ spec:
         
             ## add the helm repos for the chart dependencies
             helm dependency list --max-col-width 10000 "$OUTPUT_HELM_PATH" | awk 'NR>1 {print $1,$3}' | while read -r name url; do
-                if [[ -n "$name" && -n "$url" ]]; then
-                    helm repo add "$name" "$url"
+                if [[ -n "$name" && -n "$url" && "$url" =~ "^https?://" ]]; then
+                    helm repo add "$name" "$url" --force-update
                 fi
             done
         
