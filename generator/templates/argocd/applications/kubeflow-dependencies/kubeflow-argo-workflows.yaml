@@ -4,6 +4,9 @@ kind: Application
 metadata:
   name: kf-dep--argo-workflows
   namespace: {{< .Values.argocd.namespace | quote >}}
+  annotations:
+    ## applications in 'kubeflow-dependencies' come after 'deploykf-tools'
+    argocd.argoproj.io/sync-wave: "50"
   labels:
     app.kubernetes.io/name: kubeflow-argo-workflows
     app.kubernetes.io/component: kubeflow-dependencies

@@ -4,6 +4,9 @@ kind: Application
 metadata:
   name: kf-tools--poddefaults-webhook
   namespace: {{< .Values.argocd.namespace | quote >}}
+  annotations:
+    ## applications in 'kubeflow-tools' come after 'kubeflow-dependencies'
+    argocd.argoproj.io/sync-wave: "60"
   labels:
     app.kubernetes.io/name: poddefaults-webhook
     app.kubernetes.io/component: kubeflow-tools

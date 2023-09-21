@@ -4,6 +4,10 @@ kind: Application
 metadata:
   name: dkf-dep--cert-manager
   namespace: {{< .Values.argocd.namespace | quote >}}
+  annotations:
+    ## applications in 'deploykf-dependencies' come first
+    ## NOTE: in this group, each application has a separate wave to avoid conflicts due to webhooks
+    argocd.argoproj.io/sync-wave: "10"
   labels:
     app.kubernetes.io/name: cert-manager
     app.kubernetes.io/component: deploykf-dependencies

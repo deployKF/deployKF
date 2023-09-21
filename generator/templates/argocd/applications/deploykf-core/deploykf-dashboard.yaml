@@ -4,6 +4,9 @@ kind: Application
 metadata:
   name: dkf-core--deploykf-dashboard
   namespace: {{< .Values.argocd.namespace | quote >}}
+  annotations:
+    ## applications in 'deploykf-core' come after 'deploykf-dependencies'
+    argocd.argoproj.io/sync-wave: "21"
   labels:
     app.kubernetes.io/name: deploykf-dashboard
     app.kubernetes.io/component: deploykf-core
