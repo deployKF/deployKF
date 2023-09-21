@@ -4,6 +4,10 @@ kind: Application
 metadata:
   name: dkf-core--deploykf-istio-gateway
   namespace: {{< .Values.argocd.namespace | quote >}}
+  annotations:
+    ## applications in 'deploykf-core' come after 'deploykf-dependencies'
+    ## NOTE: 'deploykf-istio-gateway' must come FIRST, as other 'deploykf-core' applications depend on it
+    argocd.argoproj.io/sync-wave: "20"
   labels:
     app.kubernetes.io/name: deploykf-istio-gateway
     app.kubernetes.io/component: deploykf-core

@@ -4,6 +4,9 @@ kind: Application
 metadata:
   name: kf-tools--notebooks--notebook-controller
   namespace: {{< .Values.argocd.namespace | quote >}}
+  annotations:
+    ## applications in 'kubeflow-tools' come after 'kubeflow-dependencies'
+    argocd.argoproj.io/sync-wave: "60"
   labels:
     app.kubernetes.io/name: notebook-controller
     app.kubernetes.io/component: kubeflow-tools

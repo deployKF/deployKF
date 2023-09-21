@@ -4,6 +4,9 @@ kind: Application
 metadata:
   name: dkf-opt--deploykf-minio
   namespace: {{< .Values.argocd.namespace | quote >}}
+  annotations:
+    ## applications in 'deploykf-opt' come after 'deploykf-core'
+    argocd.argoproj.io/sync-wave: "30"
   labels:
     app.kubernetes.io/name: deploykf-minio
     app.kubernetes.io/component: deploykf-opt

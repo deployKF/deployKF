@@ -4,6 +4,10 @@ kind: Application
 metadata:
   name: dkf-dep--istio
   namespace: {{< .Values.argocd.namespace | quote >}}
+  annotations:
+    ## applications in 'deploykf-dependencies' come first
+    ## NOTE: in this group, each application has a separate wave to avoid conflicts due to webhooks
+    argocd.argoproj.io/sync-wave: "11"
   labels:
     app.kubernetes.io/name: istio
     app.kubernetes.io/component: deploykf-dependencies

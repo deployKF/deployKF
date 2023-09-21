@@ -4,6 +4,10 @@ kind: Application
 metadata:
   name: dkf-core--deploykf-profiles-generator
   namespace: {{< .Values.argocd.namespace | quote >}}
+  annotations:
+    ## applications in 'deploykf-core' come after 'deploykf-dependencies'
+    ## NOTE: 'deploykf-profiles-generator' must come AFTER 'deploykf-dashboard', because the latter contains the profile controller
+    argocd.argoproj.io/sync-wave: "23"
   labels:
     app.kubernetes.io/name: deploykf-profiles-generator
     app.kubernetes.io/component: deploykf-core
