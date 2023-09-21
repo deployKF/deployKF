@@ -1,0 +1,110 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  {{<- if tmpl.Exec "argocd.destination.is_remote" . >}}
+  - namespaces.yaml
+  {{<- end >}}
+
+  ###########################
+  ## deploykf-dependencies ##
+  ###########################
+  {{<- if .Values.deploykf_dependencies.cert_manager.enabled >}}
+  - deploykf-dependencies/cert-manager.yaml
+  {{<- end >}}
+
+  {{<- if .Values.deploykf_dependencies.istio.enabled >}}
+  - deploykf-dependencies/istio.yaml
+  {{<- end >}}
+  
+  {{<- if .Values.deploykf_dependencies.kyverno.enabled >}}
+  - deploykf-dependencies/kyverno.yaml
+  {{<- end >}}
+
+  ###################
+  ## deploykf-core ##
+  ###################
+  {{<- if .Values.deploykf_core.deploykf_auth.enabled >}}
+  - deploykf-core/deploykf-auth.yaml
+  {{<- end >}}
+  
+  {{<- if .Values.deploykf_core.deploykf_dashboard.enabled >}}
+  - deploykf-core/deploykf-dashboard.yaml
+  {{<- end >}}
+
+  {{<- if .Values.deploykf_core.deploykf_istio_gateway.enabled >}}
+  - deploykf-core/deploykf-istio-gateway.yaml
+  {{<- end >}}
+
+  {{<- if .Values.deploykf_core.deploykf_profiles_generator.enabled >}}
+  - deploykf-core/deploykf-profiles-generator.yaml
+  {{<- end >}}
+
+  ##################
+  ## deploykf-opt ##
+  ##################
+  {{<- if .Values.deploykf_opt.deploykf_minio.enabled >}}
+  - deploykf-opt/deploykf-minio.yaml
+  {{<- end >}}
+
+  {{<- if .Values.deploykf_opt.deploykf_mysql.enabled >}}
+  - deploykf-opt/deploykf-mysql.yaml
+  {{<- end >}}
+
+  ####################
+  ## deploykf-tools ##
+  ####################
+  ## TODO: add 'deploykf-tools' https://www.deploykf.org/reference/future-tools/
+
+  ###########################
+  ## kubeflow-dependencies ##
+  ###########################
+  {{<- if .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled >}}
+  - kubeflow-dependencies/kubeflow-argo-workflows.yaml
+  {{<- end >}}
+
+  ####################
+  ## kubeflow-tools ##
+  ####################
+  {{<- if .Values.kubeflow_tools.katib.enabled >}}
+  - kubeflow-tools/katib.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_tools.notebooks.enabled >}}
+  - kubeflow-tools/notebooks--jupyter-web-app.yaml
+  - kubeflow-tools/notebooks--notebook-controller.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
+  - kubeflow-tools/pipelines.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_tools.poddefaults_webhook.enabled >}}
+  - kubeflow-tools/poddefaults-webhook.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_tools.tensorboards.enabled >}}
+  - kubeflow-tools/tensorboards--tensorboard-controller.yaml
+  - kubeflow-tools/tensorboards--tensorboards-web-app.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_tools.training_operator.enabled >}}
+  - kubeflow-tools/training-operator.yaml
+  {{<- end >}}
+
+  {{<- if .Values.kubeflow_tools.volumes.enabled >}}
+  - kubeflow-tools/volumes--volumes-web-app.yaml
+  {{<- end >}}
+
+{{<- if .Values.argocd.appNamePrefix >}}
+transformers:
+  - |
+    apiVersion: builtin
+    kind: PrefixSuffixTransformer
+    metadata:
+      name: argocd-app-name-prefix
+    prefix: {{< .Values.argocd.appNamePrefix | quote >}}
+    fieldSpecs:
+      - apiVersion: argoproj.io/v1alpha1
+        kind: Application
+        path: metadata/name
+{{<- end >}}

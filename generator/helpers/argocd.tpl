@@ -67,3 +67,19 @@ plugin:
       array: {{< $values_files | toJSON >}}
     {{<- end >}}
 {{<- end >}}
+
+##
+## If the configured ArgoCD destination is NOT the cluster where the ArgoCD is running.
+## - NOTE: empty means false, non-empty means true
+##
+{{<- define "argocd.destination.is_remote" ->}}
+{{<- if .Values.argocd.destination.name ->}}
+{{<- if ne .Values.argocd.destination.name "in-cluster" ->}}
+true
+{{<- end ->}}
+{{<- else ->}}
+{{<- if ne .Values.argocd.destination.server "https://kubernetes.default.svc" ->}}
+true
+{{<- end ->}}
+{{<- end ->}}
+{{<- end ->}}
