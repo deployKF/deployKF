@@ -1,0 +1,382 @@
+##
+##
+## This file demonstrates how you might structure overrides for the 'sample-values.yaml' file.
+## By default, this file makes NO changes when applied over the 'sample-values.yaml' file.
+##
+## Notes:
+##  - YAML maps are RECURSIVELY merged across values files
+##  - YAML lists are REPLACED in their entirety across values files
+##  - Do NOT include empty/null sections, as this will remove ALL values from that section.
+##    To include a section without overriding any values, set it to an empty map: `{}`
+##  - We don't show all sections/values, only those which are commonly overridden.
+##    The full list is available at https://www.deploykf.org/reference/deploykf-values/
+##
+##
+
+## --------------------------------------------------------------------------------
+##                              deploykf-dependencies
+## --------------------------------------------------------------------------------
+deploykf_dependencies:
+
+  ## --------------------------------------
+  ##             cert-manager
+  ## --------------------------------------
+  cert_manager:
+    {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+    ## extra manifests
+    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#step-2-create-a-clusterissuer
+    ##
+    #extraManifests:
+    #  - |
+    #    apiVersion: cert-manager.io/v1
+    #    kind: ClusterIssuer
+    #    metadata:
+    #      name: my-cluster-issuer
+    #    spec:
+    #      acme:
+    #        << YOUR ACME CONFIGURATION >>
+
+    ## istio gateway certificate issuer configs
+    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#step-3-configure-the-istio-gateway
+    ##
+    #clusterIssuer:
+    #  enabled: false
+    #  issuerName: my-cluster-issuer
+
+  ## --------------------------------------
+  ##                 istio
+  ## --------------------------------------
+  istio:
+    {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+  ## --------------------------------------
+  ##                kyverno
+  ## --------------------------------------
+  kyverno:
+    {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+## --------------------------------------------------------------------------------
+##                                  deploykf-core
+## --------------------------------------------------------------------------------
+deploykf_core:
+
+  ## --------------------------------------
+  ##             deploykf-auth
+  ## --------------------------------------
+  deploykf_auth:
+
+    ## dex configs
+    ##
+    dex:
+      {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+      ## dex static passwords
+      ##  - https://www.deploykf.org/guides/platform/deploykf-authentication/#static-userpassword-combinations
+      ##  - there are default static passwords, set this to an empty list to disable them
+      ##
+      #staticPasswords: []
+
+      ## dex connectors
+      ##  - https://www.deploykf.org/guides/platform/deploykf-authentication/#external-identity-providers
+      ##
+      #connectors: []
+
+  ## --------------------------------------
+  ##        deploykf-istio-gateway
+  ## --------------------------------------
+  deploykf_istio_gateway:
+    {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+    ## extra manifests
+    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#expose-with-ingress
+    ##  - we recommend using a LoadBalancer Service instead of an Ingress
+    ##
+    #extraManifests:
+    #  - |
+    #    apiVersion: extensions/v1beta1
+    #    kind: Ingress
+    #    metadata:
+    #      name: deploykf-gateway
+    #    spec:
+    #      << YOUR INGRESS CONFIGURATION >>
+
+    ## istio gateway configs
+    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#2-configure-dns
+    ##
+    #gateway:
+    #  hostname: deploykf.example.com
+    #  ports:
+    #    http: 80
+    #    https: 443
+
+    ## istio gateway service configs
+    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#expose-with-loadbalancer-service
+    ##
+    #gatewayService:
+    #  name: deploykf-gateway
+    #  type: LoadBalancer
+    #  annotations:
+    #    << YOUR SERVICE ANNOTATIONS >>
+
+  ## --------------------------------------
+  ##      deploykf-profiles-generator
+  ## --------------------------------------
+  deploykf_profiles_generator:
+
+    ## profile defaults
+    profileDefaults:
+
+      ## the default access for members of profiles, when not explicitly specified
+      ##
+      #memberAccess:
+      #  role: view
+      #  notebooksAccess: false
+
+      ## the default list of plugins for profiles, when not explicitly specified
+      ##  - you may override these defaults for a specific profile definition
+      ##
+      #plugins: []
+
+      ## the default tool configs for profiles
+      ##
+      tools:
+
+        ## the default Kubeflow Pipelines configs for profiles
+        ##
+        kubeflowPipelines:
+          {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+          ## the default Kubeflow Pipelines object store auth configs for profiles
+          ##  - https://www.deploykf.org/guides/tools/external-object-store/#authentication
+          ##  - the matching secret is CLONED into the profile namespace for use by Kubeflow Pipelines
+          ##  - you will need to manually create the secrets you reference here
+          ##  - you can have all profiles share the same secret, by removing '{profile_name}' from the name
+          ##  - you may override these defaults for a specific profile definition
+          ##
+          #objectStoreAuth:
+          #  existingSecret: "kubeflow-pipelines--profile-object-store-auth--{profile_name}"
+          #  existingSecretNamespace: "my-namespace-with-the-secrets"
+          #  existingSecretAccessKeyKey: "access_key"
+          #  existingSecretSecretKeyKey: "secret_key"
+
+    ## user entities
+    ##  - https://www.deploykf.org/guides/platform/deploykf-profiles/#user-entities
+    ##
+    #users:
+    #  - id: user-1
+    #    email: "user1@example.com"
+    #  - id: user-2
+    #    email: "user2@example.com"
+
+    ## group entities
+    ##  - https://www.deploykf.org/guides/platform/deploykf-profiles/#group-entities
+    ##
+    #groups:
+    #  - id: team-1
+    #    users:
+    #      - user-1
+    #      - user-2
+
+    ## profile definitions
+    ##  - https://www.deploykf.org/guides/platform/deploykf-profiles/#profile-definitions
+    ##
+    #profiles:
+    #  - name: team-1
+    #    members:
+    #      - group: team-1
+    #        access:
+    #          role: edit
+    #          notebooksAccess: true
+    #
+    #  - name: team-1-prod
+    #    members:
+    #      - group: team-1
+    #        access:
+    #          role: view
+    #          notebooksAccess: false
+
+## --------------------------------------------------------------------------------
+##                                   deploykf-opt
+## --------------------------------------------------------------------------------
+deploykf_opt:
+
+  ## --------------------------------------
+  ##            deploykf-minio
+  ## --------------------------------------
+  deploykf_minio:
+    {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+    ## if an embedded MinIO instance will be deployed
+    ##  - https://www.deploykf.org/guides/tools/external-object-store/
+    ##
+    #enabled: false
+
+  ## --------------------------------------
+  ##            deploykf-mysql
+  ## --------------------------------------
+  deploykf_mysql:
+    {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+    ## if an embedded MySQL instance will be deployed
+    ##  - https://www.deploykf.org/guides/tools/external-mysql/
+    ##
+    #enabled: false
+
+## --------------------------------------------------------------------------------
+##                                  kubeflow-tools
+## --------------------------------------------------------------------------------
+kubeflow_tools:
+
+  ## --------------------------------------
+  ##                 katib
+  ## --------------------------------------
+  katib:
+    {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+    ## mysql connection configs
+    ##  - https://www.deploykf.org/guides/tools/external-mysql/#2-connect-katib
+    ##  - we recommend storing credentials in a Secret, rather than in plaintext
+    ##
+    #mysql:
+    #  useExternal: true
+    #  host: "mysql.example.com"
+    #  port: 3306
+    #  auth:
+    #    #username: kubeflow
+    #    #password: password
+    #    existingSecret: "katib--mysql-auth" # <-- YOUR EXISTING SECRET, IN 'kubeflow' NAMESPACE
+    #    existingSecretUsernameKey: "username"
+    #    existingSecretPasswordKey: "password"
+
+    ## mysql database name
+    ##  - you must create this database in your MySQL instance
+    ##
+    #mysqlDatabase: katib
+
+  ## --------------------------------------
+  ##               notebooks
+  ## --------------------------------------
+  notebooks:
+
+    ## notebook spawner configs
+    ##  - https://www.deploykf.org/guides/tools/kubeflow-notebooks/
+    ##
+    spawnerFormDefaults:
+      {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+      ## Jupyter-like Container Images
+      ##  - https://www.deploykf.org/guides/tools/kubeflow-notebooks/#container-images
+      ##
+      #image:
+      #  ## the default container image
+      #  value: kubeflownotebookswg/jupyter-scipy:v1.7.0
+      #
+      #  ## the list of available container images in the dropdown
+      #  options:
+      #    - kubeflownotebookswg/jupyter-scipy:v1.7.0
+      #    - kubeflownotebookswg/jupyter-pytorch-full:v1.7.0
+      #    - kubeflownotebookswg/jupyter-pytorch-cuda-full:v1.7.0
+      #    - kubeflownotebookswg/jupyter-tensorflow-full:v1.7.0
+      #    - kubeflownotebookswg/jupyter-tensorflow-cuda-full:v1.7.0
+
+      ## VSCode-like Container Images (Group 1)
+      ##  - https://www.deploykf.org/guides/tools/kubeflow-notebooks/#container-images
+      ##
+      #imageGroupOne:
+      #  ## the default container image
+      #  value: kubeflownotebookswg/codeserver-python:v1.7.0
+      #
+      #  ## the list of available container images in the dropdown
+      #  options:
+      #    - kubeflownotebookswg/codeserver-python:v1.7.0
+
+      ## RStudio-like Container Images (Group 2)
+      ##  - https://www.deploykf.org/guides/tools/kubeflow-notebooks/#container-images
+      ##
+      #imageGroupTwo:
+      #  ## the default container image
+      #  value: kubeflownotebookswg/rstudio-tidyverse:v1.7.0
+      #
+      #  ## the list of available container images in the dropdown
+      #  options:
+      #    - kubeflownotebookswg/rstudio-tidyverse:v1.7.0
+
+  ## --------------------------------------
+  ##               pipelines
+  ## --------------------------------------
+  pipelines:
+
+    ## storage bucket configs
+    ##
+    #bucket:
+    #  name: my-bucket-name
+    #  region: ""
+
+    ## object store configs
+    ##  - https://www.deploykf.org/guides/tools/external-object-store/#2-connect-kubeflow-pipelines
+    ##
+    objectStore:
+      {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+      ## object store connection configs
+      ##
+      #useExternal: true
+      #host: s3.amazonaws.com
+      #port: ""
+      #useSSL: true
+
+      ## object store auth configs
+      ##  - we recommend storing credentials in a Secret, rather than in plaintext
+      ##  - this auth is used by the backend, in-profile auth is configured by 'deploykf-profiles-generator'
+      ##
+      #auth:
+      #  fromEnv: false
+      #  #accessKey: my-access-key
+      #  #secretKey: my-secret-key
+      #  existingSecret: "kubeflow-pipelines--object-store-auth" # <-- YOUR EXISTING SECRET, IN 'kubeflow' NAMESPACE
+      #  existingSecretAccessKeyKey: "AWS_ACCESS_KEY_ID"
+      #  existingSecretSecretKeyKey: "AWS_SECRET_ACCESS_KEY"
+
+    ## mysql connection configs
+    ##  - https://www.deploykf.org/guides/tools/external-mysql/#3-connect-kubeflow-pipelines
+    ##  - we recommend storing credentials in a Secret, rather than in plaintext
+    ##
+    #mysql:
+    #  useExternal: true
+    #  host: "mysql.example.com"
+    #  port: 3306
+    #  auth:
+    #    #username: kubeflow
+    #    #password: password
+    #    existingSecret: "kubeflow-pipelines--mysql-auth" # <-- YOUR EXISTING SECRET, IN 'kubeflow' NAMESPACE
+    #    existingSecretUsernameKey: "username"
+    #    existingSecretPasswordKey: "password"
+
+    ## mysql database names
+    ##  - you must create these databases in your MySQL instance
+    ##
+    #mysqlDatabases:
+    #  cacheDatabase: kfp_cache
+    #  metadataDatabase: kfp_metadata
+    #  pipelinesDatabase: kfp_pipelines
+
+    ## configs specific to Kubeflow Pipelines v2
+    ##
+    kfpV2:
+      {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+      ## apply fixes to make MinIO work with KFP v2
+      ##  - you must set this to 'false' if you are using an external object store
+      ##
+      #minioFix: false
+
+  ## profile resource generation configs
+  ##
+  profileResourceGeneration:
+    {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+    ## if a PodDefault named "kubeflow-pipelines-api-token" should be generated in each profile namespace
+    ##  - https://www.deploykf.org/user-guides/access-kubeflow-pipelines-api/#authenticate-with-kubernetes-serviceaccount-token
+    ##
+    #kfpApiTokenPodDefault: true

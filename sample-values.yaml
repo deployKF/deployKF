@@ -1,3 +1,23 @@
+##
+##
+## This file is intended to be a base for your deployKF values.
+## You may either copy and modify it, or include it as a base before your own overrides.
+## For an example of overrides, see the 'sample-values-overrides.yaml' in the main repo.
+##
+## Differences from 'default_values.yaml':
+##  - all tools are enabled
+##  - secrets are randomly generated at install
+##
+## Notes:
+##  - YAML maps are RECURSIVELY merged across values files
+##  - YAML lists are REPLACED in their entirety across values files
+##  - Do NOT include empty/null sections, as this will remove ALL values from that section.
+##    To include a section without overriding any values, set it to an empty map: `{}`
+##  - We don't show all sections/values, only those which are commonly overridden.
+##    The full list is available at https://www.deploykf.org/reference/deploykf-values/
+##
+##
+
 ## --------------------------------------------------------------------------------
 ##
 ##                                      argocd
@@ -65,6 +85,12 @@ deploykf_dependencies:
   cert_manager:
     enabled: true
     namespace: cert-manager
+
+    ## extra manifests
+    ##  - a list of strings containing extra Kubernetes resource manifests
+    ##  - strings can include deployKF templates `{{< ... >}}` and Helm templates `{{ ... }}`
+    ##
+    extraManifests: []
 
     ## istio gateway certificate issuer configs
     ##  - if you wish to use your own ClusterIssuer, set `clusterIssuer.enabled` to false
@@ -201,7 +227,14 @@ deploykf_core:
   deploykf_istio_gateway:
     namespace: deploykf-istio-gateway
 
+    ## extra manifests
+    ##  - a list of strings containing extra Kubernetes resource manifests
+    ##  - strings can include deployKF templates `{{< ... >}}` and Helm templates `{{ ... }}`
+    ##
+    extraManifests: []
+
     ## istio gateway configs
+    ##
     gateway:
       hostname: deploykf.example.com
       ports:
@@ -219,6 +252,7 @@ deploykf_core:
         annotations: {}
 
     ## istio gateway service configs
+    ##
     gatewayService:
       name: deploykf-gateway
       annotations: {}
