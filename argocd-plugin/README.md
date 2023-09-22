@@ -2,7 +2,7 @@
 
 The deployKF ArgoCD plugin allows using deployKF without storing the rendered manifests in a git repository.
 
-## Install Plugin (New ArgoCD)
+## Install Plugin - New ArgoCD
 
 We provide manifests to install ArgoCD, with the deployKF plugin already installed, under the [`./argocd-install/`](./argocd-install) directory.
 
@@ -25,7 +25,7 @@ cd ./deploykf/argocd-plugin
 > If you already have ArgoCD installed, take extreme caution with the `./install_argocd.sh` script.
 > If you are not certain that our manifests are compatible with your existing ArgoCD installation, you should use the manual plugin install method.
 
-## Install Plugin (Existing ArgoCD)
+## Install Plugin - Existing ArgoCD
 
 To install the deployKF plugin on an existing ArgoCD deployment, you must do the following (in your `argocd` Namespace):
 
@@ -82,12 +82,12 @@ metadata:
 spec:
   project: "default"
   source:
-    ## any valid git repository 
-    ##  - note, this does NOT need to be the deployKF repository, we are only using it
-    ##    to access the './sample-values.yaml' file for the `values_files` parameter
+    ## source git repo configuration
+    ##  - we use the 'deploykf/deploykf' repo so we can read its 'sample-values.yaml'
+    ##    file, but you may use any repo (even one with no files)
     ##
     repoURL: "https://github.com/deployKF/deployKF.git"
-    targetRevision: "v0.1.1"
+    targetRevision: "v0.1.1" # <-- replace with a deployKF repo tag!
     path: "."
 
     ## plugin configuration
@@ -100,42 +100,124 @@ spec:
         ##  - available versions: https://github.com/deployKF/deployKF/releases
         ##
         - name: "source_version"
-          string: "0.1.1"
-          
+          string: "0.1.1" # <-- replace with a deployKF generator version!
+
         ## paths to values files within the `repoURL` repository
+        ##  - the values in these files are merged, with later files taking precedence
+        ##  - we strongly recommend using 'sample-values.yaml' as the base of your values
+        ##    so you can easily upgrade to newer versions of deployKF
         ##
         - name: "values_files"
           array:
             - "./sample-values.yaml"
-        
+
         ## a string containing the contents of a values file
+        ##  - this parameter allows defining values without needing to create a file in the repo
+        ##  - these values are merged with higher precedence than those defined in `values_files`
         ##
         - name: "values"
           string: |
+            ##
+            ## This demonstrates how you might structure overrides for the 'sample-values.yaml' file.
+            ## For a more comprehensive example, see the 'sample-values-overrides.yaml' in the main repo.
+            ##
+            ## Notes:
+            ##  - YAML maps are RECURSIVELY merged across values files
+            ##  - YAML lists are REPLACED in their entirety across values files
+            ##  - Do NOT include empty/null sections, as this will remove ALL values from that section.
+            ##    To include a section without overriding any values, set it to an empty map: `{}`
+            ##
+
             ## --------------------------------------------------------------------------------
-            ##
+            ##                              deploykf-dependencies
+            ## --------------------------------------------------------------------------------
+            deploykf_dependencies:
+
+              ## --------------------------------------
+              ##             cert-manager
+              ## --------------------------------------
+              cert_manager:
+                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+              ## --------------------------------------
+              ##                 istio
+              ## --------------------------------------
+              istio:
+                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+              ## --------------------------------------
+              ##                kyverno
+              ## --------------------------------------
+              kyverno:
+                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+            ## --------------------------------------------------------------------------------
             ##                                  deploykf-core
-            ##
             ## --------------------------------------------------------------------------------
             deploykf_core:
-              
+
+              ## --------------------------------------
+              ##             deploykf-auth
+              ## --------------------------------------
+              deploykf_auth:
+                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
               ## --------------------------------------
               ##        deploykf-istio-gateway
               ## --------------------------------------
               deploykf_istio_gateway:
-            
-                ## istio gateway configs
-                gateway:
-                  hostname: deploykf.example.com
+                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+              ## --------------------------------------
+              ##      deploykf-profiles-generator
+              ## --------------------------------------
+              deploykf_profiles_generator:
+                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+            ## --------------------------------------------------------------------------------
+            ##                                   deploykf-opt
+            ## --------------------------------------------------------------------------------
+            deploykf_opt:
+
+              ## --------------------------------------
+              ##            deploykf-minio
+              ## --------------------------------------
+              deploykf_minio:
+                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+              ## --------------------------------------
+              ##            deploykf-mysql
+              ## --------------------------------------
+              deploykf_mysql:
+                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+            ## --------------------------------------------------------------------------------
+            ##                                  kubeflow-tools
+            ## --------------------------------------------------------------------------------
+            kubeflow_tools:
+
+              ## --------------------------------------
+              ##                 katib
+              ## --------------------------------------
+              katib:
+                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+              ## --------------------------------------
+              ##               notebooks
+              ## --------------------------------------
+              notebooks:
+                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
+
+              ## --------------------------------------
+              ##               pipelines
+              ## --------------------------------------
+              pipelines:
+                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
 
   destination:
     server: "https://kubernetes.default.svc"
     namespace: "argocd"
 ```
-
-> __TIP:__ 
-> 
-> The `spec.source.repoURL` can be any valid git repository, even one with no files, if `values_files` is not used.
 
 For example, to apply the example app-of-apps [`./example-app-of-apps/app-of-apps.yaml`](./example-app-of-apps/app-of-apps.yaml):
 
