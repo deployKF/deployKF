@@ -4,20 +4,28 @@
   <h3>Your Open ML Platform</h3>
 </div>
 
-<br>
-
 <div align="center">
   <a href="https://www.deploykf.org/" target="_blank" rel="noopener">
-    <img src="https://www.deploykf.org/assets/images/logo_1/logo.svg" width="150">
+    <img src="https://www.deploykf.org/assets/images/logo_1/logo.svg" width="140">
   </a>
 </div>
 
+<hr>
+
 <p align="center">
-  <a href="https://www.deploykf.org/" target="_blank" rel="noopener"><b>deployKF</b></a> is a next-generation machine learning toolkit for <a href="https://kubernetes.io/" target="_blank" rel="noopener">Kubernetes</a> which effortlessly integrates <a href="https://www.kubeflow.org/" target="_blank" rel="noopener">Kubeflow</a> and other leading ML/AI tools.
+  <a href="https://www.deploykf.org/" target="_blank" rel="noopener"><b>deployKF</b></a> builds world-class ML Platforms on <strong>any Kubernetes cluster</strong>, within <strong>any cloud or environment</strong>, in minutes.
   <br>
-  <sub><sub>Crafted with ❤️ by the developers of Kubeflow.</sub></sub>
+  <br>
+  With <em>centralized configs</em>, in-place upgrades, and support for leading ML & Data tools like 
+  <a href="https://www.deploykf.org/reference/tools/#kubeflow-ecosystem"><strong>Kubeflow</strong></a>,
+  <a href="https://www.deploykf.org/reference/future-tools/#apache-airflow"><strong>Airflow</strong><sup>†</sup></a>, and
+  <a href="https://www.deploykf.org/reference/future-tools/#mlflow-model-registry"><strong>MLflow</strong><sup>†</sup></a>,
+  deployKF lets you focus on using the platform, not building it.
+  <br>
+  <sub><sup>†</sup><sup>Coming soon, see our <a href="https://www.deploykf.org/reference/tools/" target="_blank" rel="noopener">current</a> and <a href="https://www.deploykf.org/reference/future-tools/" target="_blank" rel="noopener">future</a> tools.</sup></sub>
 </p>
 
+<hr>
 <br>
 
 # About
@@ -48,21 +56,21 @@
 
 deployKF is the best way to build reliable ML Platforms on Kubernetes.
 
-- deployKF supports leading [MLOps & Data tools](https://www.deploykf.org/reference/tools/) from both Kubeflow, and other projects
-- deployKF has a Helm-like interface, with [values](https://www.deploykf.org/reference/deploykf-values/) for configuring all aspects of the deployment (no need to edit Kubernetes YAML)
-- deployKF does NOT install resources directly in your cluster, instead it generates [ArgoCD Applications](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#applications) to provide native GitOps support
+- deployKF supports leading [ML & Data tools](https://www.deploykf.org/reference/tools/) from both Kubeflow, and other projects
+- deployKF has a Helm-like interface, with [values](https://www.deploykf.org/reference/deploykf-values/) for configuring all aspects of the deployment
+- deployKF uses [ArgoCD Applications](https://www.deploykf.org/guides/getting-started/#4-sync-argocd-applications) to provide native GitOps support
 
-## What ML/AI tools are in deployKF?
+## What ML and AI tools are in deployKF?
 
-Currently, deployKF supports MLOps tools from the Kubeflow ecosystem like [Kubeflow Pipelines](https://www.deploykf.org/reference/tools/#kubeflow-pipelines) and [Kubeflow Notebooks](https://www.deploykf.org/reference/tools/#kubeflow-notebooks).
-We are actively adding support for other popular tools such as [MLFlow (Model Registry)](https://www.deploykf.org/reference/future-tools/#mlflow-model-registry), [Apache Airflow](https://www.deploykf.org/reference/future-tools/#apache-airflow), and [Feast](https://www.deploykf.org/reference/future-tools/#feast). 
+deployKF supports all tools from the [Kubeflow Ecosystem](https://www.deploykf.org/reference/tools/#kubeflow-ecosystem) including [__Kubeflow Pipelines__](https://www.deploykf.org/reference/tools/#kubeflow-pipelines) and [__Kubeflow Notebooks__](https://www.deploykf.org/reference/tools/#kubeflow-notebooks).
+We are actively adding support for other popular tools such as [__MLflow__](https://www.deploykf.org/reference/future-tools/#mlflow-model-registry), [__Airflow__](https://www.deploykf.org/reference/future-tools/#apache-airflow), and [__Feast__](https://www.deploykf.org/reference/future-tools/#feast). 
 
-For more information, please see [supported tools](https://www.deploykf.org/reference/tools/) and [future tools](https://www.deploykf.org/reference/future-tools/)!
+For more information, please see our [current](https://www.deploykf.org/reference/tools/) and [future](https://www.deploykf.org/reference/future-tools/) tools!
 
 ## Who makes deployKF?
 
 deployKF was originally created by [Mathew Wicks](https://www.linkedin.com/in/mathewwicks/) (GitHub: [@thesuperzapper](https://github.com/thesuperzapper)), a Kubeflow lead and maintainer of the popular [Apache Airflow Helm Chart](https://github.com/airflow-helm/charts).
-However, deployKF is now a community-led project that welcomes contributions from anyone who wants to help.
+deployKF is a community-led project that welcomes contributions from anyone who wants to help.
 
 ## Is commercial support available for deployKF?
 
@@ -72,18 +80,13 @@ Connect on [LinkedIn](https://www.linkedin.com/in/mathewwicks/) or email [`sales
 
 ## Who uses deployKF?
 
-deployKF is a new project, and we are still building our community.
-
-Please consider adding your organization to our [list of adopters](ADOPTERS.md).
+deployKF is a new project, and we are still building our community, consider [adding your organization](ADOPTERS.md) to our list of adopters.
 
 ## What is the difference between Kubeflow and deployKF?
 
-Kubeflow and deployKF are two different but related projects:
+Kubeflow and deployKF are two different but related projects.
 
-- deployKF is a tool for deploying Kubeflow and other MLOps tools on Kubernetes as a cohesive platform.
-- Kubeflow is a project that develops MLOps tools, including Kubeflow Pipelines, Kubeflow Notebooks, Katib, and more.
-
-For more details, see our detailed [deployKF vs Kubeflow](https://www.deploykf.org/about/kubeflow-vs-deploykf/) comparison.
+For more details, please see our [deployKF vs Kubeflow](https://www.deploykf.org/about/kubeflow-vs-deploykf/) comparison.
 
 ## Do you have a Slack or Mailing List?
 
