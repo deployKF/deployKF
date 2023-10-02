@@ -121,15 +121,26 @@ function argocd_login() {
 function sync_argocd_apps() {
   local _enable_prune="$1"
   local _prompt_for_prune="$2"
-  local _app_names=("${@:3}")
+  local _force_sync="$3"
+  local _resource_selectors="$4"
+  local _app_names=("${@:5}")
 
   echo ""
   echo_blue "=========================================================================================="
-  echo_blue "Syncing applications (timeout: ${ARGOCD_SYNC_TIMEOUT_SECONDS}s, prune: $_enable_prune)..."
+  echo_blue "Syncing applications with timeout of ${ARGOCD_SYNC_TIMEOUT_SECONDS}s:"
   local _app_name
   for _app_name in "${_app_names[@]}"; do
     echo_blue " - $_app_name"
   done
+  if [[ -n "$_resource_selectors" ]]; then
+    echo_blue "Resource Selectors:"
+    local _resource_selector
+    for _resource_selector in $_resource_selectors; do
+      echo_blue " - $_resource_selector"
+    done
+  fi
+  echo_blue "Pruning: $_enable_prune"
+  echo_blue "Force Sync: $_force_sync"
   echo_blue "=========================================================================================="
 
   # build sync command arguments
@@ -137,9 +148,18 @@ function sync_argocd_apps() {
   _sync_args+=(
     "--timeout" "$ARGOCD_SYNC_TIMEOUT_SECONDS"
   )
+  if [[ "$_force_sync" == "true" ]]; then
+    _sync_args+=("--force")
+  fi
   if [[ "$_enable_prune" == "true" ]]; then
     _sync_args+=("--prune")
   fi
+
+  # add resource selectors to the sync command
+  local _resource_selector
+  for _resource_selector in $_resource_selectors; do
+    _sync_args+=("--resource" "$_resource_selector")
+  done
 
   # run the sync command
   #  - captures STDERR
@@ -175,7 +195,7 @@ function sync_argocd_apps() {
             case "$response" in
                 "YES" | "yes" | "Y" | "y" )
                   echo_yellow ">>> Syncing again with pruning enabled..."
-                  sync_argocd_apps "true" "false" "${_app_names[@]}"
+                  sync_argocd_apps "true" "false" "false" "$_resource_selectors" "${_app_names[@]}"
                   break
                   ;;
                 "NO" | "no" | "N" | "n" | "" )
@@ -207,7 +227,7 @@ function argocd_app_wait() {
 
   echo ""
   echo_blue "=========================================================================================="
-  echo_blue "Waiting ${ARGOCD_WAIT_TIMEOUT_SECONDS}s for applications to be healthy..."
+  echo_blue "Waiting ${ARGOCD_WAIT_TIMEOUT_SECONDS}s for applications to be healthy:"
   local _app_name
   for _app_name in "${_app_names[@]}"; do
     echo_blue " - $_app_name"
@@ -231,11 +251,15 @@ function sync_argocd() {
   echo_blue "Getting status of '${_app_selector}' applications..."
   echo_blue "=========================================================================================="
 
-  # this associative array has the "sync wave numbers" as the keys, and SPACE-separated "app names" as the values
+  # this associative array has "sync wave numbers" as keys, and SPACE-separated "app names" as values
   local -A _sync_waves=()
 
   # this associative array has "app names" as keys, and "sync status" as values
   local -A _app_sync_statuses=()
+
+  # this associative array has "app names" as keys, and SPACE-separated "resource selectors" as values
+  #  - the format of each resource selector is: "GROUP:KIND:NAME"
+  local -A _app_force_sync_resources=()
 
   # build an array of applications to sync
   local _app_name
@@ -244,6 +268,7 @@ function sync_argocd() {
   local _app_sync_status
   local _app_operation_state
   local _app_operation_state_phase
+  local _app_resources
   for _app_name in $(argocd app list -l "$_app_selector" -N "$_app_namespace" -o "name"); do
 
     # get the application as JSON (and refresh at same time)
@@ -263,6 +288,55 @@ function sync_argocd() {
     # extract the operation state phase from the application (default: "Succeeded")
     # SPEC: https://github.com/argoproj/gitops-engine/blob/v0.7.3/pkg/sync/common/types.go#L50-L58
     _app_operation_state_phase=$(echo "$_app_operation_state" | jq -r '.phase // "Succeeded"')
+
+    # extract the list of resources managed by this application
+    # SPEC: https://github.com/argoproj/argo-cd/blob/v2.7.14/pkg/apis/application/v1alpha1/types.go#L1566-L1579
+    _app_resources=$(echo "$_app_json" | jq -c '.status.resources[]?')
+
+    # build an array of resource selectors that require a forced sync
+    # TODO: remove once ArgoCD has a way to force sync individual resources
+    #       https://github.com/argoproj/gitops-engine/issues/414
+    local _app_resource
+    local _app_resource_group
+    local _app_resource_kind
+    local _app_resource_name
+    local _app_resource_status
+    local _app_resource_requiresPruning
+    local _app_resource_selector
+    local _app_resource_force_sync
+    IFS=$'\n'
+    for _app_resource in $_app_resources; do
+      _app_resource_group=$(echo "$_app_resource" | jq -r '.group // empty')
+      _app_resource_kind=$(echo "$_app_resource" | jq -r '.kind // empty')
+      _app_resource_name=$(echo "$_app_resource" | jq -r '.name // empty')
+      _app_resource_status=$(echo "$_app_resource" | jq -r '.status // "Unknown"')
+      _app_resource_requiresPruning=$(echo "$_app_resource" | jq -r '.requiresPruning // false')
+      _app_resource_selector="$_app_resource_group:$_app_resource_kind:$_app_resource_name"
+
+      # only check resources which are not in-sync, and do not require pruning
+      _app_resource_force_sync="false"
+      if [[ "$_app_resource_status" != "Synced" && "$_app_resource_requiresPruning" == "false" ]]; then
+        # kyverno ClusterPolicies with "generate" type rules cant be updated without a forced sync
+        #  - https://github.com/kyverno/kyverno/issues/7718
+        #  - in deployKF, all such policies have names containing "clone" or "generate"
+        if [[ "$_app_resource_group" == "kyverno.io" &&
+              "$_app_resource_kind" == "ClusterPolicy" &&
+              ("$_app_resource_name" =~ "clone" || "$_app_resource_name" =~ "generate")
+        ]]; then
+          _app_resource_force_sync="true"
+        fi
+      fi
+
+      # add the resource selector to the array
+      if [[ "$_app_resource_force_sync" == "true" ]]; then
+        if [[ -v _app_force_sync_resources["$_app_name"] ]]; then
+          _app_force_sync_resources[$_app_name]+=" $_app_resource_selector"
+        else
+          _app_force_sync_resources[$_app_name]="$_app_resource_selector"
+        fi
+      fi
+    done
+    unset IFS
 
     # if the sync status is "Unknown", fail
     if [[ "$_app_sync_status" == "Unknown" ]]; then
@@ -325,15 +399,34 @@ function sync_argocd() {
 
     # sync the out-of-sync applications
     if [[ -n "${_out_of_sync_apps[*]}" ]]; then
+
+      # if there are resources that require a forced sync, sync them first
+      local _resource_array_str
+      local _resource_str
+      if [[ ${#_app_force_sync_resources[@]} -gt 0 ]]; then
+        for _app_name in "${_out_of_sync_apps[@]}"; do
+          if [[ -v _app_force_sync_resources["$_app_name"] ]]; then
+            _resource_array_str="${_app_force_sync_resources[$_app_name]}"
+            echo ""
+            echo_yellow ">>> Syncing resources that require a forced sync from '$_app_name':"
+            for _resource_str in $_resource_array_str; do
+              echo_yellow ">>>  - $_resource_str"
+            done
+            sync_argocd_apps "false" "false" "true" "$_resource_array_str" "$_app_name"
+          fi
+        done
+      fi
+
+      # sync the out-of-sync applications
       case "$ARGOCD_PRUNE_MODE" in
         "always")
-          sync_argocd_apps "true" "false" "${_out_of_sync_apps[@]}"
+          sync_argocd_apps "true" "false" "false" "" "${_out_of_sync_apps[@]}"
           ;;
         "prompt")
-          sync_argocd_apps "false" "true" "${_out_of_sync_apps[@]}"
+          sync_argocd_apps "false" "true" "false" "" "${_out_of_sync_apps[@]}"
           ;;
         "skip")
-          sync_argocd_apps "false" "false" "${_out_of_sync_apps[@]}"
+          sync_argocd_apps "false" "false" "false" "" "${_out_of_sync_apps[@]}"
           ;;
         *)
           echo_red ">>> ERROR: Invalid ARGOCD_PRUNE_MODE: '$ARGOCD_PRUNE_MODE'"
