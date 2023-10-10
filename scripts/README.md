@@ -8,6 +8,7 @@ This script automatically syncs the ArgoCD applications that make up deployKF.
 
 ### Requirements:
 
+- Bash `4.2` or later _(macOS has `3.2` by default, update with `brew install bash`)_
 - The `kubectl` CLI is installed ([install guide](https://kubernetes.io/docs/tasks/tools/install-kubectl/))
 - The `argocd` CLI is installed ([install guide](https://argo-cd.readthedocs.io/en/stable/cli_installation/))
 - The `jq` CLI is installed ([install guide](https://stedolan.github.io/jq/download/))

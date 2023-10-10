@@ -35,6 +35,34 @@ ARGOCD_SYNC_TIMEOUT_SECONDS="600"
 ARGOCD_WAIT_TIMEOUT_SECONDS="300"
 
 #######################################
+# REQUIREMENTS
+#######################################
+
+# ensure bash version 4.2+
+if [[ ${BASH_VERSINFO[0]} -lt 4 || (${BASH_VERSINFO[0]} -eq 4 && ${BASH_VERSINFO[1]} -lt 2) ]]; then
+  echo ">>> ERROR: Bash version 4.2+ is required to run this script, current version: '${BASH_VERSION}'"
+  exit 1
+fi
+
+# ensure 'argocd' is installed
+if [[ -z "$(command -v argocd)" ]]; then
+  echo ">>> ERROR: 'argocd' must be installed to run this script"
+  exit 1
+fi
+
+# ensure 'jq' is installed
+if [[ -z "$(command -v jq)" ]]; then
+  echo ">>> ERROR: 'jq' must be installed to run this script"
+  exit 1
+fi
+
+# ensure 'kubectl' is installed
+if [[ -z "$(command -v kubectl)" ]]; then
+  echo ">>> ERROR: 'kubectl' must be installed to run this script"
+  exit 1
+fi
+
+#######################################
 # COLORS
 #######################################
 
