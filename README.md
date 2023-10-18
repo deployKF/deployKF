@@ -59,7 +59,8 @@ deployKF builds world-class ML Platforms on __any Kubernetes cluster__, within _
 - deployKF includes [__leading ML & Data tools__](https://www.deploykf.org/reference/tools/) from Kubeflow and more
 - deployKF has [__centralized configs__](https://www.deploykf.org/reference/deploykf-values/) that manage all aspects of the platform
 - deployKF supports __in-place upgrades__ and can __autonomously__ roll out config changes
-- deployKF uses [__ArgoCD Applications__](https://www.deploykf.org/guides/getting-started/#4-sync-argocd-applications) to provide native GitOps support
+- deployKF lets you __bring your own__ cluster dependencies like __istio__ and __cert-manager__, if desired
+- deployKF uses __ArgoCD Applications__ to provide native GitOps support
 
 ## What ML and AI tools are in deployKF?
 
@@ -93,12 +94,20 @@ For more details, please see our [deployKF vs Kubeflow](https://www.deploykf.org
 
 Yes! For more information please see our [community page](https://www.deploykf.org/about/community/).
 
-# Guides
+# Documentation
 
-- ### [Getting Started (All Platforms)](https://www.deploykf.org/guides/getting-started/)
+## Admin Guides
+
+- ### [Getting Started (Production Usage) ⭐](https://www.deploykf.org/guides/getting-started/)
+- #### [Local Quickstart ⭐](https://www.deploykf.org/guides/local-quickstart/)
 - #### [Migrate from Kubeflow Manifests](https://www.deploykf.org/guides/migrate-from-kubeflow-manifests/)
 
-# Media
+## Release Information
+
+- #### [Version Matrix](https://www.deploykf.org/releases/version-matrix/)
+- #### [Changelog](https://www.deploykf.org/releases/changelog-deploykf/)
+
+## Media
 
 <div align="center">
   <h3>
