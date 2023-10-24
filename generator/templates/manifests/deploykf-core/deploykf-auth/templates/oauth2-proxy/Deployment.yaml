@@ -81,7 +81,7 @@ spec:
               port: http
           readinessProbe:
             httpGet:
-              path: /ping
+              path: /ready
               port: http
           volumeMounts:
             - name: oauth2-proxy-config
