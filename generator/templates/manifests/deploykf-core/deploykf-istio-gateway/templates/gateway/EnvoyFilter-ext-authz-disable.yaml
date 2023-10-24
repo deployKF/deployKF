@@ -36,15 +36,23 @@ spec:
           typed_per_filter_config:
             ## the ExtAuthz filter is called "envoy.filters.http.ext_authz"
             envoy.filters.http.ext_authz:
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
 
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
+            ## the JwtAuthn filter is called "envoy.filters.http.jwt_authn"
+            envoy.filters.http.jwt_authn:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-perrouteconfig
+              "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.PerRouteConfig
+
+              ## if true, disables the JwtAuthn filter on this HTTP_ROUTE
+              disabled: true
+
             ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
             envoy.filters.http.lua.set_userid_header:
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
 
               ## if true, disables the Lua filter on this HTTP_ROUTE
@@ -68,15 +76,23 @@ spec:
           typed_per_filter_config:
             ## the ExtAuthz filter is called "envoy.filters.http.ext_authz"
             envoy.filters.http.ext_authz:
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
 
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
+            ## the JwtAuthn filter is called "envoy.filters.http.jwt_authn"
+            envoy.filters.http.jwt_authn:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-perrouteconfig
+              "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.PerRouteConfig
+
+              ## if true, disables the JwtAuthn filter on this HTTP_ROUTE
+              disabled: true
+
             ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
             envoy.filters.http.lua.set_userid_header:
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
 
               ## if true, disables the Lua filter on this HTTP_ROUTE
@@ -99,15 +115,23 @@ spec:
           typed_per_filter_config:
             ## the ExtAuthz filter is called "envoy.filters.http.ext_authz"
             envoy.filters.http.ext_authz:
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
 
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
+            ## the JwtAuthn filter is called "envoy.filters.http.jwt_authn"
+            envoy.filters.http.jwt_authn:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-perrouteconfig
+              "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.PerRouteConfig
+
+              ## if true, disables the JwtAuthn filter on this HTTP_ROUTE
+              disabled: true
+
             ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
             envoy.filters.http.lua.set_userid_header:
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
 
               ## if true, disables the Lua filter on this HTTP_ROUTE
@@ -131,15 +155,23 @@ spec:
           typed_per_filter_config:
             ## the ExtAuthz filter is called "envoy.filters.http.ext_authz"
             envoy.filters.http.ext_authz:
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
 
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
+            ## the JwtAuthn filter is called "envoy.filters.http.jwt_authn"
+            envoy.filters.http.jwt_authn:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-perrouteconfig
+              "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.PerRouteConfig
+
+              ## if true, disables the JwtAuthn filter on this HTTP_ROUTE
+              disabled: true
+
             ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
             envoy.filters.http.lua.set_userid_header:
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
 
               ## if true, disables the Lua filter on this HTTP_ROUTE
@@ -164,15 +196,23 @@ spec:
           typed_per_filter_config:
             ## the ExtAuthz filter is called "envoy.filters.http.ext_authz"
             envoy.filters.http.ext_authz:
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
 
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
+            ## the JwtAuthn filter is called "envoy.filters.http.jwt_authn"
+            envoy.filters.http.jwt_authn:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-perrouteconfig
+              "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.PerRouteConfig
+
+              ## if true, disables the JwtAuthn filter on this HTTP_ROUTE
+              disabled: true
+
             ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
             envoy.filters.http.lua.set_userid_header:
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
 
               ## if true, disables the Lua filter on this HTTP_ROUTE
@@ -195,15 +235,23 @@ spec:
           typed_per_filter_config:
             ## the ExtAuthz filter is called "envoy.filters.http.ext_authz"
             envoy.filters.http.ext_authz:
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
 
               ## if true, disables the ExtAuthz filter on this HTTP_ROUTE
               disabled: true
 
+            ## the JwtAuthn filter is called "envoy.filters.http.jwt_authn"
+            envoy.filters.http.jwt_authn:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-perrouteconfig
+              "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.PerRouteConfig
+
+              ## if true, disables the JwtAuthn filter on this HTTP_ROUTE
+              disabled: true
+
             ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
             envoy.filters.http.lua.set_userid_header:
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
 
               ## if true, disables the Lua filter on this HTTP_ROUTE

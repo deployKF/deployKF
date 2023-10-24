@@ -1,4 +1,13 @@
 ########################################
+## SHARED | deploykf-helpers
+########################################
+deployKF_helpers:
+  deploykf_gateway:
+    http_endpoint: {{< (tmpl.Exec "deploykf_gateway.http_endpoint" .) | quote >}}
+    https_endpoint: {{< (tmpl.Exec "deploykf_gateway.https_endpoint" .) | quote >}}
+
+
+########################################
 ## SHARED | deploykf
 ########################################
 deployKF:
@@ -31,6 +40,13 @@ deployKF:
 
   auth:
     namespace: {{< .Values.deploykf_core.deploykf_auth.namespace | quote >}}
+    dex:
+      clients:
+        oauth2Proxy:
+          clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.oauth2Proxy.clientId | quote >}}
+        kubeflowPipelinesSDK:
+          enabled: {{< .Values.deploykf_core.deploykf_auth.dex.clients.kubeflowPipelinesSDK.enabled | conv.ToBool >}}
+          clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.kubeflowPipelinesSDK.clientId | quote >}}
 
   gateway:
     name: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name | quote >}}

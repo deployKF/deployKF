@@ -468,6 +468,13 @@ deploykf_core:
             existingSecretKey: "client_secret"
             generateSecret: false
 
+        ## OpenID client for Kubeflow Pipelines SDK
+        ##  - note, this client is used on end-user machines, so it does not have a client secret
+        ##
+        kubeflowPipelinesSDK:
+          enabled: true
+          clientId: "kubeflow-pipelines-sdk"
+
     ## oauth2-proxy configs
     ##
     oauth2Proxy:
