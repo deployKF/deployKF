@@ -25,7 +25,7 @@
 ## - NOTE: empty means false, non-empty means true
 ##
 {{<- define "deploykf_gateway.is_self_signed_cert" ->}}
-{{<- if and (.Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled) (.Values.deploykf_dependencies.cert_manager.clusterIssuer.enabled) (eq .Values.deploykf_dependencies.cert_manager.clusterIssuer.type "SELF_SIGNED") ->}}
+{{<- if and (.Values.deploykf_dependencies.cert_manager.enabled) (.Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled) (.Values.deploykf_dependencies.cert_manager.clusterIssuer.enabled) (eq .Values.deploykf_dependencies.cert_manager.clusterIssuer.type "SELF_SIGNED") ->}}
 true
 {{<- end ->}}
 {{<- end ->}}
