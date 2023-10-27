@@ -6,8 +6,8 @@ metadata:
   namespace: {{< .Values.argocd.namespace | quote >}}
   annotations:
     ## applications in 'deploykf-dependencies' come first
-    ## NOTE: in this group, each application has a separate wave to avoid conflicts due to webhooks
-    argocd.argoproj.io/sync-wave: "12"
+    ## NOTE: kyverno is last to ensure it starts after the CRDs from other applications are applied, for RBAC aggregation
+    argocd.argoproj.io/sync-wave: "19"
   labels:
     app.kubernetes.io/name: kyverno
     app.kubernetes.io/component: deploykf-dependencies
