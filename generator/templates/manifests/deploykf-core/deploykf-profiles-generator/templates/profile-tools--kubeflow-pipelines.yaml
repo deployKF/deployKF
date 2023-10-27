@@ -143,6 +143,9 @@ spec:
                 - {{ $target_secret__name | quote }}
               namespaces:
                 - {{ $target_secret__namespace | quote }}
+              operations:
+                - CREATE
+                - UPDATE
               selector:
                 matchLabels:
                   generate.kyverno.io/policy-name: {{ $this_policy_name | quote }}
