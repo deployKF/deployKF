@@ -88,7 +88,7 @@ kyverno:
 
   ## Admission controller configuration
   admissionController:
-    replicas: ~
+    replicas: {{< .Values.deploykf_dependencies.kyverno.admissionController.replicas | conv.ToInt >}}
     initContainer:
       image:
         registry: ""
@@ -112,7 +112,7 @@ kyverno:
   ## Background controller configuration
   backgroundController:
     enabled: true
-    replicas: ~
+    replicas: {{< .Values.deploykf_dependencies.kyverno.backgroundController.replicas | conv.ToInt >}}
     image:
       registry: ""
       repository: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoBackgroundController.repository | quote >}}
@@ -132,7 +132,7 @@ kyverno:
   ## Cleanup controller configuration
   cleanupController:
     enabled: true
-    replicas: ~
+    replicas: {{< .Values.deploykf_dependencies.kyverno.cleanupController.replicas | conv.ToInt >}}
     image:
       registry: ""
       repository: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoCleanupController.repository | quote >}}
@@ -151,7 +151,7 @@ kyverno:
   ## Reports controller configuration
   reportsController:
     enabled: true
-    replicas: ~
+    replicas: {{< .Values.deploykf_dependencies.kyverno.reportsController.replicas | conv.ToInt >}}
     image:
       registry: ""
       repository: {{< .Values.deploykf_dependencies.kyverno.images.kyvernoReportsController.repository | quote >}}
