@@ -329,6 +329,8 @@ function sync_argocd() {
     local _app_resource_kind
     local _app_resource_name
     local _app_resource_status
+    local _app_resource_health
+    local _app_resource_health_status
     local _app_resource_requiresPruning
     local _app_resource_selector
     local _app_resource_force_sync
@@ -338,12 +340,17 @@ function sync_argocd() {
       _app_resource_kind=$(echo "$_app_resource" | jq -r '.kind // empty')
       _app_resource_name=$(echo "$_app_resource" | jq -r '.name // empty')
       _app_resource_status=$(echo "$_app_resource" | jq -r '.status // "Unknown"')
+      _app_resource_health=$(echo "$_app_resource" | jq -r '.health // empty')
+      _app_resource_health_status=$(echo "$_app_resource_health" | jq -r '.status // "Unknown"')
       _app_resource_requiresPruning=$(echo "$_app_resource" | jq -r '.requiresPruning // false')
       _app_resource_selector="$_app_resource_group:$_app_resource_kind:$_app_resource_name"
 
-      # only check resources which are not in-sync, and do not require pruning
+      # force sync is only relevant to resources that are not Synced, do not require pruning, and are not Missing
       _app_resource_force_sync="false"
-      if [[ "$_app_resource_status" != "Synced" && "$_app_resource_requiresPruning" == "false" ]]; then
+      if [[ "$_app_resource_status" != "Synced" &&
+            "$_app_resource_requiresPruning" == "false" &&
+            "$_app_resource_health_status" != "Missing"
+      ]]; then
         # kyverno ClusterPolicies with "generate" type rules cant be updated without a forced sync
         #  - https://github.com/kyverno/kyverno/issues/7718
         #  - in deployKF, all such policies have names containing "clone" or "generate"
@@ -461,6 +468,9 @@ function sync_argocd() {
           exit 1
           ;;
       esac
+
+      # wait for the out-of-sync applications to be healthy
+      argocd_app_wait "${_out_of_sync_apps[@]}"
     fi
 
     # wait for ALL applications in this sync wave to be healthy

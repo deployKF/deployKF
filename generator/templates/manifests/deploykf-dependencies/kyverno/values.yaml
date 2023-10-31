@@ -28,6 +28,13 @@ deployKF:
     - {{< (tpl $manifest $) | quote >}}
     {{<- end >}}
 
+  kyverno:
+    clusterPolicies:
+      imagePullSecrets:
+        enabled: {{< .Values.deploykf_dependencies.kyverno.clusterPolicies.imagePullSecrets.enabled | conv.ToBool >}}
+        excludeNamespaces: {{< .Values.deploykf_dependencies.kyverno.clusterPolicies.imagePullSecrets.excludeNamespaces | toJSON >}}
+        registryCredentials: {{< .Values.deploykf_dependencies.kyverno.clusterPolicies.imagePullSecrets.registryCredentials | toJSON >}}
+
 
 ########################################
 ## DEPENDENCY | kyverno

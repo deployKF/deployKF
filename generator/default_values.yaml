@@ -326,6 +326,33 @@ deploykf_dependencies:
       - apiGroups: [ "kubeflow.org" ]
         resources: [ "poddefaults" ]
 
+    ## kyverno policy configs
+    ##
+    clusterPolicies:
+
+      ## a policy to automatically replicate and inject pod imagePullSecrets
+      ##  - this policy is useful for ~private~ container registries or avoiding ~pull limits~
+      ##
+      imagePullSecrets:
+        enabled: false
+
+        ## a list of namespaces to exclude from this policy
+        ##  - note, all namespaces are included except those excluded here (and the `kyverno.namespace`)
+        ##  - wildcards are supported "*" (zero or many characters) and “?” (at least one character)
+        ##
+        excludeNamespaces:
+          - "argocd"
+          - "kube-system"
+
+        ## a list of registry credentials
+        ##  - each element is a map with the following keys:
+        ##     - `existingSecret`: the name of an existing 'kubernetes.io/dockerconfigjson' type secret
+        ##     - `existingSecretNamespace`: the namespace containing the existing secret (default: `kyverno.namespace`)
+        ##  - for more information on creating a registry secret, see:
+        ##    https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+        ##
+        registryCredentials: []
+
 
 ## --------------------------------------------------------------------------------
 ##
