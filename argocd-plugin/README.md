@@ -87,7 +87,7 @@ spec:
     ##    file, but you may use any repo (even one with no files)
     ##
     repoURL: "https://github.com/deployKF/deployKF.git"
-    targetRevision: "v0.1.2" # <-- replace with a deployKF repo tag!
+    targetRevision: "v0.1.3" # <-- replace with a deployKF repo tag!
     path: "."
 
     ## plugin configuration
@@ -100,7 +100,7 @@ spec:
         ##  - available versions: https://github.com/deployKF/deployKF/releases
         ##
         - name: "source_version"
-          string: "0.1.2" # <-- replace with a deployKF generator version!
+          string: "0.1.3" # <-- replace with a deployKF generator version!
 
         ## paths to values files within the `repoURL` repository
         ##  - the values in these files are merged, with later files taking precedence
