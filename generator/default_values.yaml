@@ -322,9 +322,7 @@ deploykf_dependencies:
     ##  - a list of extra kubernetes resources to allow kyverno to generate and manage
     ##  - each element is a map with keys `apiGroups` and `resources` that contain lists of strings
     ##
-    extraResourceRules:
-      - apiGroups: [ "kubeflow.org" ]
-        resources: [ "poddefaults" ]
+    extraResourceRules: []
 
 
 ## --------------------------------------------------------------------------------
