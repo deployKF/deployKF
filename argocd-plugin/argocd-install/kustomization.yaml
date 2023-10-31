@@ -3,7 +3,7 @@ kind: Kustomization
 
 resources:
   ## TIP: this determines which version of ArgoCD is installed
-  - https://raw.githubusercontent.com/argoproj/argo-cd/v2.7.10/manifests/install.yaml
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v2.8.5/manifests/install.yaml
 
   ## TIP: if you don't have a default storage class, you may need to set the `spec.storageClassName`
   ## TIP: if you have an HA argocd-repo-server deployment, you will need to make this a ReadWriteMany volume
@@ -20,9 +20,9 @@ configMapGenerator:
 images:
   ## TIP: these tags can be used to change the tool versions used by the plugin
   #- name: "docker.io/bitnami/kubectl"
-  #  newTag: "1.26.7"
+  #  newTag: "1.26.10"
   #- name: "docker.io/alpine/helm"
-  #  newTag: "3.12.2"
+  #  newTag: "3.12.3"
   #- name: "ghcr.io/deploykf/cli"
   #  newTag: "0.1.2"
 

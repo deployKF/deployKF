@@ -11,7 +11,7 @@ spec:
         fsGroup: 999
       initContainers:
         - name: deploykf-plugin-setup--kubectl
-          image: docker.io/bitnami/kubectl:1.26.7
+          image: docker.io/bitnami/kubectl:1.26.10
           command:
             - "/bin/sh"
             - "-c"
@@ -24,7 +24,7 @@ spec:
               mountPath: /tools
 
         - name: deploykf-plugin-setup--helm
-          image: docker.io/alpine/helm:3.12.2
+          image: docker.io/alpine/helm:3.12.3
           command:
             - "/bin/sh"
             - "-c"
