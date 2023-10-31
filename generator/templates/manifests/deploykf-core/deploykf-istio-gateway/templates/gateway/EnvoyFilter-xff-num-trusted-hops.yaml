@@ -28,7 +28,7 @@ spec:
         operation: MERGE
         value:
           typed_config:
-            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#extensions-filters-network-http-connection-manager-v3-httpconnectionmanager
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/network/http_connection_manager/v3/http_connection_manager.proto#extensions-filters-network-http-connection-manager-v3-httpconnectionmanager
             "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager"
 
             ## the number of additional ingress proxy hops from the right side of the `x-forwarded-for` HTTP header

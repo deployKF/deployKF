@@ -137,6 +137,12 @@ dex:
         {{< fail "`deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.existingSecret` must be non-empty if `deploykf_core.deploykf_auth.dex.clients.argoServer.clientSecret.generateSecret` is true" >}}
         {{<- end >}}
 
+    ## OpenID client for Kubeflow Pipelines SDK
+    ##
+    kubeflowPipelinesSDK:
+      enabled: {{< and (.Values.kubeflow_tools.pipelines.enabled | conv.ToBool) (.Values.deploykf_core.deploykf_auth.dex.clients.kubeflowPipelinesSDK.enabled | conv.ToBool) >}}
+      clientId: {{< .Values.deploykf_core.deploykf_auth.dex.clients.kubeflowPipelinesSDK.clientId | quote >}}
+
   ## dex static passwords
   ##
   staticPasswords: {{< .Values.deploykf_core.deploykf_auth.dex.staticPasswords | toJSON >}}

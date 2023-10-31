@@ -32,21 +32,21 @@ spec:
         value:
           name: envoy.filters.http.ext_authz
           typed_config:
-            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthz
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthz
             "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
 
             ## if `false`, ext-authz will reject client requests and return a Forbidden response if the communication
             ## with the authorization service has failed, or if the authorization service has returned a HTTP 5xx error.
             failure_mode_allow: false
 
-            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-httpservice
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-httpservice
             http_service:
               server_uri:
                 uri: "http://oauth2-proxy.{{ .Values.deployKF.auth.namespace }}.svc.{{ .Values.deployKF.clusterDomain }}:4180"
                 cluster: "outbound|4180||oauth2-proxy.{{ .Values.deployKF.auth.namespace }}.svc.{{ .Values.deployKF.clusterDomain }}"
-                timeout: 5.00s
+                timeout: 5s
 
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-authorizationrequest
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-authorizationrequest
               authorization_request:
                 ## headers from the client request that are sent to oauth2-proxy (during authentication)
                 ## NOTE: envoy automatically adds: `Host`, `Method`, `Path`, `Content-Length`, `Authorization`
@@ -61,7 +61,7 @@ spec:
                     - exact: x-forwarded-proto
                       ignore_case: true
 
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-authorizationresponse
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-authorizationresponse
               authorization_response:
                 ## headers from oauth2-proxy that overwrite those in the client request (on authentication success)
                 ## NOTE: the client never sees these headers, only the downstream apps
@@ -88,7 +88,7 @@ spec:
                       ignore_case: true
 
     ################################################################################
-    ## FILTER 2 - Set USERID_HEADER from `x-auth-request-email`
+    ## FILTER 2 - Verify JWT, and path access by JWT audience
     ################################################################################
     - applyTo: HTTP_FILTER
       match:
@@ -103,12 +103,82 @@ spec:
         ## insert our filter just AFTER our `envoy.filters.http.ext_authz` filter
         operation: INSERT_AFTER
         value:
+          name: envoy.filters.http.jwt_authn
+          typed_config:
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-jwtauthentication
+            "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
+
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#envoy-v3-api-msg-extensions-filters-http-jwt-authn-v3-jwtprovider
+            providers:
+              deploykf_dex:
+                ## must match the issuer presented by the dex server
+                {{- if .Values.deployKF.gateway.tls.enabled }}
+                issuer: "https://{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/dex"
+                {{- else }}
+                issuer: "http://{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/dex"
+                {{- end }}
+
+                ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#envoy-v3-api-msg-extensions-filters-http-jwt-authn-v3-remotejwks
+                remote_jwks:
+                  http_uri:
+                    uri: "http://dex.{{ .Values.deployKF.auth.namespace }}.svc.{{ .Values.deployKF.clusterDomain }}:5556/dex/keys"
+                    cluster: "outbound|5556||dex.{{ .Values.deployKF.auth.namespace }}.svc.{{ .Values.deployKF.clusterDomain }}"
+                    timeout: 5s
+                  cache_duration: 300s
+
+                ## if true, the Authorization token header is not stripped after verification
+                forward: true
+
+                ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#envoy-v3-api-msg-extensions-filters-http-jwt-authn-v3-jwtheader
+                from_headers:
+                  - name: authorization
+                    value_prefix: "Bearer "
+
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#envoy-v3-api-msg-extensions-filters-http-jwt-authn-v3-requirementrule
+            rules:
+              {{- if and .Values.deployKF.kubeflow.pipelines.enabled .Values.deployKF.auth.dex.clients.kubeflowPipelinesSDK.enabled }}
+              ## kubeflow pipelines api
+              - match:
+                  prefix: "/pipeline"
+                requires:
+                  provider_and_audiences:
+                    provider_name: deploykf_dex
+                    audiences:
+                      - {{ .Values.deployKF.auth.dex.clients.oauth2Proxy.clientId | quote }}
+                      - {{ .Values.deployKF.auth.dex.clients.kubeflowPipelinesSDK.clientId | quote }}
+              {{- end }}
+
+              ## all remaining paths
+              - match:
+                  prefix: "/"
+                requires:
+                  provider_and_audiences:
+                    provider_name: deploykf_dex
+                    audiences:
+                      - {{ .Values.deployKF.auth.dex.clients.oauth2Proxy.clientId | quote }}
+
+    ################################################################################
+    ## FILTER 3 - Set USERID_HEADER from `x-auth-request-email`
+    ################################################################################
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: envoy.filters.http.jwt_authn
+      patch:
+        ## insert our filter just AFTER our `envoy.filters.http.jwt_authn` filter
+        operation: INSERT_AFTER
+        value:
           name: envoy.filters.http.lua.set_userid_header
           typed_config:
-            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto
             "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
 
-            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/configuration/http/http_filters/lua_filter#config-http-filters-lua
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/configuration/http/http_filters/lua_filter#config-http-filters-lua
             inline_code: |
               function envoy_on_request(request_handle)
 

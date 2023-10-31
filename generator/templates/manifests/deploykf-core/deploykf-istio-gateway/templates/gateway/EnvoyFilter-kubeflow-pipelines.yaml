@@ -40,10 +40,10 @@ spec:
         value:
           name: envoy.filters.http.lua.kfp_redirect_artifact_namespaces
           typed_config:
-            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto
             "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
 
-            ## https://www.envoyproxy.io/docs/envoy/v1.18.4/configuration/http/http_filters/lua_filter#config-http-filters-lua
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/configuration/http/http_filters/lua_filter#config-http-filters-lua
             inlineCode: |
               function envoy_on_request(request_handle)
                 -- empty lua function
@@ -65,10 +65,10 @@ spec:
         value:
           typed_per_filter_config:
             envoy.filters.http.lua.kfp_redirect_artifact_namespaces:
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
 
-              ## https://www.envoyproxy.io/docs/envoy/v1.18.4/configuration/http/http_filters/lua_filter#config-http-filters-lua
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/configuration/http/http_filters/lua_filter#config-http-filters-lua
               source_code:
                 inline_string: |
                   function extract_url_namespaces(url_path)
