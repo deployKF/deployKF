@@ -12,6 +12,11 @@ rules:
   ## there permissions are so that kyverno can mutate these resources for automatic restarts on secret changes
   - apiGroups: [ "apps" ]
     resources: [ "statefulsets" ]
+  {{<- if .Values.kubeflow_tools.poddefaults_webhook.enabled >}}
+  ## these permissions are needed for the automatic creation of PodDefaults
+  - apiGroups: [ "kubeflow.org" ]
+    resources: [ "poddefaults" ]
+  {{<- end >}}
 {{<- end >}}
 {{<- $extra_resources := ((tmpl.Exec "default_extra_resources" .) | yaml).rules >}}
 {{<- range $rule := .Values.deploykf_dependencies.kyverno.extraResourceRules >}}
