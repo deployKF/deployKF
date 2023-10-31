@@ -326,6 +326,26 @@ deploykf_dependencies:
       - apiGroups: [ "kubeflow.org" ]
         resources: [ "poddefaults" ]
 
+    ## kyverno admission controller configs
+    ##
+    admissionController:
+      replicas: 3
+
+    ## kyverno background controller configs
+    ##
+    backgroundController:
+      replicas: 1
+
+    ## kyverno cleanup controller configs
+    ##
+    cleanupController:
+      replicas: 1
+
+    ## kyverno reports controller configs
+    ##
+    reportsController:
+      replicas: 1
+
     ## kyverno policy configs
     ##
     clusterPolicies:
