@@ -3,7 +3,7 @@ kind: DestinationRule
 metadata:
   name: jupyter-web-app
 spec:
-  host: jupyter-web-app-service.kubeflow.svc.cluster.local
+  host: jupyter-web-app-service.kubeflow.svc.{{< .Values.clusterDomain >}}
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL

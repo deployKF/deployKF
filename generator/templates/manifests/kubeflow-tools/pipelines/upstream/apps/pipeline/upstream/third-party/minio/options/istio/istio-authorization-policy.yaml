@@ -11,11 +11,11 @@ spec:
   - from:
     - source:
         principals:
-        - cluster.local/ns/kubeflow/sa/ml-pipeline
+        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline
   - from:
     - source:
         principals:
-        - cluster.local/ns/kubeflow/sa/ml-pipeline-ui
+        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-ui
   # Allow traffic from User Pipeline Pods, which don't have a sidecar.
   - {}
 ---
@@ -24,7 +24,7 @@ kind: DestinationRule
 metadata:
   name: ml-pipeline-minio
 spec:
-  host: minio-service.kubeflow.svc.cluster.local
+  host: minio-service.kubeflow.svc.{{< .Values.clusterDomain >}}
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL

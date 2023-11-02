@@ -7,7 +7,7 @@ spec:
   commonName: $(podDefaultsServiceName).$(podDefaultsNamespace).svc
   dnsNames:
   - $(podDefaultsServiceName).$(podDefaultsNamespace).svc
-  - $(podDefaultsServiceName).$(podDefaultsNamespace).svc.cluster.local
+  - $(podDefaultsServiceName).$(podDefaultsNamespace).svc.{{< .Values.clusterDomain >}}
   issuerRef:
     kind: Issuer
     name: selfsigned-issuer

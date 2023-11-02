@@ -17,7 +17,7 @@ true
 ##
 {{<- define "kubeflow_pipelines.object_store.hostname" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
-deploykf-minio-api.{{< .Values.deploykf_opt.deploykf_minio.namespace >}}.svc.cluster.local
+deploykf-minio-api.{{< .Values.deploykf_opt.deploykf_minio.namespace >}}.svc.{{< .Values.clusterDomain >}}
 {{<- else ->}}
 {{< .Values.kubeflow_tools.pipelines.objectStore.host >}}
 {{<- end ->}}
@@ -39,7 +39,7 @@ deploykf-minio-api.{{< .Values.deploykf_opt.deploykf_minio.namespace >}}.svc.clu
 ##
 {{<- define "kubeflow_pipelines.object_store.endpoint" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_minio" . ->}}
-deploykf-minio-api.{{< .Values.deploykf_opt.deploykf_minio.namespace >}}.svc.cluster.local:9000
+deploykf-minio-api.{{< .Values.deploykf_opt.deploykf_minio.namespace >}}.svc.{{< .Values.clusterDomain >}}:9000
 {{<- else ->}}
 {{<- if .Values.kubeflow_tools.pipelines.objectStore.port ->}}
 {{< .Values.kubeflow_tools.pipelines.objectStore.host >}}:{{< .Values.kubeflow_tools.pipelines.objectStore.port >}}

@@ -5,7 +5,7 @@
 {{<- $default_tag = printf "%s-%s" $default_version $default_variant >}}
 {{<- end >}}
 {{<- define "required_mesh_configs" >}}
-trustDomain: cluster.local
+trustDomain: {{< .Values.clusterDomain >}}
 defaultConfig:
   proxyMetadata:
     ## these configs enable the istio "DNS Proxying" feature
@@ -50,7 +50,7 @@ global:
   istioNamespace: {{< .Values.deploykf_dependencies.istio.namespace | quote >}}
   proxy:
     image: {{< printf "%s:%s" .Values.deploykf_dependencies.istio.images.istioProxy.repository (.Values.deploykf_dependencies.istio.images.istioProxy.tag | default $default_tag) | quote >}}
-    clusterDomain: cluster.local
+    clusterDomain: {{< .Values.clusterDomain >}}
   proxy_init:
     image: {{< printf "%s:%s" .Values.deploykf_dependencies.istio.images.istioProxy.repository (.Values.deploykf_dependencies.istio.images.istioProxy.tag | default $default_tag) | quote >}}
 

@@ -3,7 +3,7 @@ kind: DestinationRule
 metadata:
   name: metadata-grpc-service
 spec:
-  host: metadata-grpc-service.kubeflow.svc.cluster.local
+  host: metadata-grpc-service.kubeflow.svc.{{< .Values.clusterDomain >}}
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL

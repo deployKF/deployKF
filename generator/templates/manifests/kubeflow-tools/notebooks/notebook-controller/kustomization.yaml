@@ -20,7 +20,7 @@ configMapGenerator:
     literals:
       - USE_ISTIO="true"
       - ISTIO_GATEWAY="{{< .Values.deploykf_core.deploykf_istio_gateway.namespace >}}/{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name >}}"
-      - CLUSTER_DOMAIN="cluster.local"
+      - CLUSTER_DOMAIN="{{< .Values.clusterDomain >}}"
       - ENABLE_CULLING={{< .Values.kubeflow_tools.notebooks.notebookCulling.enabled | conv.ToBool | quote >}}
       - CULL_IDLE_TIME={{< .Values.kubeflow_tools.notebooks.notebookCulling.idleTime | quote >}}
       - IDLENESS_CHECK_PERIOD={{< .Values.kubeflow_tools.notebooks.notebookCulling.idlenessCheckPeriod | quote >}}

@@ -8,7 +8,7 @@ spec:
   commonName: $(KATIB_SERVICE_NAME).$(KATIB_NAMESPACE).svc
   dnsNames:
     - $(KATIB_SERVICE_NAME).$(KATIB_NAMESPACE).svc
-    - $(KATIB_SERVICE_NAME).$(KATIB_NAMESPACE).svc.cluster.local
+    - $(KATIB_SERVICE_NAME).$(KATIB_NAMESPACE).svc.{{< .Values.clusterDomain >}}
   issuerRef:
     kind: Issuer
     name: katib-selfsigned-issuer

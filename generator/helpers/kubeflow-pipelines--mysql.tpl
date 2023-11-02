@@ -17,7 +17,7 @@ true
 ##
 {{<- define "kubeflow_pipelines.mysql.hostname" ->}}
 {{<- if tmpl.Exec "kubeflow_pipelines.use_embedded_mysql" . ->}}
-deploykf-mysql.{{< .Values.deploykf_opt.deploykf_mysql.namespace >}}.svc.cluster.local
+deploykf-mysql.{{< .Values.deploykf_opt.deploykf_mysql.namespace >}}.svc.{{< .Values.clusterDomain >}}
 {{<- else ->}}
 {{< .Values.kubeflow_tools.pipelines.mysql.host >}}
 {{<- end ->}}

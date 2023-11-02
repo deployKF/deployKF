@@ -159,7 +159,7 @@ spec:
               - from:
                   - source:
                       principals:
-                        - cluster.local/ns/kubeflow/sa/ml-pipeline
+                        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline
 
     ################################################################################
     ## Service/ml-pipeline-visualizationserver

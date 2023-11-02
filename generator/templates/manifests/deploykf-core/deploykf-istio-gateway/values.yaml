@@ -16,7 +16,7 @@ deployKF:
     - {{< (tpl $manifest $) | quote >}}
     {{<- end >}}
 
-  clusterDomain: cluster.local
+  clusterDomain: {{< .Values.clusterDomain >}}
 
   kubeflow:
     namespace: kubeflow
