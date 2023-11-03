@@ -213,6 +213,14 @@ spec:
           configMap:
             name: profile-tools--kubeflow-pipelines
             namespace: "{{ request.object.metadata.name }}"
+      preconditions:
+        all:
+          - key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey || '' }}"
+            operator: NotEquals
+            value: ""
+          - key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey || '' }}"
+            operator: NotEquals
+            value: ""
       generate:
         apiVersion: apps/v1
         kind: Deployment
@@ -355,6 +363,14 @@ spec:
           configMap:
             name: profile-tools--kubeflow-pipelines
             namespace: "{{ request.object.metadata.name }}"
+      preconditions:
+        all:
+          - key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey || '' }}"
+            operator: NotEquals
+            value: ""
+          - key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey || '' }}"
+            operator: NotEquals
+            value: ""
       generate:
         apiVersion: v1
         kind: ConfigMap
