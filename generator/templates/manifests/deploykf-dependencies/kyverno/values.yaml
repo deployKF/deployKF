@@ -133,6 +133,10 @@ kyverno:
             resources: {{< $extra_resource.resources | toJSON >}}
             verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
           {{<- end >}}
+    resources:
+      limits:
+        ## this is increased from the default of 128Mi
+        memory: 256Mi
 
   ## Cleanup controller configuration
   cleanupController:
