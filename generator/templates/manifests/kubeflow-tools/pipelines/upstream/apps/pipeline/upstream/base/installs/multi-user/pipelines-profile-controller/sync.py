@@ -238,7 +238,7 @@ def server_factory(visualization_server_image,
                         "rules": [{
                             "from": [{
                                 "source": {
-                                    "principals": ["{{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline"]
+                                    "principals": ["cluster.local/ns/kubeflow/sa/ml-pipeline"]
                                 }
                             }]
                         }]

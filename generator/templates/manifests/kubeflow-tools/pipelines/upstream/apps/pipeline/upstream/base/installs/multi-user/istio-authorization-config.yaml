@@ -26,12 +26,12 @@ spec:
   - from:
     - source:
         principals:
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-ui
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-persistenceagent
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-scheduledworkflow
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-viewer-crd-service-account
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/kubeflow-pipelines-cache
+        - cluster.local/ns/kubeflow/sa/ml-pipeline
+        - cluster.local/ns/kubeflow/sa/ml-pipeline-ui
+        - cluster.local/ns/kubeflow/sa/ml-pipeline-persistenceagent
+        - cluster.local/ns/kubeflow/sa/ml-pipeline-scheduledworkflow
+        - cluster.local/ns/kubeflow/sa/ml-pipeline-viewer-crd-service-account
+        - cluster.local/ns/kubeflow/sa/kubeflow-pipelines-cache
   # For user workloads, which cannot user http headers for authentication
   - when:
     - key: request.headers[kubeflow-userid]
@@ -50,12 +50,12 @@ spec:
   - from:
     - source:
         principals:
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-ui
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-persistenceagent
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-scheduledworkflow
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-viewer-crd-service-account
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/kubeflow-pipelines-cache
+        - cluster.local/ns/kubeflow/sa/ml-pipeline
+        - cluster.local/ns/kubeflow/sa/ml-pipeline-ui
+        - cluster.local/ns/kubeflow/sa/ml-pipeline-persistenceagent
+        - cluster.local/ns/kubeflow/sa/ml-pipeline-scheduledworkflow
+        - cluster.local/ns/kubeflow/sa/ml-pipeline-viewer-crd-service-account
+        - cluster.local/ns/kubeflow/sa/kubeflow-pipelines-cache
 
 ---
 apiVersion: security.istio.io/v1beta1
@@ -76,7 +76,7 @@ kind: DestinationRule
 metadata:
   name: ml-pipeline-ui
 spec:
-  host: ml-pipeline-ui.kubeflow.svc.{{< .Values.clusterDomain >}}
+  host: ml-pipeline-ui.kubeflow.svc.cluster.local
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL
@@ -86,7 +86,7 @@ kind: DestinationRule
 metadata:
   name: ml-pipeline
 spec:
-  host: ml-pipeline.kubeflow.svc.{{< .Values.clusterDomain >}}
+  host: ml-pipeline.kubeflow.svc.cluster.local
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL
@@ -96,7 +96,7 @@ kind: DestinationRule
 metadata:
   name: ml-pipeline-visualizationserver
 spec:
-  host: ml-pipeline-visualizationserver.kubeflow.svc.{{< .Values.clusterDomain >}}
+  host: ml-pipeline-visualizationserver.kubeflow.svc.cluster.local
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL

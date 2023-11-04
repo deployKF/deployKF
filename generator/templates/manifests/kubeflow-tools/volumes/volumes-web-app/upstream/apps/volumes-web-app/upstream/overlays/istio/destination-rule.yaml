@@ -3,7 +3,7 @@ kind: DestinationRule
 metadata:
   name: volumes-web-app
 spec:
-  host: volumes-web-app-service.kubeflow.svc.{{< .Values.clusterDomain >}}
+  host: volumes-web-app-service.kubeflow.svc.cluster.local
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL

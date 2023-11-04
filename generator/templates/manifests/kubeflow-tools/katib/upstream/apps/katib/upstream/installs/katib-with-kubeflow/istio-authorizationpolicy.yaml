@@ -12,4 +12,4 @@ spec:
   rules:
     - from:
         - source:
-            principals: ["{{< .Values.clusterDomain >}}/ns/istio-system/sa/istio-ingressgateway-service-account"]
+            principals: ["cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"]

@@ -16,6 +16,6 @@ spec:
       uri: /ml_metadata
     route:
     - destination:
-        host: metadata-envoy-service.kubeflow.svc.{{< .Values.clusterDomain >}}
+        host: metadata-envoy-service.kubeflow.svc.cluster.local
         port:
           number: 9090

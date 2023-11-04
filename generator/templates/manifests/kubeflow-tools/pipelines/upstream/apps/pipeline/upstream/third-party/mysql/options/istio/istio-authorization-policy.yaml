@@ -11,13 +11,13 @@ spec:
   - from:
     - source:
         principals:
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-ui
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-persistenceagent
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-scheduledworkflow
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-viewer-crd-service-account
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/kubeflow-pipelines-cache
-        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/metadata-grpc-server
+        - cluster.local/ns/kubeflow/sa/ml-pipeline
+        - cluster.local/ns/kubeflow/sa/ml-pipeline-ui
+        - cluster.local/ns/kubeflow/sa/ml-pipeline-persistenceagent
+        - cluster.local/ns/kubeflow/sa/ml-pipeline-scheduledworkflow
+        - cluster.local/ns/kubeflow/sa/ml-pipeline-viewer-crd-service-account
+        - cluster.local/ns/kubeflow/sa/kubeflow-pipelines-cache
+        - cluster.local/ns/kubeflow/sa/metadata-grpc-server
 
 ---
 
@@ -26,7 +26,7 @@ kind: DestinationRule
 metadata:
   name: ml-pipeline-mysql
 spec:
-  host: mysql.kubeflow.svc.{{< .Values.clusterDomain >}}
+  host: mysql.kubeflow.svc.cluster.local
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL

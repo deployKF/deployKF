@@ -3,7 +3,7 @@ kind: DestinationRule
 metadata:
   name: tensorboards-web-app
 spec:
-  host: tensorboards-web-app-service.kubeflow.svc.{{< .Values.clusterDomain >}}
+  host: tensorboards-web-app-service.kubeflow.svc.cluster.local
   trafficPolicy:
     tls:
       mode: ISTIO_MUTUAL
