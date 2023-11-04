@@ -14,6 +14,17 @@ resources:
   - resources/extra-manifests.yaml
   {{<- end >}}
 
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/dnsNames/1
+        value: $(podDefaultsServiceName).$(podDefaultsNamespace).svc.{{< .Values.clusterDomain >}}
+    target:
+      group: cert-manager.io
+      version: v1
+      kind: Certificate
+      name: cert
+
 images:
   - name: docker.io/kubeflownotebookswg/poddefaults-webhook
     newName: {{< .Values.kubeflow_tools.poddefaults_webhook.images.poddefaultsWebhook.repository | quote >}}

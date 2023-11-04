@@ -16,6 +16,7 @@ resources:
 
 patchesStrategicMerge:
   - patches/patch-volumes-web-app-authorizationpolicy.yaml
+  - patches/patch-volumes-web-app-destinationrule.yaml
   - patches/patch-volumes-web-app-virtualservice.yaml
 
 configMapGenerator:

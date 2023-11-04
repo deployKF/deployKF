@@ -1,0 +1,23 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: minio-service
+spec:
+  rules:
+  - from:
+    - source:
+        principals:
+        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline
+  - from:
+    - source:
+        principals:
+        - {{< .Values.clusterDomain >}}/ns/kubeflow/sa/ml-pipeline-ui
+  # Allow traffic from User Pipeline Pods, which don't have a sidecar.
+  - {}
+---
+apiVersion: "networking.istio.io/v1alpha3"
+kind: DestinationRule
+metadata:
+  name: ml-pipeline-minio
+spec:
+  host: minio-service.kubeflow.svc.{{< .Values.clusterDomain >}}
