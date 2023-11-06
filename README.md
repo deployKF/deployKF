@@ -17,9 +17,9 @@
   <br>
   <br>
   With <em>centralized configs</em>, in-place upgrades, and support for leading ML & Data tools like 
-  <a href="https://www.deploykf.org/reference/tools/#kubeflow-ecosystem"><strong>Kubeflow</strong></a>,
-  <a href="https://www.deploykf.org/reference/future-tools/#apache-airflow"><strong>Airflow</strong><sup>†</sup></a>, and
-  <a href="https://www.deploykf.org/reference/future-tools/#mlflow-model-registry"><strong>MLflow</strong><sup>†</sup></a>,
+  <a href="https://www.deploykf.org/reference/tools/#kubeflow-ecosystem">Kubeflow</a>,
+  <a href="https://www.deploykf.org/reference/future-tools/#apache-airflow">Airflow</a><sup>†</sup>, and
+  <a href="https://www.deploykf.org/reference/future-tools/#mlflow-model-registry">MLflow</a><sup>†</sup>,
   deployKF lets you focus on using the platform, not building it.
   <br>
   <sub><sup>†</sup><sup>Coming soon, see our <a href="https://www.deploykf.org/reference/tools/" target="_blank" rel="noopener">current</a> and <a href="https://www.deploykf.org/reference/future-tools/" target="_blank" rel="noopener">future</a> tools.</sup></sub>
@@ -59,38 +59,35 @@
 
 deployKF builds world-class ML Platforms on __any Kubernetes cluster__, within __any cloud or environment__, in minutes.
 
-- deployKF includes [__leading ML & Data tools__](https://www.deploykf.org/reference/tools/) from Kubeflow and more
-- deployKF has [__centralized configs__](https://www.deploykf.org/reference/deploykf-values/) that manage all aspects of the platform
+- deployKF includes [leading ML & Data tools](https://www.deploykf.org/reference/tools/) from Kubeflow and more
+- deployKF has [centralized configs](https://www.deploykf.org/reference/deploykf-values/) that manage all aspects of the platform
 - deployKF supports __in-place upgrades__ and can __autonomously__ roll out config changes
 - deployKF lets you __bring your own__ cluster dependencies like __istio__ and __cert-manager__, if desired
 - deployKF uses __ArgoCD Applications__ to provide native GitOps support
 
-## What ML and AI tools are in deployKF?
+## Which ML and AI tools are included?
 
-deployKF supports all tools from the [Kubeflow Ecosystem](https://www.deploykf.org/reference/tools/#kubeflow-ecosystem) including [__Kubeflow Pipelines__](https://www.deploykf.org/reference/tools/#kubeflow-pipelines) and [__Kubeflow Notebooks__](https://www.deploykf.org/reference/tools/#kubeflow-notebooks).
-We are actively adding support for other popular tools such as [__MLflow__](https://www.deploykf.org/reference/future-tools/#mlflow-model-registry), [__Airflow__](https://www.deploykf.org/reference/future-tools/#apache-airflow), and [__Feast__](https://www.deploykf.org/reference/future-tools/#feast). 
-
+deployKF supports all tools from the [Kubeflow Ecosystem](https://www.deploykf.org/reference/tools/#kubeflow-ecosystem) including [Kubeflow Pipelines](https://www.deploykf.org/reference/tools/#kubeflow-pipelines) and [Kubeflow Notebooks](https://www.deploykf.org/reference/tools/#kubeflow-notebooks).
+We are actively adding support for other popular tools such as [MLflow](https://www.deploykf.org/reference/future-tools/#mlflow-model-registry), [Airflow](https://www.deploykf.org/reference/future-tools/#apache-airflow), and [Feast](https://www.deploykf.org/reference/future-tools/#feast).
 For more information, please see our [current](https://www.deploykf.org/reference/tools/) and [future](https://www.deploykf.org/reference/future-tools/) tools!
 
-## Who makes deployKF?
+## Who maintains deployKF?
 
 deployKF was originally created by [Mathew Wicks](https://www.linkedin.com/in/mathewwicks/) (GitHub: [@thesuperzapper](https://github.com/thesuperzapper)), a Kubeflow lead and maintainer of the popular [Apache Airflow Helm Chart](https://github.com/airflow-helm/charts).
 deployKF is a community-led project that welcomes contributions from anyone who wants to help.
 
-## Is commercial support available for deployKF?
+## Do you offer commercial support?
 
-The creator of deployKF (Mathew Wicks), operates a US-based ML & Data company named [__Aranui Solutions__](https://www.aranui.solutions) which provides __commercial support__ and __advisory services__.
-
+The creator of deployKF (Mathew Wicks), operates a US-based ML & Data company named [Aranui Solutions](https://www.aranui.solutions) which provides commercial support and advisory services.
 Connect on [LinkedIn](https://www.linkedin.com/in/mathewwicks/) or email [`sales@aranui.solutions`](mailto:sales@aranui.solutions?subject=%5BdeployKF%5D%20MY_SUBJECT) to learn more!
 
 ## Who uses deployKF?
 
 deployKF is a new project, and we are still building our community, consider [adding your organization](ADOPTERS.md) to our list of adopters.
 
-## What is the difference between Kubeflow and deployKF?
+## How are Kubeflow and deployKF related?
 
 Kubeflow and deployKF are two different but related projects.
-
 For more details, please see our [deployKF vs Kubeflow](https://www.deploykf.org/about/kubeflow-vs-deploykf/) comparison.
 
 ## Do you have a Slack or Mailing List?
