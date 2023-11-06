@@ -25,6 +25,12 @@
   <sub><sup>†</sup><sup>Coming soon, see our <a href="https://www.deploykf.org/reference/tools/" target="_blank" rel="noopener">current</a> and <a href="https://www.deploykf.org/reference/future-tools/" target="_blank" rel="noopener">future</a> tools.</sup></sub>
 </p>
 
+<div align="center">
+  <a href="https://github.com/deployKF/deployKF/stargazers">
+    <img alt="GitHub Stars" src="https://img.shields.io/github/stars/deployKF/deployKF?style=for-the-badge&color=ffcb2f&label=Support%20us%20with%20a%20%E2%AD%90%20on%20GitHub">
+  </a>
+</div>
+
 <hr>
 <br>
 
@@ -47,9 +53,6 @@
     <img alt="Latest Release" src="https://img.shields.io/github/v/release/deployKF/deployKF?style=flat-square&color=6f42c1&label=latest%20release">
   </a>
   <br>
-  <a href="https://github.com/deployKF/deployKF/stargazers">
-    <img alt="GitHub Stars" src="https://img.shields.io/github/stars/deployKF/deployKF?style=for-the-badge&color=ffcb2f&label=Support%20with%20%E2%AD%90%20on%20GitHub">
-  </a>
 </div>
 
 ## What is deployKF?
