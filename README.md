@@ -10,7 +10,7 @@
   </a>
 </div>
 
-<hr>
+<br>
 
 <p align="center">
   <a href="https://www.deploykf.org/" target="_blank" rel="noopener"><b>deployKF</b></a> builds world-class ML Platforms on <strong>any Kubernetes cluster</strong>, within <strong>any cloud or environment</strong>, in minutes.
@@ -24,6 +24,8 @@
   <br>
   <sub><sup>†</sup><sup>Coming soon, see our <a href="https://www.deploykf.org/reference/tools/" target="_blank" rel="noopener">current</a> and <a href="https://www.deploykf.org/reference/future-tools/" target="_blank" rel="noopener">future</a> tools.</sup></sub>
 </p>
+
+<br>
 
 <div align="center">
   <a href="https://github.com/deployKF/deployKF/stargazers">
@@ -59,13 +61,23 @@
 
 deployKF builds world-class ML Platforms on __any Kubernetes cluster__, within __any cloud or environment__, in minutes.
 
-- deployKF includes [leading ML & Data tools](https://www.deploykf.org/reference/tools/) from Kubeflow and more
+- deployKF includes [leading ML & Data tools](https://www.deploykf.org/reference/tools/#tool-index) from Kubeflow and more
 - deployKF has [centralized configs](https://www.deploykf.org/reference/deploykf-values/) that manage all aspects of the platform
 - deployKF supports __in-place upgrades__ and can __autonomously__ roll out config changes
 - deployKF lets you __bring your own__ cluster dependencies like __istio__ and __cert-manager__, if desired
-- deployKF uses __ArgoCD Applications__ to provide native GitOps support
+- deployKF provides __native GitOps__ via ArgoCD
 
-## Which ML and AI tools are included?
+## Do you offer commercial support?
+
+Yes! The founder of deployKF ([Mathew Wicks](https://www.linkedin.com/in/mathewwicks/)), operates a US-based company named [Aranui Solutions](https://www.aranui.solutions) to provide commercial support and advisory services for organizations building ML & Data Platforms on Kubernetes.
+
+Email [`sales@aranui.solutions`](mailto:sales@aranui.solutions?subject=%5BdeployKF%5D%20MY_SUBJECT) to learn more!
+
+<br>
+
+# Common Questions
+
+## Which ML and AI tools are in deployKF?
 
 deployKF supports all tools from the [Kubeflow Ecosystem](https://www.deploykf.org/reference/tools/#kubeflow-ecosystem) including [Kubeflow Pipelines](https://www.deploykf.org/reference/tools/#kubeflow-pipelines) and [Kubeflow Notebooks](https://www.deploykf.org/reference/tools/#kubeflow-notebooks).
 We are actively adding support for other popular tools such as [MLflow](https://www.deploykf.org/reference/future-tools/#mlflow-model-registry), [Airflow](https://www.deploykf.org/reference/future-tools/#apache-airflow), and [Feast](https://www.deploykf.org/reference/future-tools/#feast).
@@ -75,11 +87,6 @@ For more information, please see our [current](https://www.deploykf.org/referenc
 
 deployKF was originally created by [Mathew Wicks](https://www.linkedin.com/in/mathewwicks/) (GitHub: [@thesuperzapper](https://github.com/thesuperzapper)), a Kubeflow lead and maintainer of the popular [Apache Airflow Helm Chart](https://github.com/airflow-helm/charts).
 deployKF is a community-led project that welcomes contributions from anyone who wants to help.
-
-## Do you offer commercial support?
-
-The creator of deployKF (Mathew Wicks), operates a US-based ML & Data company named [Aranui Solutions](https://www.aranui.solutions) which provides commercial support and advisory services.
-Connect on [LinkedIn](https://www.linkedin.com/in/mathewwicks/) or email [`sales@aranui.solutions`](mailto:sales@aranui.solutions?subject=%5BdeployKF%5D%20MY_SUBJECT) to learn more!
 
 ## Who uses deployKF?
 
@@ -92,7 +99,9 @@ For more details, please see our [deployKF vs Kubeflow](https://www.deploykf.org
 
 ## Do you have a Slack or Mailing List?
 
-Yes! For more information please see our [community page](https://www.deploykf.org/about/community/).
+Yes! For more information, please see our [community page](https://www.deploykf.org/about/community/).
+
+<br>
 
 # Documentation
 
@@ -107,7 +116,9 @@ Yes! For more information please see our [community page](https://www.deploykf.o
 - #### [Version Matrix](https://www.deploykf.org/releases/version-matrix/)
 - #### [Changelog](https://www.deploykf.org/releases/changelog-deploykf/)
 
-## Media
+<br>
+
+# Media
 
 <div align="center">
   <h3>
