@@ -2,7 +2,7 @@
 
 The deployKF ArgoCD plugin allows using deployKF without storing the rendered manifests in a git repository.
 
-## Install Plugin - New ArgoCD
+## Install Plugin along with new ArgoCD installation
 
 We provide manifests to install ArgoCD, with the deployKF plugin already installed, under the [`./argocd-install/`](./argocd-install) directory.
 
@@ -25,7 +25,7 @@ cd ./deploykf/argocd-plugin
 > If you already have ArgoCD installed, take extreme caution with the `./install_argocd.sh` script.
 > If you are not certain that our manifests are compatible with your existing ArgoCD installation, you should use the manual plugin install method.
 
-## Install Plugin - Existing ArgoCD
+## Install Plugin with Existing ArgoCD installation
 
 To install the deployKF plugin on an existing ArgoCD deployment, you must do the following (in your `argocd` Namespace):
 
