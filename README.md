@@ -13,14 +13,14 @@
 <br>
 
 <p align="center">
-  <a href="https://www.deploykf.org/" target="_blank" rel="noopener"><b>deployKF</b></a> builds world-class ML Platforms on <strong>any Kubernetes cluster</strong>, within <strong>any cloud or environment</strong>, in minutes.
+  <a href="https://www.deploykf.org/" target="_blank" rel="noopener"><b>deployKF</b></a> builds world-class Data and Machine Learning Platforms on <strong>any Kubernetes cluster</strong>, in any cloud or environment.
   <br>
   <br>
-  With <em>centralized configs</em>, in-place upgrades, and support for leading ML & Data tools like 
+  Centralized configs, in-place upgrades, and support for leading tools like
   <a href="https://www.deploykf.org/reference/tools/#kubeflow-ecosystem">Kubeflow</a>,
   <a href="https://www.deploykf.org/reference/future-tools/#apache-airflow">Airflow</a><sup>†</sup>, and
   <a href="https://www.deploykf.org/reference/future-tools/#mlflow-model-registry">MLflow</a><sup>†</sup>,
-  deployKF lets you focus on using the platform, not building it.
+  let you focus on using your platform, not just building it.
   <br>
   <sub><sup>†</sup><sup>Coming soon, see our <a href="https://www.deploykf.org/reference/tools/" target="_blank" rel="noopener">current</a> and <a href="https://www.deploykf.org/reference/future-tools/" target="_blank" rel="noopener">future</a> tools.</sup></sub>
 </p>
@@ -59,13 +59,18 @@
 
 ## What is deployKF?
 
-deployKF builds world-class ML Platforms on __any Kubernetes cluster__, within __any cloud or environment__, in minutes.
+deployKF builds world-class Data and Machine Learning Platforms on __any Kubernetes cluster__, in any cloud or environment.
+By combining the ease of a managed service with the flexibility of a self-hosted solution, deployKF enables you to deliver a sustainable platform which is still tailored to your organization's needs.
 
-- deployKF includes [leading ML & Data tools](https://www.deploykf.org/reference/tools/#tool-index) from Kubeflow and more
-- deployKF has [centralized configs](https://www.deploykf.org/reference/deploykf-values/) that manage all aspects of the platform
-- deployKF supports __in-place upgrades__ and can __autonomously__ roll out config changes
-- deployKF lets you __bring your own__ cluster dependencies like __istio__ and __cert-manager__, if desired
-- deployKF provides __native GitOps__ via ArgoCD
+Our vision is that anyone with Kubernetes experience can effortlessly build, maintain, and support a custom Data and ML Platform for their organization, without requiring specialized MLOps knowledge.
+
+Key features of deployKF include:
+
+- Support for [__leading tools__](https://www.deploykf.org/reference/tools/#tool-index) from Kubeflow and more
+- Intuitive and [__centralized configs__](https://www.deploykf.org/reference/deploykf-values/) to manage all aspects of the platform
+- Seamless __in-place upgrades__ and config rollouts
+- Connect with __existing cluster dependencies__ like Istio and cert-manager
+- Native support for GitOps via ArgoCD
 
 ## Do you offer commercial support?
 
