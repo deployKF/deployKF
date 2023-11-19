@@ -16,11 +16,11 @@
   <a href="https://www.deploykf.org/" target="_blank" rel="noopener"><b>deployKF</b></a> builds world-class Data and Machine Learning Platforms on <strong>any Kubernetes cluster</strong>, in any cloud or environment.
   <br>
   <br>
-  Centralized configs, in-place upgrades, and support for leading tools like
+  With centralized configs, in-place upgrades, and support for leading Data and MLOps tools including
   <a href="https://www.deploykf.org/reference/tools/#kubeflow-ecosystem">Kubeflow</a>,
   <a href="https://www.deploykf.org/reference/future-tools/#apache-airflow">Airflow</a><sup>†</sup>, and
   <a href="https://www.deploykf.org/reference/future-tools/#mlflow-model-registry">MLflow</a><sup>†</sup>,
-  let you focus on using your platform, not just building it.
+  deployKF lets you focus on using the platform, not building it.
   <br>
   <sub><sup>†</sup><sup>Coming soon, see our <a href="https://www.deploykf.org/reference/tools/" target="_blank" rel="noopener">current</a> and <a href="https://www.deploykf.org/reference/future-tools/" target="_blank" rel="noopener">future</a> tools.</sup></sub>
 </p>
@@ -60,9 +60,7 @@
 ## What is deployKF?
 
 deployKF builds world-class Data and Machine Learning Platforms on __any Kubernetes cluster__, in any cloud or environment.
-By combining the ease of a managed service with the flexibility of a self-hosted solution, deployKF enables you to deliver a sustainable platform which is still tailored to your organization's needs.
-
-Our vision is that anyone with Kubernetes experience can effortlessly build, maintain, and support a custom Data and ML Platform for their organization, without requiring specialized MLOps knowledge.
+Our vision is that _anyone with Kubernetes experience_ can effortlessly build, maintain, and support a custom Data and ML Platform for their organization, without requiring specialized MLOps knowledge.
 
 Key features of deployKF include:
 
