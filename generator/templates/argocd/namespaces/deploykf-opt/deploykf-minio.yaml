@@ -3,5 +3,9 @@ kind: Namespace
 metadata:
   name: {{< .Values.deploykf_opt.deploykf_minio.namespace | quote >}}
   labels:
+    {{- if .Values.deploykf_dependencies.istio.revision }}
+    istio.io/rev: {{ .Values.deploykf_dependencies.istio.revision }}
+    {{- else }}
     istio-injection: enabled
+    {{- end }}
     deploykf.github.io/inject-root-ca-cert: enabled
