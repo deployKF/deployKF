@@ -8,7 +8,9 @@
 
 <div align="center">
   <picture>
-    <img src="https://www.deploykf.org/assets/images/logo_1/logo.svg" width="140" />
+    <source media="(prefers-color-scheme: dark)" srcset="https://www.deploykf.org/assets/images/logo_1/logo.svg" />
+    <source media="(prefers-color-scheme: light)" srcset="https://www.deploykf.org/assets/images/logo_1/logo.svg" />
+    <img alt="deployKF Logo" src="https://www.deploykf.org/assets/images/logo_1/logo.svg" width="140" />
   </picture>
 </div>
 
