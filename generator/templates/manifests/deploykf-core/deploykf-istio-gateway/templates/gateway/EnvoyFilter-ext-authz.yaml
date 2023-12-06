@@ -1,7 +1,26 @@
 ################
-## This EnvoyFilter uses oauth2-proxy to authenticate all requests to the ingress gateway.
-## Secondarily, it sets the USERID_HEADER, from the `x-auth-request-email` returned by the upstream auth provider.
+## This EnvoyFilter is for deployKF Authentication at the entrance to the mesh (Ingress Gateway).
+##
+## The new HTTP filters are:
+##  1. Use Lua to set DynamicMetadata for requests that need to be authenticated
+##  2. Use ExtAuthz with oauth2-proxy to authenticate users
+##  3. Use JwtAuthn to verify JWTs from dex
+##  4. Use Lua to set USERID_HEADER from the `x-auth-request-email` returned by oauth2-proxy
+##
+## We have configured them such that authentication needs to be explicitly enabled for each route.
+## We disable the filters for Gateways/Routes that do not need them, or which would cause a redirect loop.
+## Routes from the user's other gateways on the same deployment should not be affected.
 ################
+{{- $disable_auth_routes := list }}
+{{- $disable_auth_routes = "dex-route" | append $disable_auth_routes }}
+{{- $disable_auth_routes = "oauth2-proxy-route" | append $disable_auth_routes }}
+{{- if .Values.deployKF.argoWorkflows.enabled }}
+  {{- $disable_auth_routes = "argo-server-route" | append $disable_auth_routes }}
+{{- end }}
+{{- if .Values.deployKF.minio.enabled }}
+  {{- $disable_auth_routes = "minio-api-route" | append $disable_auth_routes }}
+  {{- $disable_auth_routes = "minio-console-route" | append $disable_auth_routes }}
+{{- end }}
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
@@ -17,27 +36,91 @@ spec:
       {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
   configPatches:
     ################################################################################
-    ## FILTER 1 - Set JWT `Authorization` header from oauth2-proxy
+    ## FILTER 1 - Set DynamicMetadata for requests that need to be authenticated
     ################################################################################
     - applyTo: HTTP_FILTER
       match:
         context: GATEWAY
         listener:
+          {{- if .Values.deployKF.gateway.tls.enabled }}
+          portNumber: {{ .Values.deployKF.gateway.ports.https | int }}
+          {{- else }}
+          portNumber: {{ .Values.deployKF.gateway.ports.http | int }}
+          {{- end }}
           filterChain:
             filter:
               name: envoy.filters.network.http_connection_manager
       patch:
         ## insert as the FIRST http filter in the chain
+        ## as we need to inject authentication before Istio AuthN/AuthZ filters
         operation: INSERT_FIRST
         value:
-          name: envoy.filters.http.ext_authz
+          name: envoy.filters.http.deploykf.flag_requests
+          typed_config:
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/configuration/http/http_filters/lua_filter
+            "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
+
+            ## by default, no dynamic metadata is set
+            default_source_code:
+              inline_string: |
+                function envoy_on_request(request_handle)
+                  -- empty lua function
+                end
+
+            ## in our LuaPerRoute filters, we choose which source code to use for the route
+            source_codes:
+
+              ## SOURCE CODE 1:
+              ##  - set "needs_auth" to `true` for requests that need to be authenticated
+              enable_auth.lua:
+                inline_string: |
+                  function envoy_on_request(request_handle)
+                      request_handle:streamInfo():dynamicMetadata():set(
+                        "envoy.filters.http.deploykf.flag_requests",
+                        "needs_auth",
+                        true
+                      )
+                  end
+
+    ################################################################################
+    ## FILTER 2 - Set JWT `Authorization` header from oauth2-proxy
+    ################################################################################
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          {{- if .Values.deployKF.gateway.tls.enabled }}
+          portNumber: {{ .Values.deployKF.gateway.ports.https | int }}
+          {{- else }}
+          portNumber: {{ .Values.deployKF.gateway.ports.http | int }}
+          {{- end }}
+          filterChain:
+            filter:
+              name: envoy.filters.network.http_connection_manager
+              subFilter:
+                name: envoy.filters.http.deploykf.flag_requests
+      patch:
+        ## insert right AFTER the `envoy.filters.http.deploykf.flag_requests` filter
+        operation: INSERT_AFTER
+        value:
+          name: envoy.filters.http.deploykf.ext_authz
           typed_config:
             ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthz
             "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
 
             ## if `false`, ext-authz will reject client requests and return a Forbidden response if the communication
-            ## with the authorization service has failed, or if the authorization service has returned a HTTP 5xx error.
+            ## with the authorization service has failed, or if the authorization service has returned an HTTP 5xx error.
             failure_mode_allow: false
+
+            ## only apply the filter to requests flagged by our Lua filter
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/type/matcher/v3/metadata.proto#type-matcher-v3-metadatamatcher
+            filter_enabled_metadata:
+              filter: envoy.filters.http.deploykf.flag_requests
+              path:
+                - key: needs_auth
+              value:
+                bool_match: true
 
             ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-httpservice
             http_service:
@@ -88,28 +171,35 @@ spec:
                       ignore_case: true
 
     ################################################################################
-    ## FILTER 2 - Verify JWT, and path access by JWT audience
+    ## FILTER 3 - Verify JWT, and path access by JWT audience
     ################################################################################
     - applyTo: HTTP_FILTER
       match:
         context: GATEWAY
         listener:
+          {{- if .Values.deployKF.gateway.tls.enabled }}
+          portNumber: {{ .Values.deployKF.gateway.ports.https | int }}
+          {{- else }}
+          portNumber: {{ .Values.deployKF.gateway.ports.http | int }}
+          {{- end }}
           filterChain:
             filter:
               name: envoy.filters.network.http_connection_manager
               subFilter:
-                name: envoy.filters.http.ext_authz
+                name: envoy.filters.http.deploykf.ext_authz
       patch:
-        ## insert our filter just AFTER our `envoy.filters.http.ext_authz` filter
+        ## insert right AFTER the `envoy.filters.http.deploykf.ext_authz` filter
         operation: INSERT_AFTER
         value:
-          name: envoy.filters.http.jwt_authn
+          name: envoy.filters.http.deploykf.jwt_authn
           typed_config:
             ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-jwtauthentication
             "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
 
             ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#envoy-v3-api-msg-extensions-filters-http-jwt-authn-v3-jwtprovider
             providers:
+
+              ## provider for the deployKF dex server
               deploykf_dex:
                 ## must match the issuer presented by the dex server
                 {{- if .Values.deployKF.gateway.tls.enabled }}
@@ -134,75 +224,201 @@ spec:
                   - name: authorization
                     value_prefix: "Bearer "
 
-            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#envoy-v3-api-msg-extensions-filters-http-jwt-authn-v3-requirementrule
-            rules:
-              {{- if and .Values.deployKF.kubeflow.pipelines.enabled .Values.deployKF.auth.dex.clients.kubeflowPipelinesSDK.enabled }}
-              ## kubeflow pipelines api
-              - match:
-                  prefix: "/pipeline"
-                requires:
-                  provider_and_audiences:
-                    provider_name: deploykf_dex
-                    audiences:
-                      - {{ .Values.deployKF.auth.dex.clients.oauth2Proxy.clientId | quote }}
-                      - {{ .Values.deployKF.auth.dex.clients.kubeflowPipelinesSDK.clientId | quote }}
-              {{- end }}
+            ## by default, do not require JWT verification
+            rules: []
 
-              ## all remaining paths
-              - match:
-                  prefix: "/"
-                requires:
-                  provider_and_audiences:
-                    provider_name: deploykf_dex
-                    audiences:
-                      - {{ .Values.deployKF.auth.dex.clients.oauth2Proxy.clientId | quote }}
+            ## in our PerRouteConfig filters, we choose which requirements to use for the route
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#envoy-v3-api-msg-extensions-filters-http-jwt-authn-v3-requirementrule
+            requirement_map:
+
+              ## used by kubeflow pipelines api route
+              ## allows both 'oauth2-proxy' and 'kubeflow-pipelines-sdk' audiences
+              kubeflow_pipelines_api:
+                provider_and_audiences:
+                  provider_name: deploykf_dex
+                  audiences:
+                    - {{ .Values.deployKF.auth.dex.clients.oauth2Proxy.clientId | quote }}
+                    - {{ .Values.deployKF.auth.dex.clients.kubeflowPipelinesSDK.clientId | quote }}
+
+              ## used by all other deployKF routes
+              oauth2_proxy:
+                provider_and_audiences:
+                  provider_name: deploykf_dex
+                  audiences:
+                    - {{ .Values.deployKF.auth.dex.clients.oauth2Proxy.clientId | quote }}
 
     ################################################################################
-    ## FILTER 3 - Set USERID_HEADER from `x-auth-request-email`
+    ## FILTER 4 - Set USERID_HEADER from `x-auth-request-email`
     ################################################################################
     - applyTo: HTTP_FILTER
       match:
         context: GATEWAY
         listener:
+          {{- if .Values.deployKF.gateway.tls.enabled }}
+          portNumber: {{ .Values.deployKF.gateway.ports.https | int }}
+          {{- else }}
+          portNumber: {{ .Values.deployKF.gateway.ports.http | int }}
+          {{- end }}
           filterChain:
             filter:
               name: envoy.filters.network.http_connection_manager
               subFilter:
-                name: envoy.filters.http.jwt_authn
+                name: envoy.filters.http.deploykf.jwt_authn
       patch:
-        ## insert our filter just AFTER our `envoy.filters.http.jwt_authn` filter
+        ## insert right AFTER the `envoy.filters.http.deploykf.jwt_authn` filter
         operation: INSERT_AFTER
         value:
-          name: envoy.filters.http.lua.set_userid_header
+          name: envoy.filters.http.deploykf.set_userid_header
           typed_config:
             ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/configuration/http/http_filters/lua_filter
             "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
 
-            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/configuration/http/http_filters/lua_filter#config-http-filters-lua
-            inline_code: |
-              function envoy_on_request(request_handle)
-
-                -- extract value of 'x-auth-request-email' header
-                local x_auth_request_email = request_handle:headers():get("x-auth-request-email")
-
-                -- fail if 'x-auth-request-email' is not set or is empty
-                if (x_auth_request_email == nil or x_auth_request_email == "") then
-                  request_handle:respond(
-                    {[":status"] = "403"},
-                    "ExtAuthz did not set 'x-auth-request-email' header"
-                  )
+            ## by default, do nothing
+            default_source_code:
+              inline_string: |
+                function envoy_on_request(request_handle)
+                  -- empty lua function
                 end
 
-                {{- if .Values.deployKF.gateway.emailToLowercase }}
-                {{- "\n" }}
-                -- cast the value of 'x-auth-request-email' to lowercase
-                x_auth_request_email = string.lower(x_auth_request_email)
-                {{- end }}
+            ## in our LuaPerRoute filters, we choose which source code to use for the route
+            source_codes:
 
-                -- set Kubeflow USERID_HEADER from 'x-auth-request-email'
-                request_handle:headers():replace(
-                  "{{ .Values.deployKF.kubeflow.useridHeader }}",
-                  x_auth_request_email
-                )
+              ## SOURCE CODE 1:
+              ##  - set USERID_HEADER from `x-auth-request-email`
+              set_userid_header.lua:
+                inline_string: |
+                  function envoy_on_request(request_handle)
+                    -- extract value of 'x-auth-request-email' header
+                    local x_auth_request_email = request_handle:headers():get("x-auth-request-email")
 
-              end
+                    -- fail if 'x-auth-request-email' is not set or is empty
+                    if (x_auth_request_email == nil or x_auth_request_email == "") then
+                      request_handle:respond(
+                        {[":status"] = "403"},
+                        "ExtAuthz did not set 'x-auth-request-email' header"
+                      )
+                    end
+
+                    {{- if .Values.deployKF.gateway.emailToLowercase }}
+                    {{- "\n" }}
+                    -- cast the value of 'x-auth-request-email' to lowercase
+                    x_auth_request_email = string.lower(x_auth_request_email)
+                    {{- end }}
+
+                    -- set Kubeflow USERID_HEADER from 'x-auth-request-email'
+                    request_handle:headers():replace(
+                      "{{ .Values.deployKF.kubeflow.useridHeader }}",
+                      x_auth_request_email
+                    )
+                  end
+
+    ################################################################################
+    ## ROUTE - Enable auth on ALL deployKF Gateway routes
+    ################################################################################
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          {{- if .Values.deployKF.gateway.tls.enabled }}
+          portNumber: {{ .Values.deployKF.gateway.ports.https | int }}
+          {{- else }}
+          portNumber: {{ .Values.deployKF.gateway.ports.http | int }}
+          {{- end }}
+          gateway: "{{ .Release.Namespace }}/{{ .Values.deployKF.gateway.name }}"
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            ## the Lua filter that flags requests is called "envoy.filters.http.deploykf.flag_requests"
+            envoy.filters.http.deploykf.flag_requests:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+              name: enable_auth.lua
+
+            ## the JwtAuthn filter is called "envoy.filters.http.deploykf.jwt_authn"
+            envoy.filters.http.deploykf.jwt_authn:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-perrouteconfig
+              "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.PerRouteConfig
+              requirement_name: oauth2_proxy
+
+            ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.deploykf.set_userid_header"
+            envoy.filters.http.deploykf.set_userid_header:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+              name: set_userid_header.lua
+
+    ################################################################################
+    ## ROUTE - Use special JwtAuthn requirement for 'ml-pipeline-ui' route
+    ################################################################################
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          {{- if .Values.deployKF.gateway.tls.enabled }}
+          portNumber: {{ .Values.deployKF.gateway.ports.https | int }}
+          {{- else }}
+          portNumber: {{ .Values.deployKF.gateway.ports.http | int }}
+          {{- end }}
+          gateway: "{{ .Release.Namespace }}/{{ .Values.deployKF.gateway.name }}"
+          vhost:
+            route:
+              ## HTTP route names are specified in VirtualServices
+              name: ml-pipeline-ui-route
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            ## use the JwtAuthn requirement that also allows the 'kubeflow-pipelines-api' audience
+            envoy.filters.http.deploykf.jwt_authn:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-perrouteconfig
+              "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.PerRouteConfig
+              requirement_name: kubeflow_pipelines_api
+
+    {{- range $route_name := $disable_auth_routes }}
+    {{- "\n" }}
+    ################################################################################
+    ## ROUTE - Disable auth for '{{ $route_name }}' route
+    ################################################################################
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          {{- if $.Values.deployKF.gateway.tls.enabled }}
+          portNumber: {{ $.Values.deployKF.gateway.ports.https | int }}
+          {{- else }}
+          portNumber: {{ $.Values.deployKF.gateway.ports.http | int }}
+          {{- end }}
+          gateway: "{{ $.Release.Namespace }}/{{ $.Values.deployKF.gateway.name }}"
+          vhost:
+            route:
+              ## HTTP route names are specified in VirtualServices
+              name: {{ $route_name | quote }}
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            ## disable the Lua filter that flags requests
+            envoy.filters.http.deploykf.flag_requests:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+              disabled: true
+
+            ## disable the ExtAuthz filter
+            envoy.filters.http.deploykf.ext_authz:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/ext_authz/v3/ext_authz.proto#extensions-filters-http-ext-authz-v3-extauthzperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+              disabled: true
+
+            ## disable the JwtAuthn filter
+            envoy.filters.http.deploykf.jwt_authn:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-perrouteconfig
+              "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.PerRouteConfig
+              disabled: true
+
+            ## disable the Lua filter that sets USERID_HEADER
+            envoy.filters.http.deploykf.set_userid_header:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+              disabled: true
+    {{- end }}

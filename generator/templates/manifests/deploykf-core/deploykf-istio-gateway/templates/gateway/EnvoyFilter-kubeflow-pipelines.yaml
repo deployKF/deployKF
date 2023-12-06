@@ -18,58 +18,51 @@ metadata:
     app.kubernetes.io/instance: {{ .Release.Name }}
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
+  ## this filter must be applied after 'deploykf-istio-gateway--ext-authz'
+  priority: 10
   workloadSelector:
     labels:
       {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
   configPatches:
     ################################################################################
-    ## FILTER 1 - Empty global lua filter (needed to allow per-route lua filter)
+    ## FILTER - Define the Lua filter
     ################################################################################
     - applyTo: HTTP_FILTER
       match:
         context: GATEWAY
         listener:
+          {{- if .Values.deployKF.gateway.tls.enabled }}
+          portNumber: {{ .Values.deployKF.gateway.ports.https | int }}
+          {{- else }}
+          portNumber: {{ .Values.deployKF.gateway.ports.http | int }}
+          {{- end }}
           filterChain:
             filter:
               name: envoy.filters.network.http_connection_manager
               subFilter:
-                ## the Lua filter that sets USERID_HEADER is called "envoy.filters.http.lua.set_userid_header"
-                name: envoy.filters.http.lua.set_userid_header
+                name: envoy.filters.http.deploykf.set_userid_header
       patch:
+        ## insert right AFTER the `envoy.filters.http.deploykf.set_userid_header` filter
         operation: INSERT_AFTER
         value:
-          name: envoy.filters.http.lua.kfp_redirect_artifact_namespaces
+          name: envoy.filters.http.deploykf.kfp_redirect_artifact_namespaces
           typed_config:
             ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/configuration/http/http_filters/lua_filter
             "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.Lua
 
-            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/configuration/http/http_filters/lua_filter#config-http-filters-lua
-            inlineCode: |
-              function envoy_on_request(request_handle)
-                -- empty lua function
-              end
+            ## by default, do nothing
+            default_source_code:
+              inline_string: |
+                function envoy_on_request(request_handle)
+                  -- empty lua function
+                end
 
-    ################################################################################
-    ## PATCH - Enable lua filter for the `ml-pipeline-ui-artifacts-route`
-    ################################################################################
-    - applyTo: HTTP_ROUTE
-      match:
-        context: GATEWAY
-        routeConfiguration:
-          vhost:
-            route:
-              ## HTTP route names are specified in VirtualServices
-              name: ml-pipeline-ui-artifacts-route
-      patch:
-        operation: MERGE
-        value:
-          typed_per_filter_config:
-            envoy.filters.http.lua.kfp_redirect_artifact_namespaces:
-              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
-              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+            ## in our LuaPerRoute filter, we choose which source code to use for the route
+            source_codes:
 
-              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/configuration/http/http_filters/lua_filter#config-http-filters-lua
-              source_code:
+              ## SOURCE CODE:
+              kfp_redirect_artifact_namespaces.lua:
                 inline_string: |
                   function extract_url_namespaces(url_path)
                       -- extract namespace from object key
@@ -143,5 +136,32 @@ spec:
                           end
                       end
                   end
+
+    ################################################################################
+    ## ROUTE - Enable lua filter for the 'ml-pipeline-ui-artifacts' route
+    ################################################################################
+    - applyTo: HTTP_ROUTE
+      match:
+        context: GATEWAY
+        routeConfiguration:
+          {{- if .Values.deployKF.gateway.tls.enabled }}
+          portNumber: {{ .Values.deployKF.gateway.ports.https | int }}
+          {{- else }}
+          portNumber: {{ .Values.deployKF.gateway.ports.http | int }}
+          {{- end }}
+          gateway: "{{ .Release.Namespace }}/{{ .Values.deployKF.gateway.name }}"
+          vhost:
+            route:
+              ## HTTP route names are specified in VirtualServices
+              name: ml-pipeline-ui-artifacts-route
+      patch:
+        operation: MERGE
+        value:
+          typed_per_filter_config:
+            ## the Lua filter that we defined above
+            envoy.filters.http.deploykf.kfp_redirect_artifact_namespaces:
+              ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
+              "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
+              name: kfp_redirect_artifact_namespaces.lua
 {{- end }}
 {{- end }}

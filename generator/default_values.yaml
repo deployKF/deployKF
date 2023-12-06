@@ -669,7 +669,7 @@ deploykf_core:
       enableProxyProtocol: false
 
       ## the number of x-forwarded-for HTTP header hops to trust
-      ##  - important if using a LoadBalancer (like AWS NLB) as the Service type of deploykf-istio-gateway
+      ##  - important if using a LoadBalancer (like AWS NLB) for your Service
       ##
       xffNumTrustedHops: 0
 
