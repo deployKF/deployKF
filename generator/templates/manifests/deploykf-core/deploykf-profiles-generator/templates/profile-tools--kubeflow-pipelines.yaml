@@ -108,6 +108,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ $.Release.Service }}
 spec:
   generateExisting: true
+  mutateExistingOnPolicyUpdate: false
   rules:
     {{- $source_secret__name := $profile_configs.objectStoreAuth_existingSecret }}
     {{- $source_secret__namespace := $profile_configs.objectStoreAuth_existingSecretNamespace }}
