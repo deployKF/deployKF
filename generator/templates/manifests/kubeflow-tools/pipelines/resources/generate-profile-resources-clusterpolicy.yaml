@@ -19,20 +19,22 @@ spec:
         any:
           - resources:
               kinds:
-                - Namespace
-              selector:
+                - ConfigMap
+              names:
+                - profile-tools--kubeflow-pipelines
+              namespaceSelector:
                 matchLabels:
                   pipelines.kubeflow.org/enabled: "true"
       generate:
         apiVersion: v1
         kind: ConfigMap
         name: metadata-grpc-configmap
-        namespace: "{{ request.object.metadata.name }}"
+        namespace: "{{ request.object.metadata.namespace }}"
         synchronize: true
         data:
           metadata:
             annotations:
-              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "ConfigMap" "{{ request.object.metadata.name }}" "metadata-grpc-configmap" | quote >}}
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "ConfigMap" "{{ request.object.metadata.namespace }}" "metadata-grpc-configmap" | quote >}}
               argocd.argoproj.io/compare-options: "IgnoreExtraneous"
               argocd.argoproj.io/sync-options: "Prune=false"
             labels:
@@ -49,20 +51,22 @@ spec:
         any:
           - resources:
               kinds:
-                - Namespace
-              selector:
+                - ConfigMap
+              names:
+                - profile-tools--kubeflow-pipelines
+              namespaceSelector:
                 matchLabels:
                   pipelines.kubeflow.org/enabled: "true"
       generate:
         apiVersion: apps/v1
         kind: Deployment
         name: ml-pipeline-visualizationserver
-        namespace: "{{ request.object.metadata.name }}"
+        namespace: "{{ request.object.metadata.namespace }}"
         synchronize: true
         data:
           metadata:
             annotations:
-              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "apps" "Deployment" "{{ request.object.metadata.name }}" "ml-pipeline-visualizationserver" | quote >}}
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "apps" "Deployment" "{{ request.object.metadata.namespace }}" "ml-pipeline-visualizationserver" | quote >}}
               argocd.argoproj.io/compare-options: "IgnoreExtraneous"
               argocd.argoproj.io/sync-options: "Prune=false"
             labels:
@@ -101,20 +105,22 @@ spec:
         any:
           - resources:
               kinds:
-                - Namespace
-              selector:
+                - ConfigMap
+              names:
+                - profile-tools--kubeflow-pipelines
+              namespaceSelector:
                 matchLabels:
                   pipelines.kubeflow.org/enabled: "true"
       generate:
         apiVersion: networking.istio.io/v1alpha3
         kind: DestinationRule
         name: ml-pipeline-visualizationserver
-        namespace: "{{ request.object.metadata.name }}"
+        namespace: "{{ request.object.metadata.namespace }}"
         synchronize: true
         data:
           metadata:
             annotations:
-              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "networking.istio.io" "DestinationRule" "{{ request.object.metadata.name }}" "ml-pipeline-visualizationserver" | quote >}}
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "networking.istio.io" "DestinationRule" "{{ request.object.metadata.namespace }}" "ml-pipeline-visualizationserver" | quote >}}
               argocd.argoproj.io/compare-options: "IgnoreExtraneous"
               argocd.argoproj.io/sync-options: "Prune=false"
             labels:
@@ -133,20 +139,22 @@ spec:
         any:
           - resources:
               kinds:
-                - Namespace
-              selector:
+                - ConfigMap
+              names:
+                - profile-tools--kubeflow-pipelines
+              namespaceSelector:
                 matchLabels:
                   pipelines.kubeflow.org/enabled: "true"
       generate:
         apiVersion: security.istio.io/v1beta1
         kind: AuthorizationPolicy
         name: ml-pipeline-visualizationserver
-        namespace: "{{ request.object.metadata.name }}"
+        namespace: "{{ request.object.metadata.namespace }}"
         synchronize: true
         data:
           metadata:
             annotations:
-              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "security.istio.io" "AuthorizationPolicy" "{{ request.object.metadata.name }}" "ml-pipeline-visualizationserver" | quote >}}
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "security.istio.io" "AuthorizationPolicy" "{{ request.object.metadata.namespace }}" "ml-pipeline-visualizationserver" | quote >}}
               argocd.argoproj.io/compare-options: "IgnoreExtraneous"
               argocd.argoproj.io/sync-options: "Prune=false"
             labels:
@@ -169,20 +177,22 @@ spec:
         any:
           - resources:
               kinds:
-                - Namespace
-              selector:
+                - ConfigMap
+              names:
+                - profile-tools--kubeflow-pipelines
+              namespaceSelector:
                 matchLabels:
                   pipelines.kubeflow.org/enabled: "true"
       generate:
         apiVersion: v1
         kind: Service
         name: ml-pipeline-visualizationserver
-        namespace: "{{ request.object.metadata.name }}"
+        namespace: "{{ request.object.metadata.namespace }}"
         synchronize: true
         data:
           metadata:
             annotations:
-              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "Service" "{{ request.object.metadata.name }}" "ml-pipeline-visualizationserver" | quote >}}
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "Service" "{{ request.object.metadata.namespace }}" "ml-pipeline-visualizationserver" | quote >}}
               argocd.argoproj.io/compare-options: "IgnoreExtraneous"
               argocd.argoproj.io/sync-options: "Prune=false"
             labels:
@@ -204,25 +214,27 @@ spec:
         any:
           - resources:
               kinds:
-                - Namespace
-              selector:
+                - ConfigMap
+              names:
+                - profile-tools--kubeflow-pipelines
+              namespaceSelector:
                 matchLabels:
                   pipelines.kubeflow.org/enabled: "true"
       context:
         - name: tool_config
           configMap:
-            name: profile-tools--kubeflow-pipelines
-            namespace: "{{ request.object.metadata.name }}"
+            name: "{{ request.object.metadata.name }}"
+            namespace: "{{ request.object.metadata.namespace }}"
       generate:
         apiVersion: apps/v1
         kind: Deployment
         name: ml-pipeline-ui-artifact
-        namespace: "{{ request.object.metadata.name }}"
+        namespace: "{{ request.object.metadata.namespace }}"
         synchronize: true
         data:
           metadata:
             annotations:
-              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "apps" "Deployment" "{{ request.object.metadata.name }}" "ml-pipeline-ui-artifact" | quote >}}
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "apps" "Deployment" "{{ request.object.metadata.namespace }}" "ml-pipeline-ui-artifact" | quote >}}
               argocd.argoproj.io/compare-options: "IgnoreExtraneous"
               argocd.argoproj.io/sync-options: "Prune=false"
             labels:
@@ -310,20 +322,22 @@ spec:
         any:
           - resources:
               kinds:
-                - Namespace
-              selector:
+                - ConfigMap
+              names:
+                - profile-tools--kubeflow-pipelines
+              namespaceSelector:
                 matchLabels:
                   pipelines.kubeflow.org/enabled: "true"
       generate:
         apiVersion: v1
         kind: Service
         name: ml-pipeline-ui-artifact
-        namespace: "{{ request.object.metadata.name }}"
+        namespace: "{{ request.object.metadata.namespace }}"
         synchronize: true
         data:
           metadata:
             annotations:
-              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "Service" "{{ request.object.metadata.name }}" "ml-pipeline-ui-artifact" | quote >}}
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "Service" "{{ request.object.metadata.namespace }}" "ml-pipeline-ui-artifact" | quote >}}
               argocd.argoproj.io/compare-options: "IgnoreExtraneous"
               argocd.argoproj.io/sync-options: "Prune=false"
             labels:
@@ -346,26 +360,28 @@ spec:
         any:
           - resources:
               kinds:
-                - Namespace
-              selector:
+                - ConfigMap
+              names:
+                - profile-tools--kubeflow-pipelines
+              namespaceSelector:
                 matchLabels:
                   pipelines.kubeflow.org/enabled: "true"
       context:
         - name: tool_config
           configMap:
-            name: profile-tools--kubeflow-pipelines
-            namespace: "{{ request.object.metadata.name }}"
+            name: "{{ request.object.metadata.name }}"
+            namespace: "{{ request.object.metadata.namespace }}"
       generate:
         apiVersion: v1
         kind: ConfigMap
         name: artifact-repositories
-        namespace: "{{ request.object.metadata.name }}"
+        namespace: "{{ request.object.metadata.namespace }}"
         synchronize: true
         data:
           metadata:
             annotations:
               workflows.argoproj.io/default-artifact-repository: default-v1
-              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "ConfigMap" "{{ request.object.metadata.name }}" "artifact-repositories" | quote >}}
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "ConfigMap" "{{ request.object.metadata.namespace }}" "artifact-repositories" | quote >}}
               argocd.argoproj.io/compare-options: "IgnoreExtraneous"
               argocd.argoproj.io/sync-options: "Prune=false"
             labels:
@@ -399,20 +415,22 @@ spec:
         any:
           - resources:
               kinds:
-                - Namespace
-              selector:
+                - ConfigMap
+              names:
+                - profile-tools--kubeflow-pipelines
+              namespaceSelector:
                 matchLabels:
                   pipelines.kubeflow.org/enabled: "true"
       generate:
         apiVersion: v1
         kind: ConfigMap
         name: kfp-launcher
-        namespace: "{{ request.object.metadata.name }}"
+        namespace: "{{ request.object.metadata.namespace }}"
         synchronize: true
         data:
           metadata:
             annotations:
-              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "ConfigMap" "{{ request.object.metadata.name }}" "kfp-launcher" | quote >}}
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "" "ConfigMap" "{{ request.object.metadata.namespace }}" "kfp-launcher" | quote >}}
               argocd.argoproj.io/compare-options: "IgnoreExtraneous"
               argocd.argoproj.io/sync-options: "Prune=false"
             labels:
@@ -420,7 +438,7 @@ spec:
           data:
             {{<- $defaultPipelineRoot := .Values.kubeflow_tools.pipelines.kfpV2.defaultPipelineRoot >}}
             {{<- $defaultPipelineRoot := $defaultPipelineRoot | strings.ReplaceAll "{bucket_name}" .Values.kubeflow_tools.pipelines.bucket.name >}}
-            {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{profile_name}" "{{ request.object.metadata.name }}" >}}
+            {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{profile_name}" "{{ request.object.metadata.namespace }}" >}}
             defaultPipelineRoot: {{< $defaultPipelineRoot | quote >}}
 
     {{<- if and .Values.kubeflow_tools.pipelines.profileResourceGeneration.kfpApiTokenPodDefault .Values.kubeflow_tools.poddefaults_webhook.enabled >}}
@@ -433,20 +451,22 @@ spec:
         any:
           - resources:
               kinds:
-                - Namespace
-              selector:
+                - ConfigMap
+              names:
+                - profile-tools--kubeflow-pipelines
+              namespaceSelector:
                 matchLabels:
                   pipelines.kubeflow.org/enabled: "true"
       generate:
         apiVersion: kubeflow.org/v1alpha1
         kind: PodDefault
         name: kubeflow-pipelines-api-token
-        namespace: "{{ request.object.metadata.name }}"
+        namespace: "{{ request.object.metadata.namespace }}"
         synchronize: true
         data:
           metadata:
             annotations:
-              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "kubeflow.org" "PodDefault" "{{ request.object.metadata.name }}" "kubeflow-pipelines-api-token" | quote >}}
+              argocd.argoproj.io/tracking-id: {{< printf "%s:%s/%s:%s/%s" $argocd_app_name "kubeflow.org" "PodDefault" "{{ request.object.metadata.namespace }}" "kubeflow-pipelines-api-token" | quote >}}
               argocd.argoproj.io/compare-options: "IgnoreExtraneous"
               argocd.argoproj.io/sync-options: "Prune=false"
             labels:
