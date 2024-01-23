@@ -269,18 +269,24 @@ spec:
                         value: {{< tmpl.Exec "kubeflow_pipelines.object_store.port" . | quote >}}
                       - name: MINIO_SSL
                         value: {{< tmpl.Exec "kubeflow_pipelines.object_store.use_ssl" . | quote >}}
-                      {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
                       - name: MINIO_ACCESS_KEY
+                        {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+                        value: ""
+                        {{<- else >}}
                         valueFrom:
                           secretKeyRef:
                             name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
+                        {{<- end >}}
                       - name: MINIO_SECRET_KEY
+                        {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+                        value: ""
+                        {{<- else >}}
                         valueFrom:
                           secretKeyRef:
                             name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
-                      {{<- end >}}
+                        {{<- end >}}
 
                       ## ================================
                       ## S3 - Object Store Configs
@@ -289,18 +295,24 @@ spec:
                         value: {{< .Values.kubeflow_tools.pipelines.bucket.region | quote >}}
                       - name: AWS_S3_ENDPOINT
                         value: {{< tmpl.Exec "kubeflow_pipelines.object_store.endpoint" . | quote >}}
-                      {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
                       - name: AWS_ACCESS_KEY_ID
+                        {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+                        value: ""
+                        {{<- else >}}
                         valueFrom:
                           secretKeyRef:
                             name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretAccessKeyKey }}"
+                        {{<- end >}}
                       - name: AWS_SECRET_ACCESS_KEY
+                        {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+                        value: ""
+                        {{<- else >}}
                         valueFrom:
                           secretKeyRef:
                             name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
                             key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey }}"
-                      {{<- end >}}
+                        {{<- end >}}
 
     ################################################################################
     ## Service/ml-pipeline-ui-artifact
