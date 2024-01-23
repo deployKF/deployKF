@@ -208,6 +208,8 @@ spec:
               selector:
                 matchLabels:
                   pipelines.kubeflow.org/enabled: "true"
+      {{<- /* currently, the ConfigMap/profile-tools--kubeflow-pipelines is not created when fromEnv is true */ ->}}
+      {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
       context:
         - name: tool_config
           configMap:
@@ -221,6 +223,7 @@ spec:
           - key: "{{ tool_config.data.objectStoreAuth_existingSecretSecretKeyKey || '' }}"
             operator: NotEquals
             value: ""
+      {{<- end >}}
       generate:
         apiVersion: apps/v1
         kind: Deployment
