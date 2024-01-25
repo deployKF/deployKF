@@ -32,12 +32,12 @@ spec:
   location: MESH_INTERNAL
   ports:
     - name: http
-      number: {{ .Values.deployKF.gateway.ports.http | int }}
+      number: {{ .Values.deployKF.gateway.servicePorts.http | default .Values.deployKF.gateway.ports.http | int }}
       protocol: HTTP
       targetPort: {{ .Values.deployKF.gateway.ports.http | int }}
     {{- if .Values.deployKF.gateway.tls.enabled }}
     - name: https
-      number: {{ .Values.deployKF.gateway.ports.https | int }}
+      number: {{ .Values.deployKF.gateway.servicePorts.https | default .Values.deployKF.gateway.ports.https | int }}
       protocol: HTTPS
       targetPort: {{ .Values.deployKF.gateway.ports.https | int }}
     {{- end }}

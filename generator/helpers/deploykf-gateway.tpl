@@ -1,22 +1,24 @@
 ##
-## The HTTP endpoint of the gateway (hides port when set to 80)
+## The public HTTP endpoint of the gateway (hides port when set to 80)
 ##
 {{<- define "deploykf_gateway.http_endpoint" ->}}
-{{<- if eq (.Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http | conv.ToString) "80" ->}}
+{{<- $http_port := .Values.deploykf_core.deploykf_istio_gateway.gatewayService.ports.http | default .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
+{{<- if eq ($http_port | conv.ToString) "80" ->}}
 {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname >}}
 {{<- else ->}}
-{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname >}}:{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
+{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname >}}:{{< $http_port >}}
 {{<- end ->}}
 {{<- end ->}}
 
 ##
-## The HTTPS endpoint of the gateway (hides port when set to 443)
+## The public HTTPS endpoint of the gateway (hides port when set to 443)
 ##
 {{<- define "deploykf_gateway.https_endpoint" ->}}
-{{<- if eq (.Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https | conv.ToString) "443" ->}}
+{{<- $https_port := .Values.deploykf_core.deploykf_istio_gateway.gatewayService.ports.https | default .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
+{{<- if eq ($https_port | conv.ToString) "443" ->}}
 {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname >}}
 {{<- else ->}}
-{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname >}}:{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
+{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname >}}:{{< $https_port >}}
 {{<- end ->}}
 {{<- end ->}}
 

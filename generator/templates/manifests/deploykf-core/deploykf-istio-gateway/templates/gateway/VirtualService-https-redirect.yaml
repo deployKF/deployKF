@@ -27,6 +27,6 @@ spec:
           port: {{ .Values.deployKF.gateway.ports.http | int }}
       redirect:
         scheme: https
-        port: {{ .Values.deployKF.gateway.ports.https | int }}
+        port: {{ .Values.deployKF.gateway.servicePorts.https | default .Values.deployKF.gateway.ports.https | int }}
         redirectCode: 307
 {{- end }}

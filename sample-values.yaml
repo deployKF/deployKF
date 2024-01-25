@@ -236,10 +236,22 @@ deploykf_core:
     ## istio gateway configs
     ##
     gateway:
+
+      ## the hostname that the gateway will listen on
+      ##  - subdomains of this hostname may also be used, depending on which apps are enabled
+      ##
       hostname: deploykf.example.com
+
+      ## the ports that the gateway will listen on
+      ##  - these are the "internal" ports which the gateway use, and can be different
+      ##    to the user-facing ports which the service listens on, see `gatewayService.ports`
+      ##
       ports:
         http: 8080
         https: 8443
+
+      ## the pod labels used by the gateway to find the ingress gateway deployment
+      ##
       selectorLabels:
         app: deploykf-gateway
         istio: deploykf-gateway
