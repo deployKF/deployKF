@@ -4,5 +4,7 @@ metadata:
   name: katib-ui
   namespace: kubeflow
 spec:
+  hosts:
+    - {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
   gateways:
     - {{< .Values.deploykf_core.deploykf_istio_gateway.namespace >}}/{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name >}}

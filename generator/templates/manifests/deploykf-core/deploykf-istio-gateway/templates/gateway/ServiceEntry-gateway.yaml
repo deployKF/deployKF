@@ -29,6 +29,18 @@ spec:
     - "minio-api.{{ .Values.deployKF.gateway.hostname }}"
     - "minio-console.{{ .Values.deployKF.gateway.hostname }}"
     {{- end }}
+
+    {{- /* TODO: remove this once we update Kubeflow Notebooks/TensorBoards: https://github.com/kubeflow/kubeflow/pull/6902 */ -}}
+    {{- if and .Values.deployKF.gateway.tls.enabled (not .Values.deployKF.gateway.tls.matchSNI) }}
+    {{- if .Values.deployKF.kubeflow.notebooks.enabled }}
+    ## NOTE: the notebooks subdomain is NOT exposed on the public gateway (see `VirtualService/notebooks-redirect`)
+    - "notebooks-redirect.{{ .Values.deployKF.gateway.hostname }}"
+    {{- end }}
+    {{- if .Values.deployKF.kubeflow.tensorboards.enabled }}
+    ## NOTE: the tensorboards subdomain is NOT exposed on the public gateway (see `VirtualService/tensorboards-redirect`)
+    - "tensorboards-redirect.{{ .Values.deployKF.gateway.hostname }}"
+    {{- end }}
+    {{- end }}
   location: MESH_INTERNAL
   ports:
     - name: http
