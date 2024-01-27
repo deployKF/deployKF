@@ -50,6 +50,7 @@ deployKF:
 
   gateway:
     name: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name | quote >}}
+    httpsRedirectName: "deploykf-gateway-https-redirect"
     selectorLabels: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.selectorLabels | toJSON >}}
     hostname: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
     ports:
@@ -94,6 +95,10 @@ gateway:
     externalTrafficPolicy: ""
     externalIPs: []
     ports:
+      ## NOTE: the status-port is required for many LoadBalancer services (like AWS NLB),
+      ##       as they poll the first port of a service to determine if it's ready to receive traffic
+      ## NOTE: port 15021 is special, istio responds to HTTP health checks on this port under /healthz/ready
+      ##       https://istio.io/latest/docs/ops/deployment/requirements/#ports-used-by-istio
       - name: status-port
         port: 15021
         protocol: TCP
@@ -102,10 +107,12 @@ gateway:
         port: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
         protocol: TCP
         targetPort: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
+      {{<- if .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled >}}
       - name: https
         port: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
         protocol: TCP
         targetPort: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
+      {{<- end >}}
 
   resources:
     requests:
