@@ -56,6 +56,9 @@ deployKF:
     ports:
       http: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
       https: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
+    servicePorts:
+      http: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.ports.http | default "~" >}}
+      https: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.ports.https | default "~" >}}
     tls:
       enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
     enableProxyProtocol: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.enableProxyProtocol >}}
@@ -104,12 +107,12 @@ gateway:
         protocol: TCP
         targetPort: 15021
       - name: http
-        port: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
+        port: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.ports.http | default .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
         protocol: TCP
         targetPort: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.http >}}
       {{<- if .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled >}}
       - name: https
-        port: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
+        port: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.ports.https | default .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
         protocol: TCP
         targetPort: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
       {{<- end >}}

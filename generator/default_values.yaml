@@ -648,13 +648,33 @@ deploykf_core:
     ## istio gateway configs
     ##
     gateway:
+
+      ## the name of the Gateway resource, created by deployKF
+      ##
       name: deploykf-gateway
 
+      ## the hostname that the gateway will listen on
+      ##  - subdomains of this hostname may also be used, depending on which apps are enabled
+      ##
       hostname: deploykf.example.com
+
+      ## the ports that the gateway will listen on
+      ##  - these are the "internal" ports which the gateway use, and can be different
+      ##    to the user-facing ports which the service listens on, see `gatewayService.ports`
+      ##  - you may need to set non-standard ports if you are using your own gateway service
+      ##    (`charts.istioGateway.enabled` is false) and need to avoid conflicts with existing
+      ##    services on the selected gateway deployment
+      ##
       ports:
         http: 80
         https: 443
+
+      ## gateway TLS configs
+      ##
       tls:
+
+        ## if the gateway will listen on HTTPS
+        ##
         enabled: true
 
       ## the pod labels used by the gateway to find the ingress gateway deployment
@@ -711,6 +731,16 @@ deploykf_core:
       loadBalancerIP: ""
       loadBalancerSourceRanges: []
 
+      ## the ports that the gateway service listens on
+      ##  - if unset, they default to their corresponding port under `gateway.ports`
+      ##  - these are the "public" ports which clients are expected to connect to,
+      ##    and can be different to the "internal" ports defined in `gateway.ports`
+      ##  - when using your own gateway service (`charts.istioGateway.enabled` is false)
+      ##    these values still affect the ports presented in user-facing HTTP links
+      ##
+      ports:
+        http: ~
+        https: ~
 
   ## --------------------------------------
   ##      deploykf-profiles-generator
