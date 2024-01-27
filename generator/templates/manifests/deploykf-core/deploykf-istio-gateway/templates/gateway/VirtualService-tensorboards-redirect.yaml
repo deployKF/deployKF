@@ -1,0 +1,39 @@
+{{- /* TODO: remove this once we update Kubeflow TensorBoards: https://github.com/kubeflow/kubeflow/pull/6902 */ -}}
+{{- if and .Values.deployKF.gateway.tls.enabled (not .Values.deployKF.gateway.tls.matchSNI) }}
+{{- if .Values.deployKF.kubeflow.tensorboards.enabled }}
+################
+## This VirtualService matches all `/tensorboard/` paths and proxies the traffic back to the gateway with a different hostname.
+## Also see: `ServiceEntry/deploykf-istio-gateway` and `DestinationRule/tensorboards-redirect`
+##
+## This is a workaround for Kubeflow TensorBoards creating VirtualServices with "*" for `spec.hosts`.
+## The problem is that our dashboard VirtualService sets a specific `sepc.hosts` and matches all paths under `/`.
+## Because that is a "more specific match", all tensorboard traffic is mistakenly routed to the dashboard.
+################
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: tensorboards-redirect
+  labels:
+    helm.sh/chart: {{ include "deploykf-istio-gateway.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-istio-gateway.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  gateways:
+    - {{ .Release.Namespace }}/{{ .Values.deployKF.gateway.name }}
+  hosts:
+    - {{ .Values.deployKF.gateway.hostname | quote }}
+  http:
+    - match:
+        - uri:
+            prefix: /tensorboard/
+      rewrite:
+        {{- $public_port := .Values.deployKF.gateway.servicePorts.https | default .Values.deployKF.gateway.ports.https }}
+        authority: "tensorboards-redirect.{{ .Values.deployKF.gateway.hostname }}:{{ $public_port }}"
+      route:
+        - destination:
+            host: "tensorboards-redirect.{{ .Values.deployKF.gateway.hostname }}"
+            port:
+              number: {{ $public_port }}
+{{- end }}
+{{- end }}

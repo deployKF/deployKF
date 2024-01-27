@@ -677,6 +677,13 @@ deploykf_core:
         ##
         enabled: true
 
+        ## if the gateway will perform SNI matching on TLS connections
+        ##  - typically needs to be ~false~ when using an outer proxy that does TLS termination (like AWS ALB),
+        ##    as most cloud load-balancers don't forward the SNI for TLS connections that they terminate
+        ##    https://istio.io/v1.19/docs/ops/common-problems/network-issues/#configuring-sni-routing-when-not-sending-sni
+        ##
+        matchSNI: true
+
       ## the pod labels used by the gateway to find the ingress gateway deployment
       ##
       selectorLabels:

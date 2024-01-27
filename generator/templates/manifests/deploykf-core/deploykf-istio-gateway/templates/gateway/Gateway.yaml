@@ -12,6 +12,11 @@ spec:
     {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 4 }}
   servers:
     - hosts:
+      {{- if and .Values.deployKF.gateway.tls.enabled (not .Values.deployKF.gateway.tls.matchSNI) }}
+        ## NOTE: hosts is set to "*" because most external load balancers do not forward the SNI after TLS termination
+        ##       https://istio.io/v1.19/docs/ops/common-problems/network-issues/#configuring-sni-routing-when-not-sending-sni
+        - "*"
+      {{- else }}
         ## select VirtualServices in any namespace with the deployKF hostname
         - "*/{{ .Values.deployKF.gateway.hostname }}"
         {{- if .Values.deployKF.argoWorkflows.enabled }}
@@ -23,6 +28,7 @@ spec:
         - "{{ .Values.deployKF.minio.namespace }}/minio-api.{{ .Values.deployKF.gateway.hostname }}"
         - "{{ .Values.deployKF.minio.namespace }}/minio-console.{{ .Values.deployKF.gateway.hostname }}"
         {{- end }}
+      {{- end }}
       {{- if .Values.deployKF.gateway.tls.enabled }}
       port:
         name: https

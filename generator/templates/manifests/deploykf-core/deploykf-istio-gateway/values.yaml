@@ -27,6 +27,10 @@ deployKF:
         defaultPipelineRoot: {{< .Values.kubeflow_tools.pipelines.kfpV2.defaultPipelineRoot | quote >}}
       cache:
         namespaceRedirect: {{< .Values.kubeflow_tools.pipelines.cache.namespaceRedirect | conv.ToBool >}}
+    notebooks:
+      enabled: {{< .Values.kubeflow_tools.notebooks.enabled | conv.ToBool >}}
+    tensorboards:
+      enabled: {{< .Values.kubeflow_tools.tensorboards.enabled | conv.ToBool >}}
 
   certManager:
     clusterIssuer:
@@ -61,6 +65,7 @@ deployKF:
       https: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.ports.https | default "~" >}}
     tls:
       enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
+      matchSNI: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.matchSNI | conv.ToBool >}}
     enableProxyProtocol: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.enableProxyProtocol >}}
     xffNumTrustedHops: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.xffNumTrustedHops >}}
     emailToLowercase: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.emailToLowercase | conv.ToBool >}}
