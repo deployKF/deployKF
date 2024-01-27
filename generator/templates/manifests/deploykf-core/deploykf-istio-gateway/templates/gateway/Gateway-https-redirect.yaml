@@ -2,7 +2,7 @@
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: deploykf-istio-gateway-https-redirect
+  name: {{ .Values.deployKF.gateway.httpsRedirectName | quote }}
   labels:
     helm.sh/chart: {{ include "deploykf-istio-gateway.labels.chart" . }}
     app.kubernetes.io/name: {{ include "deploykf-istio-gateway.labels.name" . }}
@@ -13,16 +13,21 @@ spec:
     {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 4 }}
   servers:
     - hosts:
-        ## this gateway only needs to select the `VirtualService/https-redirect`
+        ## this gateway only needs to select the `VirtualService/https-redirect`, even for the subdomains
         - "{{ .Release.Namespace }}/{{ .Values.deployKF.gateway.hostname }}"
-        - "{{ .Release.Namespace }}/*.{{ .Values.deployKF.gateway.hostname }}"
+        {{- if .Values.deployKF.argoWorkflows.enabled }}
+        - "{{ .Release.Namespace }}/argo-server.{{ .Values.deployKF.gateway.hostname }}"
+        {{- end }}
+        {{- if .Values.deployKF.minio.enabled }}
+        - "{{ .Release.Namespace }}/minio-api.{{ .Values.deployKF.gateway.hostname }}"
+        - "{{ .Release.Namespace }}/minio-console.{{ .Values.deployKF.gateway.hostname }}"
+        {{- end }}
       port:
         name: http
         number: {{ .Values.deployKF.gateway.ports.http | int }}
         protocol: HTTP
       tls:
         ## NOTE: our `VirtualService/https-redirect` handles HTTP to HTTPS redirects,
-        ##       as this is more robust than `httpsRedirect` because it can redirect to non-standard HTTPS ports,
-        ##       additionally, we can disable the ExtAuthz filter, to ensure we redirect to HTTPS before authorization
+        ##       as this is more robust than `httpsRedirect` because it can redirect to non-standard HTTPS ports
         httpsRedirect: false
 {{- end }}

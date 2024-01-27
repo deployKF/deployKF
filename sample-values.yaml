@@ -301,8 +301,18 @@ deploykf_core:
       ##           https://github.com/kubeflow/kubeflow/blob/v1.7.0/components/profile-controller/controllers/plugin_iam.go#L30
       ##         - spec for WorkloadIdentity:
       ##           https://github.com/kubeflow/kubeflow/blob/v1.7.0/components/profile-controller/controllers/plugin_workload_identity.go#L39
+      ##  - override these defaults for a specific profile by setting `plugins` in that profile,
+      ##    to disable all plugins for that profile, set an empty list `[]`
       ##
       plugins: []
+
+      ## the default resource quota for profiles, when not explicitly specified
+      ##  - spec for ResourceQuotaSpec:
+      ##    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#resourcequotaspec-v1-core
+      ##  - override these defaults for a specific profile by setting `resourceQuotaSpec` in that profile,
+      ##    to disable resource quotas for that profile, set an empty map `{}`
+      ##
+      resourceQuotaSpec: {}
 
       ## the default tool configs for profiles
       ##

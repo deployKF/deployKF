@@ -94,7 +94,9 @@ spec:
                   key: bucketPort
             - name: OBJECTSTORECONFIG_ACCESSKEY
               {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
-              $patch: delete
+              value: ""
+              valueFrom:
+                $patch: delete
               {{<- else >}}
               valueFrom:
                 secretKeyRef:
@@ -103,7 +105,9 @@ spec:
               {{<- end >}}
             - name: OBJECTSTORECONFIG_SECRETACCESSKEY
               {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
-              $patch: delete
+              value: ""
+              valueFrom:
+                $patch: delete
               {{<- else >}}
               valueFrom:
                 secretKeyRef:

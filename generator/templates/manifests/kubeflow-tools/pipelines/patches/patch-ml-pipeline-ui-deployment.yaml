@@ -77,7 +77,9 @@ spec:
                   key: bucketSecure
             - name: MINIO_ACCESS_KEY
               {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
-              $patch: delete
+              value: ""
+              valueFrom:
+                $patch: delete
               {{<- else >}}
               valueFrom:
                 secretKeyRef:
@@ -86,7 +88,9 @@ spec:
               {{<- end >}}
             - name: MINIO_SECRET_KEY
               {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
-              $patch: delete
+              value: ""
+              valueFrom:
+                $patch: delete
               {{<- else >}}
               valueFrom:
                 secretKeyRef:
@@ -110,7 +114,9 @@ spec:
                   key: bucketEndpoint
             - name: AWS_ACCESS_KEY_ID
               {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
-              $patch: delete
+              value: ""
+              valueFrom:
+                $patch: delete
               {{<- else >}}
               valueFrom:
                 secretKeyRef:
@@ -119,7 +125,9 @@ spec:
               {{<- end >}}
             - name: AWS_SECRET_ACCESS_KEY
               {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
-              $patch: delete
+              value: ""
+              valueFrom:
+                $patch: delete
               {{<- else >}}
               valueFrom:
                 secretKeyRef:

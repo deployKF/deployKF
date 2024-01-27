@@ -2,8 +2,7 @@
 ################
 ## This VirtualService is here to redirect all HTTP traffic to HTTPS.
 ## We can't use the `Gateway/spec.servers[*].tls.httpsRedirect`, as it blindly swaps the schema from `http://` to `https://`
-## without changing the port, and we allow users to specify non-standard HTTPS ports. Additionally, we disable ExtAuthz
-## on this redirect route, so that we redirect to HTTPS before authorization.
+## without changing the port, and we allow users to specify non-standard HTTPS ports.
 ################
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
@@ -16,7 +15,7 @@ metadata:
     app.kubernetes.io/managed-by: {{ .Release.Service }}
 spec:
   gateways:
-    - {{ .Release.Namespace }}/deploykf-istio-gateway-https-redirect
+    - {{ .Release.Namespace }}/{{ .Values.deployKF.gateway.httpsRedirectName }}
   hosts:
     - {{ .Values.deployKF.gateway.hostname | quote }}
     - "*.{{ .Values.deployKF.gateway.hostname }}"
@@ -29,5 +28,5 @@ spec:
       redirect:
         scheme: https
         port: {{ .Values.deployKF.gateway.ports.https | int }}
-        redirectCode: 302
+        redirectCode: 307
 {{- end }}

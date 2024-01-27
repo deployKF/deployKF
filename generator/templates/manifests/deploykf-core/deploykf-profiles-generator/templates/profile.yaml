@@ -25,10 +25,10 @@
 {{- end }}
 
 {{- /* get the profile's plugins */ -}}
-{{- $profile_plugins := $profile.plugins | default $.Values.profileDefaults.plugins }}
+{{- $profile_plugins := $profile | dig "plugins" $.Values.profileDefaults.plugins }}
 
 {{- /* get the profile's resourceQuotaSpec */ -}}
-{{- $profile_resourceQuotaSpec := $profile.resourceQuotaSpec | default $.Values.profileDefaults.resourceQuotaSpec }}
+{{- $profile_resourceQuotaSpec := $profile | dig "resourceQuotaSpec" $.Values.profileDefaults.resourceQuotaSpec }}
 ---
 apiVersion: kubeflow.org/v1
 kind: Profile

@@ -7,7 +7,6 @@ spec:
   gateways:
     - {{< .Values.deploykf_core.deploykf_istio_gateway.namespace >}}/{{< .Values.deploykf_core.deploykf_istio_gateway.gateway.name >}}
   http:
-    {{<- if .Values.kubeflow_dependencies.kubeflow_argo_workflows.artifactRepository.keyFormat | strings.HasPrefix `artifacts/{{ workflow.namespace }}/` >}}
     ## this route is used in `EnvoyFilter/kubeflow-pipelines--redirect-artifact-namespaces` to redirect
     ## artifact requests which use the wrong `?namespace=` query parameter
     - name: ml-pipeline-ui-artifacts-route
@@ -19,8 +18,10 @@ spec:
             host: ml-pipeline-ui.kubeflow.svc.cluster.local
             port:
               number: 80
-    {{<- end >}}
-    - match:
+    ## this route is used in `EnvoyFilter/deploykf-istio-gateway--ext-authz` to allow JWT tokens to alternatively
+    ## have the "kubeflow-pipelines-sdk" audience, used by "browser login flow" tokens
+    - name: ml-pipeline-ui-route
+      match:
         - uri:
             prefix: /pipeline
       route:
