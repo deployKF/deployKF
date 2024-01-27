@@ -28,5 +28,5 @@ spec:
       redirect:
         scheme: https
         port: {{ .Values.deployKF.gateway.ports.https | int }}
-        redirectCode: 302
+        redirectCode: 307
 {{- end }}

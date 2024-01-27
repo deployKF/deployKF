@@ -130,7 +130,7 @@ spec:
                           -- redirect to new_url_path, if it was set
                           if new_url_path then
                               request_handle:respond(
-                                  { [":status"] = "302", ["location"] = new_url_path },
+                                  { [":status"] = "307", ["location"] = new_url_path },
                                     "Redirecting to correct namespace..."
                               )
                           end
