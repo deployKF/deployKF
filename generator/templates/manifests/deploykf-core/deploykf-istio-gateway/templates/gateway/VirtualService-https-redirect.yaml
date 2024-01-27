@@ -1,8 +1,13 @@
 {{- if .Values.deployKF.gateway.tls.enabled }}
 ################
-## This VirtualService is here to redirect all HTTP traffic to HTTPS.
-## We can't use the `Gateway/spec.servers[*].tls.httpsRedirect`, as it blindly swaps the schema from `http://` to `https://`
-## without changing the port, and we allow users to specify non-standard HTTPS ports.
+## If `deployKF.gateway.tls.redirect` is true:
+##  - This VirtualService is here to redirect all HTTP traffic to HTTPS.
+##  - NOTE: we can't use the `Gateway/spec.servers[*].tls.httpsRedirect` as it blindly swaps the schema from
+##    `http://` to `https://` without changing the port (and we allow users to specify non-standard HTTPS ports).
+##
+## If `deployKF.gateway.tls.redirect` is false:
+##  - This VirtualService proxies all HTTP requests back to the Gateway as HTTPS requests.
+##    See `DestinationRule/https-redirect` and `EnvoyFilter/deploykf-istio-gateway--ext-authz` for more context.
 ################
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
@@ -20,13 +25,21 @@ spec:
     - {{ .Values.deployKF.gateway.hostname | quote }}
     - "*.{{ .Values.deployKF.gateway.hostname }}"
   http:
-    - name: https-redirect-route
-      match:
+    - match:
         - scheme:
             exact: http
           port: {{ .Values.deployKF.gateway.ports.http | int }}
+      {{- $public_https_port := .Values.deployKF.gateway.servicePorts.https | default .Values.deployKF.gateway.ports.https }}
+      {{- if .Values.deployKF.gateway.tls.redirect }}
       redirect:
         scheme: https
-        port: {{ .Values.deployKF.gateway.servicePorts.https | default .Values.deployKF.gateway.ports.https | int }}
+        port: {{ $public_https_port }}
         redirectCode: 307
+      {{- else }}
+      route:
+        - destination:
+            host: {{ .Values.deployKF.gateway.hostname | quote }}
+            port:
+              number: {{ $public_https_port }}
+      {{- end }}
 {{- end }}

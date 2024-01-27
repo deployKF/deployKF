@@ -1,0 +1,27 @@
+{{- if and .Values.deployKF.gateway.tls.enabled (not .Values.deployKF.gateway.tls.redirect) }}
+################
+## This DestinationRule tells Istio to use TLS when connecting to our https-redirect service.
+## See `VirtualService/https-redirect` for more details.
+################
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: https-redirect
+  labels:
+    helm.sh/chart: {{ include "deploykf-istio-gateway.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-istio-gateway.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  host: {{ .Values.deployKF.gateway.hostname | quote }}
+  workloadSelector:
+    matchLabels:
+     {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
+  trafficPolicy:
+    portLevelSettings:
+      - port:
+          number: {{ .Values.deployKF.gateway.servicePorts.https | default .Values.deployKF.gateway.ports.https | int }}
+        tls:
+            mode: SIMPLE
+            sni: {{ .Values.deployKF.gateway.hostname | quote }}
+{{- end }}

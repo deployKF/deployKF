@@ -65,7 +65,9 @@ deployKF:
       https: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.ports.https | default "~" >}}
     tls:
       enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
+      clientsUseHttps: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.clientsUseHttps | conv.ToBool >}}
       matchSNI: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.matchSNI | conv.ToBool >}}
+      redirect: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.redirect | conv.ToBool >}}
     enableProxyProtocol: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.enableProxyProtocol >}}
     xffNumTrustedHops: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.xffNumTrustedHops >}}
     emailToLowercase: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.emailToLowercase | conv.ToBool >}}

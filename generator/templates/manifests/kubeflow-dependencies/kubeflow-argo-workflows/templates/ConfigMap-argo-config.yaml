@@ -41,7 +41,7 @@ data:
 
   sso: |
     ## the issuer of the OIDC provider
-    {{- if .Values.deployKF.gateway.tls.enabled }}
+    {{- if .Values.deployKF.gateway.tls.clientsUseHttps }}
     issuer: "https://{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/dex"
     {{- else }}
     issuer: "http://{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/dex"
@@ -74,7 +74,7 @@ data:
       {{- end }}
 
     ## the OIDC redirect URL
-    {{- if .Values.deployKF.gateway.tls.enabled }}
+    {{- if .Values.deployKF.gateway.tls.clientsUseHttps }}
     redirectUrl: "https://argo-server.{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/oauth2/callback"
     {{- else }}
     redirectUrl: "http://argo-server.{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/oauth2/callback"

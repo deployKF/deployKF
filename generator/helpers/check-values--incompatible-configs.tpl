@@ -20,6 +20,23 @@
 
 ## --------------------------------------------------------------------------------
 ##
+##                                  deploykf-core
+##
+## --------------------------------------------------------------------------------
+
+## --------------------------------------
+##         deploykf-istio-gateway
+## --------------------------------------
+{{<- if not .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled >}}
+  {{< fail "`deploykf_core.deploykf_istio_gateway.gateway.tls.enabled` must be true (TIP: to allow HTTP connections on the gateway, set `deploykf_core.deploykf_istio_gateway.gateway.tls.redirect` to false)" >}}
+{{<- end >}}
+
+{{<- if and .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.redirect (not .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.clientsUseHttps) >}}
+  {{< fail "`deploykf_core.deploykf_istio_gateway.gateway.tls.clientsUseHttps` must be true if `deploykf_core.deploykf_istio_gateway.gateway.tls.redirect` is true" >}}
+{{<- end >}}
+
+## --------------------------------------------------------------------------------
+##
 ##                              kubeflow-dependencies
 ##
 ## --------------------------------------------------------------------------------

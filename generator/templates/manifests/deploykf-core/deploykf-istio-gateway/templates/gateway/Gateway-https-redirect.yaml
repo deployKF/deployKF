@@ -12,6 +12,9 @@ spec:
   selector:
     {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 4 }}
   servers:
+    ################################################################################
+    ## HTTP
+    ################################################################################
     - hosts:
         ## this gateway only needs to select the `VirtualService/https-redirect`, even for the subdomains
         - "{{ .Release.Namespace }}/{{ .Values.deployKF.gateway.hostname }}"

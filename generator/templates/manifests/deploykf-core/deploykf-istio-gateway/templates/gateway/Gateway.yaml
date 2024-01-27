@@ -1,3 +1,19 @@
+{{- define "deploykf-istio-gateway.gateway.server_hosts" }}
+## select VirtualServices in any namespace with the deployKF hostname
+- "*/{{ .Values.deployKF.gateway.hostname }}"
+
+{{- if .Values.deployKF.argoWorkflows.enabled }}
+## select VirtualService for Argo Workflows UI
+- "{{ .Values.deployKF.argoWorkflows.namespace }}/argo-server.{{ .Values.deployKF.gateway.hostname }}"
+{{- end }}
+
+{{- if .Values.deployKF.minio.enabled }}
+## select VirtualServices for Minio API and Console
+- "{{ .Values.deployKF.minio.namespace }}/minio-api.{{ .Values.deployKF.gateway.hostname }}"
+- "{{ .Values.deployKF.minio.namespace }}/minio-console.{{ .Values.deployKF.gateway.hostname }}"
+{{- end }}
+{{- end }}
+
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
@@ -11,25 +27,18 @@ spec:
   selector:
     {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 4 }}
   servers:
+    {{- if .Values.deployKF.gateway.tls.enabled }}
+    ################################################################################
+    ## HTTPS
+    ################################################################################
     - hosts:
-      {{- if and .Values.deployKF.gateway.tls.enabled (not .Values.deployKF.gateway.tls.matchSNI) }}
+        {{- if .Values.deployKF.gateway.tls.matchSNI }}
+        {{- include "deploykf-istio-gateway.gateway.server_hosts" . | indent 8 }}
+        {{- else }}
         ## NOTE: hosts is set to "*" because most external load balancers do not forward the SNI after TLS termination
         ##       https://istio.io/v1.19/docs/ops/common-problems/network-issues/#configuring-sni-routing-when-not-sending-sni
         - "*"
-      {{- else }}
-        ## select VirtualServices in any namespace with the deployKF hostname
-        - "*/{{ .Values.deployKF.gateway.hostname }}"
-        {{- if .Values.deployKF.argoWorkflows.enabled }}
-        ## select VirtualService for Argo Workflows UI
-        - "{{ .Values.deployKF.argoWorkflows.namespace }}/argo-server.{{ .Values.deployKF.gateway.hostname }}"
         {{- end }}
-        {{- if .Values.deployKF.minio.enabled }}
-        ## select VirtualServices for Minio API and Console
-        - "{{ .Values.deployKF.minio.namespace }}/minio-api.{{ .Values.deployKF.gateway.hostname }}"
-        - "{{ .Values.deployKF.minio.namespace }}/minio-console.{{ .Values.deployKF.gateway.hostname }}"
-        {{- end }}
-      {{- end }}
-      {{- if .Values.deployKF.gateway.tls.enabled }}
       port:
         name: https
         number: {{ .Values.deployKF.gateway.ports.https | int }}
@@ -37,9 +46,4 @@ spec:
       tls:
         mode: SIMPLE
         credentialName: deploykf-istio-gateway-cert
-      {{- else }}
-      port:
-        name: http
-        number: {{ .Values.deployKF.gateway.ports.http | int }}
-        protocol: HTTP
-      {{- end }}
+    {{- end }}
