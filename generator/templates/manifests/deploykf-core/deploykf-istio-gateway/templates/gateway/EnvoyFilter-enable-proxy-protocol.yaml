@@ -2,6 +2,7 @@
 ################
 ## This EnvoyFilter enables the PROXY protocol on the main ingress gateway.
 ## This is sometimes used by some external proxies (like AWS NLB) to provide information about the original request.
+## https://istio.io/v1.18/docs/ops/configuration/traffic-management/network-topologies/#proxy-protocol
 ################
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
@@ -17,13 +18,14 @@ spec:
     labels:
       {{- toYaml .Values.deployKF.gateway.selectorLabels | nindent 6 }}
   configPatches:
-    - applyTo: LISTENER
+    - applyTo: LISTENER_FILTER
+      match:
+        context: GATEWAY
       patch:
-        operation: MERGE
+        operation: INSERT_FIRST
         value:
-          listener_filters:
-            ## enable the PROXY Protocol
-            ## https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt
-            - name: envoy.listener.proxy_protocol
-            - name: envoy.listener.tls_inspector
+          name: envoy.filters.listener.proxy_protocol
+          typed_config:
+            ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/listener/proxy_protocol/v3/proxy_protocol.proto.html?highlight=proxyprotocol#extensions-filters-listener-proxy-protocol-v3-proxyprotocol
+            "@type": type.googleapis.com/envoy.extensions.filters.listener.proxy_protocol.v3.ProxyProtocol
 {{- end }}

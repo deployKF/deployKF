@@ -663,13 +663,15 @@ deploykf_core:
         app: deploykf-gateway
         istio: deploykf-gateway
 
-      ## if the "PROXY Protocol" is enabled on the gateway
-      ## - https://istio.io/v1.16/docs/ops/configuration/traffic-management/network-topologies/#proxy-protocol
+      ## if "PROXY Protocol" is enabled on the gateway
+      ## - requires Istio 1.17+ if enabled. will apply to all ports on the gateway
+      ##   https://istio.io/v1.18/docs/ops/configuration/traffic-management/network-topologies/#proxy-protocol
       ##
       enableProxyProtocol: false
 
       ## the number of x-forwarded-for HTTP header hops to trust
-      ##  - important if using a LoadBalancer (like AWS NLB) for your Service
+      ##  - sets the number of hops from the right side of a `x-forwarded-for` HTTP header to trust
+      ##    when determining the origin client's IP address
       ##
       xffNumTrustedHops: 0
 
