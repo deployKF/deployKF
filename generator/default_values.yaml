@@ -674,8 +674,15 @@ deploykf_core:
       tls:
 
         ## if the gateway will listen on HTTPS
+        ##  - must ALWAYS be true (even if an outer proxy is doing its own TLS termination)
         ##
         enabled: true
+
+        ## if browser clients use HTTPS when connecting to the gateway
+        ##  - determines the protocol of links and cookies presented to client browsers,
+        ##    should ~only~ be false if your end-users connect over HTTP, which is NOT recommended
+        ##
+        clientsUseHttps: true
 
         ## if the gateway will perform SNI matching on TLS connections
         ##  - typically needs to be ~false~ when using an outer proxy that does TLS termination (like AWS ALB),
@@ -683,6 +690,18 @@ deploykf_core:
         ##    https://istio.io/v1.19/docs/ops/common-problems/network-issues/#configuring-sni-routing-when-not-sending-sni
         ##
         matchSNI: true
+
+        ## if the gateway will redirect all HTTP requests to HTTPS
+        ##  - when false, the gateway will allow both HTTP and HTTPS connections
+        ##  - [WARNING] you should ~only~ set this to false if you have an outer proxy doing TLS termination
+        ##              that is ~unable~ to communicate with the gateway over HTTPS, and you don't care about
+        ##              the security of the connections between your outer proxy and the gateway
+        ##  - [WARNING] allowing HTTP connections will ~increase~ the load on your gateway pods,
+        ##              this is because HTTP is implemented by proxying to HTTPS internally
+        ##              (this strange behavior is required because of an Istio limitation and
+        ##               the way we apply authentication to routes with EnvoyFilters)
+        ##
+        redirect: true
 
       ## the pod labels used by the gateway to find the ingress gateway deployment
       ##

@@ -87,7 +87,7 @@ spec:
 
             ## minio - console
             - name: MINIO_BROWSER_REDIRECT_URL
-              {{- if .Values.deployKF.gateway.tls.enabled }}
+              {{- if .Values.deployKF.gateway.tls.clientsUseHttps }}
               value: "https://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}"
               {{- else }}
               value: "http://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}"
@@ -100,7 +100,7 @@ spec:
             - name: MINIO_IDENTITY_OPENID_DISPLAY_NAME
               value: {{ .Values.minio.identity.openid.displayName | quote }}
             - name: MINIO_IDENTITY_OPENID_CONFIG_URL
-              {{- if .Values.deployKF.gateway.tls.enabled }}
+              {{- if .Values.deployKF.gateway.tls.clientsUseHttps }}
               value: "https://{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/dex/.well-known/openid-configuration"
               {{- else }}
               value: "http://{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/dex/.well-known/openid-configuration"
@@ -120,7 +120,7 @@ spec:
             - name: MINIO_IDENTITY_OPENID_CLAIM_NAME
               value: {{ .Values.minio.identity.openid.policyClaim | quote }}
             - name: MINIO_IDENTITY_OPENID_REDIRECT_URI
-              {{- if .Values.deployKF.gateway.tls.enabled }}
+              {{- if .Values.deployKF.gateway.tls.clientsUseHttps }}
               value: "https://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.https_endpoint }}/oauth_callback"
               {{- else }}
               value: "http://minio-console.{{ .Values.deployKF_helpers.deploykf_gateway.http_endpoint }}/oauth_callback"

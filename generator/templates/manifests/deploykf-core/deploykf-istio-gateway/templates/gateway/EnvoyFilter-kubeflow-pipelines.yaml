@@ -8,6 +8,14 @@
 ## NOTE: Kubeflow Pipelines will sometimes use an artifact which was cached by another namespace.
 ## NOTE: the user might still not have access after the redirect if they are not a member of the correct namespace.
 ################
+{{- /* the listener port-numbers to apply these patches to */ -}}
+{{- /* NOTE: Istio does NOT allow `match.routeConfiguration.gateway` to be used on HTTP routes (https://github.com/istio/istio/issues/46459),
+       so if HTTP routes are needed (when `deploykf_core.deploykf_istio_gateway.gateway.tls.redirect` is false),
+       they are implemented by internally proxying them to the HTTPS routes (see `VirtualService/https-redirect`) */ -}}
+{{- $listner_port_numbers := list }}
+{{- if .Values.deployKF.gateway.tls.enabled }}
+  {{- $listner_port_numbers = .Values.deployKF.gateway.ports.https | int | append $listner_port_numbers }}
+{{- end }}
 apiVersion: networking.istio.io/v1alpha3
 kind: EnvoyFilter
 metadata:
@@ -27,15 +35,14 @@ spec:
     ################################################################################
     ## FILTER - Define the Lua filter
     ################################################################################
+    {{- range $port_number := $listner_port_numbers }}
+    {{- "\n" }}
+    ## for port {{ $port_number }}
     - applyTo: HTTP_FILTER
       match:
         context: GATEWAY
         listener:
-          {{- if .Values.deployKF.gateway.tls.enabled }}
-          portNumber: {{ .Values.deployKF.gateway.ports.https | int }}
-          {{- else }}
-          portNumber: {{ .Values.deployKF.gateway.ports.http | int }}
-          {{- end }}
+          portNumber: {{ $port_number }}
           filterChain:
             filter:
               name: envoy.filters.network.http_connection_manager
@@ -136,20 +143,20 @@ spec:
                           end
                       end
                   end
+    {{- end }}
 
     ################################################################################
     ## ROUTE - Enable lua filter for the 'ml-pipeline-ui-artifacts' route
     ################################################################################
+    {{- range $port_number := $listner_port_numbers }}
+    {{- "\n" }}
+    ## for port {{ $port_number }}
     - applyTo: HTTP_ROUTE
       match:
         context: GATEWAY
         routeConfiguration:
-          {{- if .Values.deployKF.gateway.tls.enabled }}
-          portNumber: {{ .Values.deployKF.gateway.ports.https | int }}
-          {{- else }}
-          portNumber: {{ .Values.deployKF.gateway.ports.http | int }}
-          {{- end }}
-          gateway: "{{ .Release.Namespace }}/{{ .Values.deployKF.gateway.name }}"
+          portNumber: {{ $port_number }}
+          gateway: "{{ $.Release.Namespace }}/{{ $.Values.deployKF.gateway.name }}"
           vhost:
             route:
               ## HTTP route names are specified in VirtualServices
@@ -163,5 +170,6 @@ spec:
               ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/lua/v3/lua.proto#extensions-filters-http-lua-v3-luaperroute
               "@type": type.googleapis.com/envoy.extensions.filters.http.lua.v3.LuaPerRoute
               name: kfp_redirect_artifact_namespaces.lua
+    {{- end }}
 {{- end }}
 {{- end }}

@@ -37,6 +37,7 @@ deployKF:
     hostname: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.hostname | quote >}}
     tls:
       enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
+      clientsUseHttps: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.clientsUseHttps | conv.ToBool >}}
 
 
 ########################################
