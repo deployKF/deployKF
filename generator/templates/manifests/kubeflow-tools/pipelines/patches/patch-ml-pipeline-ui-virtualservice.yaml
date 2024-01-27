@@ -17,7 +17,7 @@ spec:
             prefix: /pipeline/artifacts/
       route:
         - destination:
-            host: ml-pipeline-ui.kubeflow.svc.cluster.local
+            host: ml-pipeline-ui.kubeflow.svc.{{< .Values.clusterDomain >}}
             port:
               number: 80
     ## this route is used in `EnvoyFilter/deploykf-istio-gateway--ext-authz` to allow JWT tokens to alternatively
@@ -28,7 +28,7 @@ spec:
             prefix: /pipeline
       route:
         - destination:
-            host: ml-pipeline-ui.kubeflow.svc.cluster.local
+            host: ml-pipeline-ui.kubeflow.svc.{{< .Values.clusterDomain >}}
             port:
               number: 80
       timeout: 300s

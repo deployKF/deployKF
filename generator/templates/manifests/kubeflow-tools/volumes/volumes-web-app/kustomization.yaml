@@ -16,6 +16,7 @@ resources:
 
 patchesStrategicMerge:
   - patches/patch-volumes-web-app-authorizationpolicy.yaml
+  - patches/patch-volumes-web-app-destinationrule.yaml
   - patches/patch-volumes-web-app-virtualservice.yaml
 
 configMapGenerator:
@@ -23,7 +24,7 @@ configMapGenerator:
     behavior: merge
     literals:
       - VWA_PREFIX="/volumes"
-      - VWA_CLUSTER_DOMAIN="cluster.local"
+      - VWA_CLUSTER_DOMAIN="{{< .Values.clusterDomain >}}"
       - VWA_USERID_HEADER="kubeflow-userid"
       - VWA_USERID_PREFIX=""
       - VWA_APP_SECURE_COOKIES="true"

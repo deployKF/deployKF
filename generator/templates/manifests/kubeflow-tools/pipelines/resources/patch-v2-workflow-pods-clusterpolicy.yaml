@@ -29,22 +29,22 @@ spec:
               - (name): "*"
                 env:
                   - name: MINIO_SERVICE_SERVICE_HOST
-                    value: "deploykf-minio-api.{{< .Values.deploykf_opt.deploykf_minio.namespace >}}.svc.cluster.local"
+                    value: "deploykf-minio-api.{{< .Values.deploykf_opt.deploykf_minio.namespace >}}.svc.{{< .Values.clusterDomain >}}"
                   - name: MINIO_SERVICE_SERVICE_PORT
                     value: "9000"
                   - name: ML_PIPELINE_SERVICE_HOST
-                    value: "ml-pipeline.kubeflow.svc.cluster.local"
+                    value: "ml-pipeline.kubeflow.svc.{{< .Values.clusterDomain >}}"
                   - name: ML_PIPELINE_SERVICE_PORT_GRPC
                     value: "8887"
             containers:
               - (name): "*"
                 env:
                   - name: MINIO_SERVICE_SERVICE_HOST
-                    value: "deploykf-minio-api.{{< .Values.deploykf_opt.deploykf_minio.namespace >}}.svc.cluster.local"
+                    value: "deploykf-minio-api.{{< .Values.deploykf_opt.deploykf_minio.namespace >}}.svc.{{< .Values.clusterDomain >}}"
                   - name: MINIO_SERVICE_SERVICE_PORT
                     value: "9000"
                   - name: ML_PIPELINE_SERVICE_HOST
-                    value: "ml-pipeline.kubeflow.svc.cluster.local"
+                    value: "ml-pipeline.kubeflow.svc.{{< .Values.clusterDomain >}}"
                   - name: ML_PIPELINE_SERVICE_PORT_GRPC
                     value: "8887"
     {{<- end >}}

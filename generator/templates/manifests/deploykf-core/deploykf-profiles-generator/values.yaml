@@ -25,7 +25,7 @@ deployKF:
     - {{< (tpl $manifest $) | quote >}}
     {{<- end >}}
 
-  clusterDomain: cluster.local
+  clusterDomain: {{< .Values.clusterDomain >}}
 
   minio:
     namespace: {{< .Values.deploykf_opt.deploykf_minio.namespace | quote >}}

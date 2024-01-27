@@ -14,6 +14,7 @@ patchesStrategicMerge:
   {{<- if .Values.kubeflow_tools.notebooks.notebookTemplate >}}
   - patches/patch-jupyter-web-app-deployment.yaml
   {{<- end >}}
+  - patches/patch-jupyter-web-app-destinationrule.yaml
   - patches/patch-jupyter-web-app-virtualservice.yaml
 
 configMapGenerator:
@@ -22,7 +23,7 @@ configMapGenerator:
     literals:
       - JWA_UI="default"
       - JWA_PREFIX="/jupyter"
-      - JWA_CLUSTER_DOMAIN="cluster.local"
+      - JWA_CLUSTER_DOMAIN="{{< .Values.clusterDomain >}}"
       - JWA_USERID_HEADER="kubeflow-userid"
       - JWA_USERID_PREFIX=""
       - JWA_APP_SECURE_COOKIES="true"

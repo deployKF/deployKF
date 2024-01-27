@@ -48,14 +48,17 @@ resources:
 patchesStrategicMerge:
   - patches/patch-cache-server-deployment.yaml
   - patches/patch-metadata-grpc-deployment-deployment.yaml
+  - patches/patch-metadata-grpc-service-destinationrule.yaml
   - patches/patch-metadata-grpc-virtualservice.yaml
+  - patches/patch-minio-istio-authorizationpolicy.yaml
   - patches/patch-ml-pipeline-deployment.yaml
+  - patches/patch-ml-pipeline-istio-authorization-config.yaml
   - patches/patch-ml-pipeline-persistenceagent-deployment.yaml
   - patches/patch-ml-pipeline-serviceaccount.yaml
-  - patches/patch-ml-pipeline-ui-authorizationpolicy.yaml
   - patches/patch-ml-pipeline-ui-deployment.yaml
   - patches/patch-ml-pipeline-ui-serviceaccount.yaml
   - patches/patch-ml-pipeline-ui-virtualservice.yaml
+  - patches/patch-mysql-istio-authorizationpolicy.yaml
 
   ## removals
   - patches/removals/argo-workflows-resources.yaml
@@ -63,6 +66,17 @@ patchesStrategicMerge:
   - patches/removals/minio-resources.yaml
   - patches/removals/mysql-resources.yaml
   - patches/removals/profile-controller-resources.yaml
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/http/0/route/0/destination/host
+        value: metadata-envoy-service.kubeflow.svc.{{< .Values.clusterDomain >}}
+    target:
+      group: networking.istio.io
+      version: v1alpha3
+      kind: VirtualService
+      name: metadata-grpc
 
 configurations:
   - params.yaml

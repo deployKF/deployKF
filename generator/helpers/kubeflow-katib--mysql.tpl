@@ -17,7 +17,7 @@ true
 ##
 {{<- define "kubeflow_katib.mysql.hostname" ->}}
 {{<- if tmpl.Exec "kubeflow_katib.use_embedded_mysql" . ->}}
-deploykf-mysql.{{< .Values.deploykf_opt.deploykf_mysql.namespace >}}.svc.cluster.local
+deploykf-mysql.{{< .Values.deploykf_opt.deploykf_mysql.namespace >}}.svc.{{< .Values.clusterDomain >}}
 {{<- else ->}}
 {{< .Values.kubeflow_tools.katib.mysql.host >}}
 {{<- end ->}}

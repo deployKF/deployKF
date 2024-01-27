@@ -35,6 +35,25 @@ patchesStrategicMerge:
   ## removals
   - patches/removals/mysql-resources.yaml
 
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/dnsNames/1
+        value: $(KATIB_SERVICE_NAME).$(KATIB_NAMESPACE).svc.{{< .Values.clusterDomain >}}
+    target:
+      group: cert-manager.io
+      version: v1
+      kind: Certificate
+      name: katib-webhook-cert
+  - patch: |-
+      - op: replace
+        path: /spec/http/0/route/0/destination/host
+        value: katib-ui.$(KATIB_UI_NAMESPACE).svc.{{< .Values.clusterDomain >}}
+    target:
+      group: networking.istio.io
+      version: v1alpha3
+      kind: VirtualService
+      name: katib-ui
 configMapGenerator:
   - name: katib-mysql-config
     literals:

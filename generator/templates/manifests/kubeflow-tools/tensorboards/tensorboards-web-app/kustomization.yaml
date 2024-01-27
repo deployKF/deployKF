@@ -11,6 +11,7 @@ resources:
 
 patchesStrategicMerge:
   - patches/patch-tensorboards-web-app-authorizationpolicy.yaml
+  - patches/patch-tensorboards-web-app-destinationrule.yaml
   - patches/patch-tensorboards-web-app-virtualservice.yaml
 
 configMapGenerator:
@@ -18,7 +19,7 @@ configMapGenerator:
     behavior: merge
     literals:
       - TWA_PREFIX="/tensorboards"
-      - TWA_CLUSTER_DOMAIN="cluster.local"
+      - TWA_CLUSTER_DOMAIN="{{< .Values.clusterDomain >}}"
       - TWA_USERID_HEADER="kubeflow-userid"
       - TWA_USERID_PREFIX=""
       - TWA_APP_SECURE_COOKIES="true"
