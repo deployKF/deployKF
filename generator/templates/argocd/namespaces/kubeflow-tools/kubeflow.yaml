@@ -4,5 +4,9 @@ metadata:
   name: kubeflow
   labels:
     control-plane: kubeflow
+    {{- if .Values.deploykf_dependencies.istio.revision }}
+    istio.io/rev: {{ .Values.deploykf_dependencies.istio.revision }}
+    {{- else }}
     istio-injection: enabled
+    {{- end }}
     deploykf.github.io/inject-root-ca-cert: enabled
