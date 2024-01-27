@@ -2,13 +2,12 @@
 {{- if and .Values.deployKF.gateway.tls.enabled (not .Values.deployKF.gateway.tls.matchSNI) }}
 {{- if .Values.deployKF.kubeflow.notebooks.enabled }}
 ################
-## This VirtualService is a workaround for Kubeflow Notebooks creating VirtualServices with "*" for `spec.hosts`.
-##
-## The problem is that our dashboard VirtualService sets a specific `sepc.hosts` and matches all paths under `/`.
-## Because that is a "more specific match", all notebook traffic is mistakenly routed to the dashboard.
-##
 ## This VirtualService matches all `/notebook/` paths and proxies the traffic back to the gateway with a different hostname.
 ## Also see: `ServiceEntry/deploykf-istio-gateway` and `DestinationRule/notebooks-redirect`
+##
+## This is a workaround for Kubeflow Notebooks creating VirtualServices with "*" for `spec.hosts`.
+## The problem is that our dashboard VirtualService sets a specific `sepc.hosts` and matches all paths under `/`.
+## Because that is a "more specific match", all notebook traffic is mistakenly routed to the dashboard.
 ################
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
