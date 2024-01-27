@@ -58,6 +58,15 @@ cert-manager:
       {{<- end >}}
       pullPolicy: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerWebhook.pullPolicy | quote >}}
 
+    {{<- if .Values.kubernetes.azure.admissionsEnforcerFix >}}
+    ## azure aks admissions enforcer fix
+    ## https://github.com/cert-manager/cert-manager/issues/4114
+    validatingWebhookConfigurationAnnotations:
+      "admissions.enforcer/disabled": "true"
+    mutatingWebhookConfigurationAnnotations:
+      "admissions.enforcer/disabled": "true"
+    {{<- end >}}
+
   cainjector:
     enabled: true
     replicaCount: 1
@@ -139,3 +148,10 @@ trust-manager:
 
     trust:
       namespace: {{< .Values.deploykf_dependencies.cert_manager.namespace | quote >}}
+
+    {{<- if .Values.kubernetes.azure.admissionsEnforcerFix >}}
+    ## azure aks admissions enforcer fix
+    webhook:
+      validatingWebhookConfigurationAnnotations:
+        "admissions.enforcer/disabled": "true"
+    {{<- end >}}

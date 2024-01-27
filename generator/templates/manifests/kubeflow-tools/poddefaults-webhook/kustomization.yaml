@@ -14,6 +14,9 @@ resources:
   - resources/extra-manifests.yaml
   {{<- end >}}
 
+patchesStrategicMerge:
+  - patches/patch-mutatingwebhook.yaml
+
 images:
   - name: docker.io/kubeflownotebookswg/poddefaults-webhook
     newName: {{< .Values.kubeflow_tools.poddefaults_webhook.images.poddefaultsWebhook.repository | quote >}}

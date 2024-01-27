@@ -74,6 +74,11 @@ app:
     service:
       type: ClusterIP
 
+    #################### BEGIN CHANGE ####################
+    # -- Annotations for the trust-manager Webhook
+    validatingWebhookConfigurationAnnotations: {}
+    ##################### END CHANGE #####################
+
   securityContext:
     # -- If false, disables the default seccomp profile, which might be required to run on certain platforms
     seccompProfileEnabled: true

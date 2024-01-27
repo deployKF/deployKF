@@ -28,6 +28,9 @@ metadata:
 {{ include "trust-manager.labels" . | indent 4 }}
   annotations:
     cert-manager.io/inject-ca-from: "{{ .Release.Namespace }}/{{ include "trust-manager.name" . }}"
+    {{- if .Values.app.webhook.validatingWebhookConfigurationAnnotations }}
+    {{- toYaml .Values.app.webhook.validatingWebhookConfigurationAnnotations | nindent 4 }}
+    {{- end }}
 
 webhooks:
   - name: trust.cert-manager.io

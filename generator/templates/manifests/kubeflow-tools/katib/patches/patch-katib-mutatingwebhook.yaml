@@ -1,0 +1,9 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: katib.kubeflow.org
+  {{<- if .Values.kubernetes.azure.admissionsEnforcerFix >}}
+  annotations:
+    ## azure aks admissions enforcer fix
+    "admissions.enforcer/disabled": "true"
+  {{<- end >}}

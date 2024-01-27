@@ -3,6 +3,5 @@ kind: Namespace
 metadata:
   name: kubeflow
   labels:
-    control-plane: kubeflow
     istio-injection: enabled
     deploykf.github.io/inject-root-ca-cert: enabled

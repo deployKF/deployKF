@@ -44,3 +44,14 @@ spec:
       name: istiod-default-validator
       jqPathExpressions:
         - ".webhooks[]?.failurePolicy"
+    {{<- if .Values.kubernetes.azure.admissionsEnforcerFix >}}
+    ## azure aks admissions enforcer fix
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      jqPathExpressions:
+        - ".webhooks[]?.namespaceSelector"
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      jqPathExpressions:
+        - ".webhooks[]?.namespaceSelector"
+    {{<- end >}}

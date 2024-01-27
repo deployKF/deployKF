@@ -49,6 +49,15 @@ deployKF:
 kyverno:
   fullnameOverride: kyverno
 
+  {{<- if .Values.kubernetes.azure.admissionsEnforcerFix >}}
+  ## Kyverno configurations
+  config:
+    ## azure aks admissions enforcer fix
+    ## https://kyverno.io/docs/installation/platform-notes/#notes-for-aks-users
+    webhookAnnotations:
+      "admissions.enforcer/disabled": "true"
+  {{<- end >}}
+
   ## Kyverno feature flags
   features:
 
