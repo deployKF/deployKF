@@ -31,6 +31,8 @@ patchesStrategicMerge:
   - patches/patch-katib-ui-authorizationpolicy.yaml
   - patches/patch-katib-ui-deployment.yaml
   - patches/patch-katib-ui-virtualservice.yaml
+  - patches/patch-katib-mutatingwebhook.yaml
+  - patches/patch-katib-validatingwebhook.yaml
 
   ## removals
   - patches/removals/mysql-resources.yaml

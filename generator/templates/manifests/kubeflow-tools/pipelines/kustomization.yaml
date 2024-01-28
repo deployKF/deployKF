@@ -47,6 +47,7 @@ resources:
 
 patchesStrategicMerge:
   - patches/patch-cache-server-deployment.yaml
+  - patches/patch-cache-server-mutatingwebhook.yaml
   - patches/patch-metadata-grpc-deployment-deployment.yaml
   - patches/patch-metadata-grpc-virtualservice.yaml
   - patches/patch-ml-pipeline-deployment.yaml

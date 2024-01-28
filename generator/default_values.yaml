@@ -63,6 +63,23 @@ argocd:
 
 ## --------------------------------------------------------------------------------
 ##
+##                                    kubernetes
+##
+## --------------------------------------------------------------------------------
+kubernetes:
+
+  ## configs specific to Azure Kubernetes
+  ##
+  azure:
+
+    ## apply workarounds for the AKS Admissions Enforcer
+    ##  - https://github.com/deployKF/deployKF/issues/61
+    ##
+    admissionsEnforcerFix: false
+
+
+## --------------------------------------------------------------------------------
+##
 ##                              deploykf-dependencies
 ##
 ## --------------------------------------------------------------------------------
