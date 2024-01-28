@@ -37,6 +37,8 @@ cert-manager:
     {{<- end >}}
     pullPolicy: {{< .Values.deploykf_dependencies.cert_manager.images.certManagerController.pullPolicy | quote >}}
 
+  podLabels: {{< .Values.deploykf_dependencies.cert_manager.controller.podLabels | toJSON >}}
+
   securityContext: {{< .Values.deploykf_dependencies.cert_manager.controller.securityContext | toJSON >}}
 
   serviceAccount:

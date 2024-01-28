@@ -143,6 +143,10 @@ deploykf_dependencies:
     ##
     controller:
 
+      ## extra Pod labels
+      ##
+      podLabels: {}
+
       ## PodSecurityContext configs
       ##
       securityContext:
