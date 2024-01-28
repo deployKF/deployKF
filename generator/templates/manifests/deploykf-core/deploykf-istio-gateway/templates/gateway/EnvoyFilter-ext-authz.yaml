@@ -240,14 +240,19 @@ spec:
             ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#envoy-v3-api-msg-extensions-filters-http-jwt-authn-v3-requirementrule
             requirement_map:
 
+              {{- if $.Values.deployKF.kubeflow.pipelines.enabled }}
+              {{- "\n" }}
               ## used by kubeflow pipelines api route
-              ## allows both 'oauth2-proxy' and 'kubeflow-pipelines-sdk' audiences
               kubeflow_pipelines_api:
                 provider_and_audiences:
                   provider_name: deploykf_dex
                   audiences:
                     - {{ $.Values.deployKF.auth.dex.clients.oauth2Proxy.clientId | quote }}
+                    {{- if $.Values.deployKF.auth.dex.clients.kubeflowPipelinesSDK.enabled }}
+                    ## also allow the special 'kubeflow-pipelines-sdk' audiences (for out-of-band login)
                     - {{ $.Values.deployKF.auth.dex.clients.kubeflowPipelinesSDK.clientId | quote }}
+                    {{- end }}
+              {{- end }}
 
               ## used by all other deployKF routes
               oauth2_proxy:
@@ -358,8 +363,10 @@ spec:
               name: set_userid_header.lua
     {{- end }}
 
+    {{- if .Values.deployKF.kubeflow.pipelines.enabled }}
+    {{- "\n" }}
     ################################################################################
-    ## ROUTE - Use special JwtAuthn requirement for 'ml-pipeline-ui' route
+    ## ROUTE - Use special JwtAuthn requirement for KFP 'ml-pipeline-ui' route
     ################################################################################
     {{- range $port_number := $listner_port_numbers }}
     {{- "\n" }}
@@ -383,6 +390,7 @@ spec:
               ## https://www.envoyproxy.io/docs/envoy/v1.23.1/api-v3/extensions/filters/http/jwt_authn/v3/config.proto#extensions-filters-http-jwt-authn-v3-perrouteconfig
               "@type": type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.PerRouteConfig
               requirement_name: kubeflow_pipelines_api
+    {{- end }}
     {{- end }}
 
     {{- range $route_name := $disable_auth_routes }}
