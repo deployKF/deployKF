@@ -3,7 +3,7 @@ kind: Kustomization
 
 resources:
   ## TIP: this determines which version of ArgoCD is installed
-  - https://raw.githubusercontent.com/argoproj/argo-cd/v2.8.5/manifests/install.yaml
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v2.9.6/manifests/install.yaml
 
   ## TIP: if you don't have a default storage class, you may need to set the `spec.storageClassName`
   ## TIP: if you have an HA argocd-repo-server deployment, you will need to make this a ReadWriteMany volume
