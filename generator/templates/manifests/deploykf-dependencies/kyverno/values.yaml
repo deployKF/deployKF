@@ -160,6 +160,7 @@ kyverno:
           {{<- range $extra_resource := $extra_resources >}}
           - apiGroups: {{< $extra_resource.apiGroups | toJSON >}}
             resources: {{< $extra_resource.resources | toJSON >}}
+            verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
           {{<- end >}}
 
   ## Reports controller configuration

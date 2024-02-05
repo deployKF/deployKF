@@ -3,7 +3,6 @@ kind: ClusterPolicy
 metadata:
   name: kubeflow-pipelines--restart-on-pipeline-configmap-update
 spec:
-  mutateExistingOnPolicyUpdate: false
   rules:
     - name: trigger-deployment-restarts
       match:
@@ -22,7 +21,7 @@ spec:
         targets:
           - apiVersion: apps/v1
             kind: Deployment
-            namespace: "{{ request.namespace }}"
+            namespace: "{{ request.object.metadata.namespace }}"
         patchStrategicMerge:
           spec:
             template:
