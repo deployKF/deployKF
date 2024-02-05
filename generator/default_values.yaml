@@ -723,6 +723,9 @@ deploykf_core:
         ##
         enabled: true
 
+        ## the secret containing the gateway's TLS certificate and key
+        secretName: deploykf-istio-gateway-cert
+
         ## if browser clients use HTTPS when connecting to the gateway
         ##  - determines the protocol of links and cookies presented to client browsers,
         ##    should ~only~ be false if your end-users connect over HTTP, which is NOT recommended
