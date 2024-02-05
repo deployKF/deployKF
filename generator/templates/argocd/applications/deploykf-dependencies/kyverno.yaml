@@ -37,8 +37,3 @@ spec:
     server: {{< .Values.argocd.destination.server | quote >}}
     {{<- end >}}
     namespace: {{< .Values.deploykf_dependencies.kyverno.namespace | quote >}}
-  syncPolicy:
-    syncOptions:
-      ## kyverno will fail to sync if not using one of `Replace` or `ServerSideApply`
-      ## https://kyverno.io/docs/installation/platform-notes/#notes-for-argocd-users
-      - ServerSideApply=true
