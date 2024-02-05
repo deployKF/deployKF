@@ -171,6 +171,13 @@ spec:
               operations:
                 - CREATE
                 - UPDATE
+      preconditions:
+        all:
+          - key: {{ `"{{ request.operation || 'BACKGROUND' }}"` }}
+            operator: AnyIn
+            value:
+              - CREATE
+              - UPDATE
       mutate:
         targets:
           - apiVersion: apps/v1
