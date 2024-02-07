@@ -88,6 +88,10 @@ spec:
               mountPath: /etc/oauth2-proxy/oauth2-proxy.cfg
               subPath: oauth2-proxy.cfg
               readOnly: true
+            - name: oauth2-proxy-theme
+              mountPath: /custom-theme/logo.svg
+              subPath: logo.svg
+              readOnly: true
             {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
             - name: gateway-root-ca-cert
               mountPath: /etc/oauth2-proxy/certs/
@@ -97,6 +101,9 @@ spec:
         - name: oauth2-proxy-config
           secret:
             secretName: oauth2-proxy-config
+        - name: oauth2-proxy-theme
+          configMap:
+            name: oauth2-proxy-theme
         {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
         - name: gateway-root-ca-cert
           configMap:
