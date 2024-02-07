@@ -569,6 +569,15 @@ deploykf_core:
     ##
     oauth2Proxy:
 
+      ## if a sign-in page is shown before redirecting to dex
+      ##  - when enabled, prevents background requests from accumulating CSRF cookies upon token expiry
+      ##    by requiring a click to initiate the dex login flow
+      ##  - [WARNING] this will be ~enabled by default~ in a future version of deployKF
+      ##  - [WARNING] before enabling, you must update older versions of `KFPClientManager`, please see:
+      ##              https://www.deploykf.org/user-guides/access-kubeflow-pipelines-api/#dex-static-credentials
+      ##
+      enableSignInPage: false
+
       ## oauth2-proxy cookie configs
       ##
       cookie:

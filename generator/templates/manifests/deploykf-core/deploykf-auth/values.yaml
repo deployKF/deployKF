@@ -173,6 +173,10 @@ oauth2Proxy:
   ##
   resources: {}
 
+  ## if a sign-in page is shown before redirecting to dex
+  ## NOTE: this prevents background requests being redirected and accumulating CSRF cookies
+  enableSignInPage: {{< .Values.deploykf_core.deploykf_auth.oauth2Proxy.enableSignInPage | conv.ToBool >}}
+
   ## OpenID configs for oauth2-proxy
   ##
   oidc:
