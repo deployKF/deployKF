@@ -144,8 +144,15 @@ spec:
                 ## NOTE: envoy automatically adds: `Host`, `Method`, `Path`, `Content-Length`, `Authorization`
                 allowed_headers:
                   patterns:
+                    ## oauth2-proxy uses the `accept` header to not redirect `application/json` requests
+                    - exact: accept
+                      ignore_case: true
+
+                    ## tokens are stored in cookies
                     - exact: cookie
                       ignore_case: true
+
+                    ## used by oauth2-proxy to know about the original request
                     - exact: x-forwarded-for
                       ignore_case: true
                     - exact: x-forwarded-host
@@ -159,6 +166,7 @@ spec:
                 ## NOTE: the client never sees these headers, only the downstream apps
                 allowed_upstream_headers:
                   patterns:
+                    ## oauth2-proxy will set/overwrite these headers for authenticated requests
                     - exact: authorization
                       ignore_case: true
                     - exact: x-auth-request-email
@@ -168,14 +176,18 @@ spec:
                 ## NOTE: envoy automatically adds: `Path`, `Status`, `Content-Length`, `WWWAuthenticate`, `Location`
                 allowed_client_headers:
                   patterns:
-                    ## NOTE: this is needed for oauth2-proxy cookie_refresh to work
+                    ## oauth2-proxy can return HTML content on failure (for its sign-in page)
+                    - exact: content-type
+                      ignore_case: true
+
+                    ## oauth2-proxy will set cookies during a cookie refresh flow
                     - exact: set-cookie
                       ignore_case: true
 
                 ## headers from oauth2-proxy that are sent back in the client response (on authentication success)
                 allowed_client_headers_on_success:
                   patterns:
-                    ## NOTE: this is needed for oauth2-proxy cookie_refresh to work
+                    ## oauth2-proxy will set cookies during a cookie refresh flow
                     - exact: set-cookie
                       ignore_case: true
     {{- end }}
