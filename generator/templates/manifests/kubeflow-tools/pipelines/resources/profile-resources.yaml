@@ -201,6 +201,10 @@ kind: PodDefault
 metadata:
   name: kubeflow-pipelines-api-token
   namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
 spec:
   desc: "Mount a serviceAccountToken to authenticate with Kubeflow Pipelines API"
   env:
@@ -235,6 +239,10 @@ kind: ConfigMap
 metadata:
   name: metadata-grpc-configmap
   namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
 data:
   METADATA_GRPC_SERVICE_HOST: "metadata-grpc-service.kubeflow"
   METADATA_GRPC_SERVICE_PORT: "8080"
@@ -244,6 +252,10 @@ kind: Deployment
 metadata:
   name: ml-pipeline-visualizationserver
   namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
   labels:
     app: ml-pipeline-visualizationserver
 spec:
@@ -277,6 +289,10 @@ kind: DestinationRule
 metadata:
   name: ml-pipeline-visualizationserver
   namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
 spec:
   host: ml-pipeline-visualizationserver
   trafficPolicy:
@@ -288,6 +304,10 @@ kind: AuthorizationPolicy
 metadata:
   name: ml-pipeline-visualizationserver
   namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
 spec:
   selector:
     matchLabels:
@@ -303,6 +323,10 @@ kind: Service
 metadata:
   name: ml-pipeline-visualizationserver
   namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
 spec:
   selector:
     app: ml-pipeline-visualizationserver
@@ -317,6 +341,10 @@ kind: Deployment
 metadata:
   name: ml-pipeline-ui-artifact
   namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
   labels:
     app: ml-pipeline-ui-artifact
 spec:
@@ -410,6 +438,10 @@ kind: Service
 metadata:
   name: ml-pipeline-ui-artifact
   namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
 spec:
   selector:
     app: ml-pipeline-ui-artifact
@@ -426,6 +458,10 @@ metadata:
   namespace: {{< $profile_name | quote >}}
   annotations:
     workflows.argoproj.io/default-artifact-repository: default-v1
+    
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
 data:
   default-v1: |
     archiveLogs: true
@@ -451,6 +487,10 @@ kind: ConfigMap
 metadata:
   name: kfp-launcher
   namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
 data:
   {{<- $defaultPipelineRoot := $.Values.kubeflow_tools.pipelines.kfpV2.defaultPipelineRoot >}}
   {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{bucket_name}" $.Values.kubeflow_tools.pipelines.bucket.name >}}
