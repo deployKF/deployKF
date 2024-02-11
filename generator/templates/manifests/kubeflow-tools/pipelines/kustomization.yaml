@@ -1,16 +1,17 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-## global namespace must be set due to:
+## we can't set the global namespace as we generate resources across multiple namespaces (for profiles)
+## however, we must set the `configMapGenerator` namespaces to `kubeflow` to avoid this issue:
 ## https://github.com/kubernetes-sigs/kustomize/issues/1301#issuecomment-1308228710
-namespace: kubeflow
+#namespace: kubeflow
 
 resources:
   ## upstream
   - upstream/apps/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user
 
   ## local
-  - resources/generate-profile-resources-clusterpolicy.yaml
+  - resources/profile-resources.yaml
   - resources/restart-on-pipeline-configmap-update-clusterpolicy.yaml
 
   {{<- if not .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
@@ -70,8 +71,12 @@ configurations:
 
 configMapGenerator:
   - name: pipeline-install-config
+    namespace: kubeflow
     behavior: merge
     literals:
+      ## remove the upstream warning, because it can be confusing to users
+      - warning=""
+
       ## ================================
       ## UserID Configs
       ## ================================
@@ -99,9 +104,8 @@ configMapGenerator:
       - bucketName="{{< .Values.kubeflow_tools.pipelines.bucket.name >}}"
       - bucketRegion="{{< .Values.kubeflow_tools.pipelines.bucket.region >}}"
       ## NOTE: this is not actually used in our manifests to create `ConfigMap/kfp-launcher`
-      ##       as we have replaced the "kubeflow-pipelines-profile-controller" with kyverno,
-      ##       specifically our `ClusterPolicy/kubeflow-pipelines--generate-profile-resources`
-      ##       creates/syncs the `ConfigMap/kfp-launcher` in each profile namespace
+      ##       as we have replaced the "kubeflow-pipelines-profile-controller" with explicitly
+      ##       generated resource templates in `resources/profile-resources.yaml`
       - defaultPipelineRoot=""
 
       ## ================================
@@ -123,6 +127,7 @@ configMapGenerator:
       - pipelineDb="{{< .Values.kubeflow_tools.pipelines.mysqlDatabases.pipelinesDatabase >}}"
 
   - name: ml-pipeline-ui-configmap
+    namespace: kubeflow
     behavior: merge
     files:
       - files/viewer-pod-template.json

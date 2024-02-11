@@ -12,9 +12,6 @@ deployKF_helpers:
       object_store:
         profile:
           cloned_secret_name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" . | quote >}}
-          generated_access_key_key: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_access_key_key" . | quote >}}
-          generated_secret_key_key: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_secret_key_key" . | quote >}}
-
 
 ########################################
 ## SHARED | deploykf
@@ -27,9 +24,6 @@ deployKF:
 
   clusterDomain: cluster.local
 
-  minio:
-    namespace: {{< .Values.deploykf_opt.deploykf_minio.namespace | quote >}}
-
   argoWorkflows:
     enabled: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.enabled | conv.ToBool >}}
     namespace: {{< .Values.kubeflow_dependencies.kubeflow_argo_workflows.namespace | quote >}}
@@ -39,14 +33,9 @@ deployKF:
 
     pipelines:
       enabled: {{< .Values.kubeflow_tools.pipelines.enabled | conv.ToBool >}}
-      namespace: kubeflow
       pipelineUI:
         namespace: kubeflow
         serviceAccount: ml-pipeline-ui
-      objectStore:
-        useExternal: {{< .Values.kubeflow_tools.pipelines.objectStore.useExternal | conv.ToBool >}}
-        auth:
-          fromEnv: {{< .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv | conv.ToBool >}}
 
   gateway:
     namespace: {{< .Values.deploykf_core.deploykf_istio_gateway.namespace | quote >}}
@@ -93,22 +82,6 @@ profileDefaults:
   ##    https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#resourcequotaspec-v1-core
   ##
   resourceQuotaSpec: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.resourceQuotaSpec | toJSON >}}
-
-  ## the default tool configs for profiles
-  ##
-  tools:
-
-    ## the default Kubeflow Pipelines configs for profiles
-    ##
-    kubeflowPipelines:
-
-      ## the default Kubeflow Pipelines object store auth configs for profiles
-      ##
-      objectStoreAuth:
-        existingSecret: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret | quote >}}
-        existingSecretNamespace: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretNamespace | quote >}}
-        existingSecretAccessKeyKey: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretAccessKeyKey | quote >}}
-        existingSecretSecretKeyKey: {{< .Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretSecretKeyKey | quote >}}
 
 ## user entities
 ##  - a list of users that can be referenced when defining profile members
