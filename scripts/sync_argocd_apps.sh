@@ -26,9 +26,9 @@ ARGOCD_PASSWORD=""
 # how to handle resources that require pruning
 #  - 'always': prune resources without prompting (DANGER: this can delete resources that are still in use)
 #  - 'prompt': ask the user if they want to prune resources (defaults to 'no' after timeout)
-#  - 'skip': continue silently without pruning
+#  - 'skip': continue silently without pruning (WARNING: deployKF may not work correctly)
 ARGOCD_PRUNE_MODE="prompt"
-ARGOCD_PRUNE_PROMPT_SECONDS="30"
+ARGOCD_PRUNE_PROMPT_SECONDS="60"
 
 # timeouts for argocd commands
 ARGOCD_SYNC_TIMEOUT_SECONDS="600"
@@ -209,14 +209,16 @@ function sync_argocd_apps() {
       echo_yellow ">>> WARNING: There are resources that need to be PRUNED"
       if [[ "$_prompt_for_prune" == "true" ]]; then
         echo ""
-        echo_magenta "Do you want to sync again with PRUNING enabled?"
-        echo ""
+        echo_yellow "What is PRUNING?"
+        echo_yellow "----------------"
         echo_red "Pruning DELETES resources that are no longer part of the application."
-        echo_red "Check that resources above with '(requires pruning)' can be safely deleted."
-        echo ""
-        echo_yellow "If you are unsure, respond with 'no' or press ENTER to continue without pruning."
+        echo_red "Ensure the resources listed ABOVE as '(requires pruning)' can be SAFELY deleted."
+        echo_red "Note, some resources are listed incorrectly, and will NOT actually be pruned."
+        echo_red "Please see: https://github.com/argoproj/argo-cd/issues/17188"
         echo ""
         while true; do
+            echo_yellow "Do you want to sync with PRUNING enabled?"
+            echo_yellow "-----------------------------------------"
             echo "${COLOR_MAGENTA}${BOLD}OPTIONS:${NC} ${COLOR_RED}${BOLD}yes${NC}, ${COLOR_GREEN}${BOLD}no${NC} (default)"
             echo "${COLOR_MAGENTA}${BOLD}TIMEOUT:${NC} ${ARGOCD_PRUNE_PROMPT_SECONDS} seconds"
             read -r -t "$ARGOCD_PRUNE_PROMPT_SECONDS" -p "${COLOR_MAGENTA}${BOLD}RESPONSE:${NC} " response || echo "<no response, continuing without pruning>"
@@ -285,8 +287,8 @@ function sync_argocd() {
   # this associative array has "app names" as keys, and "sync status" as values
   local -A _app_sync_statuses=()
 
-  # this associative array has "app names" as keys, and SPACE-separated "resource selectors" as values
-  #  - the format of each resource selector is: "GROUP:KIND:NAME"
+  # this associative array has "app names" as keys, and SPACE-separated "argocd resource selectors" as values
+  #  - the format of each resource selector is: "<GROUP>:<KIND>:<NAMESPACE>/<NAME>" or "<GROUP>:<KIND>:<NAME>"
   local -A _app_force_sync_resources=()
 
   # build an array of applications to sync
@@ -322,12 +324,13 @@ function sync_argocd() {
     _app_resources=$(echo "$_app_json" | jq -c '.status.resources[]?')
 
     # build an array of resource selectors that require a forced sync
-    # TODO: remove once ArgoCD has a way to force sync individual resources
+    # TODO: remove force-sync once ArgoCD has a way to force-sync individual resources
     #       https://github.com/argoproj/gitops-engine/issues/414
     local _app_resource
     local _app_resource_group
     local _app_resource_kind
     local _app_resource_name
+    local _app_resource_namespace
     local _app_resource_status
     local _app_resource_health
     local _app_resource_health_status
@@ -339,18 +342,27 @@ function sync_argocd() {
       _app_resource_group=$(echo "$_app_resource" | jq -r '.group // empty')
       _app_resource_kind=$(echo "$_app_resource" | jq -r '.kind // empty')
       _app_resource_name=$(echo "$_app_resource" | jq -r '.name // empty')
+      _app_resource_namespace=$(echo "$_app_resource" | jq -r '.namespace // empty')
       _app_resource_status=$(echo "$_app_resource" | jq -r '.status // "Unknown"')
       _app_resource_health=$(echo "$_app_resource" | jq -r '.health // empty')
       _app_resource_health_status=$(echo "$_app_resource_health" | jq -r '.status // "Unknown"')
       _app_resource_requiresPruning=$(echo "$_app_resource" | jq -r '.requiresPruning // false')
-      _app_resource_selector="$_app_resource_group:$_app_resource_kind:$_app_resource_name"
 
-      # force sync is only relevant to resources that are not Synced, do not require pruning, and are not Missing
-      _app_resource_force_sync="false"
+      # construct a resource selector (for argocd commands)
+      if [[ -n "$_app_resource_namespace" ]]; then
+        _app_resource_selector="$_app_resource_group:$_app_resource_kind:$_app_resource_namespace/$_app_resource_name"
+      else
+        _app_resource_selector="$_app_resource_group:$_app_resource_kind:$_app_resource_name"
+      fi
+
+      # check if the resource requires forced sync
+      #  - force sync is only relevant to resources that are not Synced, do not require pruning, and are not Missing
       if [[ "$_app_resource_status" != "Synced" &&
             "$_app_resource_requiresPruning" == "false" &&
             "$_app_resource_health_status" != "Missing"
       ]]; then
+        _app_resource_force_sync="false"
+
         # kyverno ClusterPolicies with "generate" type rules cant be updated without a forced sync
         #  - https://github.com/kyverno/kyverno/issues/7718
         #  - in deployKF, all such policies have names containing "clone" or "generate"
@@ -360,14 +372,14 @@ function sync_argocd() {
         ]]; then
           _app_resource_force_sync="true"
         fi
-      fi
 
-      # add the resource selector to the array
-      if [[ "$_app_resource_force_sync" == "true" ]]; then
-        if [[ -v _app_force_sync_resources["$_app_name"] ]]; then
-          _app_force_sync_resources[$_app_name]+=" $_app_resource_selector"
-        else
-          _app_force_sync_resources[$_app_name]="$_app_resource_selector"
+        # if the resource requires forced sync, add it to the array
+        if [[ "$_app_resource_force_sync" == "true" ]]; then
+          if [[ -v _app_force_sync_resources["$_app_name"] ]]; then
+            _app_force_sync_resources[$_app_name]+=" $_app_resource_selector"
+          else
+            _app_force_sync_resources[$_app_name]="$_app_resource_selector"
+          fi
         fi
       fi
     done
@@ -435,19 +447,19 @@ function sync_argocd() {
     # sync the out-of-sync applications
     if [[ -n "${_out_of_sync_apps[*]}" ]]; then
 
-      # if there are resources that require a forced sync, sync them first
-      local _resource_array_str
+      # force sync specific resources from the out-of-sync applications
+      local _force_resource_array_str
       local _resource_str
       if [[ ${#_app_force_sync_resources[@]} -gt 0 ]]; then
         for _app_name in "${_out_of_sync_apps[@]}"; do
           if [[ -v _app_force_sync_resources["$_app_name"] ]]; then
-            _resource_array_str="${_app_force_sync_resources[$_app_name]}"
+            _force_resource_array_str="${_app_force_sync_resources[$_app_name]}"
             echo ""
-            echo_yellow ">>> Syncing resources that require a forced sync from '$_app_name':"
-            for _resource_str in $_resource_array_str; do
+            echo_yellow ">>> Force syncing specific resources from '$_app_name':"
+            for _resource_str in $_force_resource_array_str; do
               echo_yellow ">>>  - $_resource_str"
             done
-            sync_argocd_apps "false" "false" "true" "$_resource_array_str" "$_app_name"
+            sync_argocd_apps "false" "false" "true" "$_force_resource_array_str" "$_app_name"
           fi
         done
       fi
@@ -468,9 +480,6 @@ function sync_argocd() {
           exit 1
           ;;
       esac
-
-      # wait for the out-of-sync applications to be healthy
-      argocd_app_wait "${_out_of_sync_apps[@]}"
     fi
 
     # wait for ALL applications in this sync wave to be healthy
