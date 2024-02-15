@@ -1,0 +1,499 @@
+{{<- /*
+  First, we build a mapping of {"<profile name>": <object_store_auth_configs>}
+*/ ->}}
+{{<- $profile_mapping := dict >}}
+
+{{<- /* ITERATE OVER EACH PROFILE */ ->}}
+{{<- range $index, $profile := .Values.deploykf_core.deploykf_profiles_generator.profiles >}}
+  {{<- $objectStoreAuth_fromEnv := false >}}
+  {{<- $objectStoreAuth_existingSecret := "" >}}
+  {{<- $objectStoreAuth_existingSecretNamespace := "" >}}
+  {{<- $objectStoreAuth_existingSecretAccessKeyKey := "" >}}
+  {{<- $objectStoreAuth_existingSecretSecretKeyKey := "" >}}
+
+  {{<- /* Unpack `tools.kubeflowPipelines.objectStoreAuth` from the profile, if present */ ->}}
+  {{<- $profile_objectStoreAuth := dict >}}
+  {{<- if and (has $profile "tools") (has $profile.tools "kubeflowPipelines") (has $profile.tools.kubeflowPipelines "objectStoreAuth") >}}
+    {{<- $profile_objectStoreAuth = $profile.tools.kubeflowPipelines.objectStoreAuth >}}
+  {{<- end >}}
+
+  {{<- /* CASE 1: the profile specifies `objectStoreAuth` */ ->}}
+  {{<- if $profile_objectStoreAuth >}}
+    {{<- $objectStoreAuth_existingSecret = (index $profile_objectStoreAuth "existingSecret") | default "" >}}
+    {{<- $objectStoreAuth_existingSecretNamespace = (index $profile_objectStoreAuth "existingSecretNamespace") | default $profile.name >}}
+    {{<- $objectStoreAuth_existingSecretAccessKeyKey = (index $profile_objectStoreAuth "existingSecretAccessKeyKey") | default "access_key" >}}
+    {{<- $objectStoreAuth_existingSecretSecretKeyKey = (index $profile_objectStoreAuth "existingSecretSecretKeyKey") | default "secret_key" >}}
+    {{<- if not $objectStoreAuth_existingSecret >}}
+      {{<- fail (printf "profiles which set `tools.kubeflowPipelines.objectStoreAuth` must have non-empty `objectStoreAuth.existingSecret`, but profile '%s' does not" $profile.name) >}}
+    {{<- end >}}
+
+  {{<- /* CASE 2: the profile does not specify `objectStoreAuth` */ ->}}
+  {{<- else >}}
+
+    {{<- /* CASE 2a: environment-based auth (e.g. EKS IRSA) */ ->}}
+    {{<- if $.Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
+      {{<- $objectStoreAuth_fromEnv = true >}}
+
+    {{<- /* CASE 2b: external object store */ ->}}
+    {{<- else if $.Values.kubeflow_tools.pipelines.objectStore.useExternal >}}
+      {{<- $objectStoreAuth_existingSecret = $.Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret | default "" | strings.ReplaceAll "{profile_name}" $profile.name >}}
+      {{<- $objectStoreAuth_existingSecretNamespace = $.Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretNamespace | default "kubeflow" >}}
+      {{<- $objectStoreAuth_existingSecretAccessKeyKey = $.Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretAccessKeyKey | default "access_key" >}}
+      {{<- $objectStoreAuth_existingSecretSecretKeyKey = $.Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecretSecretKeyKey | default "secret_key" >}}
+      {{<- if not $objectStoreAuth_existingSecret >}}
+        {{<- fail "`deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret` must be non-empty if `kubeflow_tools.pipelines.objectStore.useExternal` is true" >}}
+      {{<- end >}}
+
+    {{<- /* CASE 2c: minio (generated secret) */ ->}}
+    {{<- else >}}
+      {{<- $objectStoreAuth_existingSecret_template := $.Values.deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret | default "" >}}
+      {{<- if not ($objectStoreAuth_existingSecret_template | strings.Contains "{profile_name}") >}}
+        {{<- fail (printf "if `kubeflow_tools.pipelines.objectStore.useExternal` is false, then `deploykf_core.deploykf_profiles_generator.profileDefaults.tools.kubeflowPipelines.objectStoreAuth.existingSecret` must contain '{profile_name}', but got '%s'" $objectStoreAuth_existingSecret_template) >}}
+      {{<- end >}}
+      {{<- $objectStoreAuth_existingSecret_template = printf "generated--%s" $objectStoreAuth_existingSecret_template >}}
+      {{<- $objectStoreAuth_existingSecret = $objectStoreAuth_existingSecret_template | strings.ReplaceAll "{profile_name}" $profile.name >}}
+      {{<- $objectStoreAuth_existingSecretNamespace = $.Values.deploykf_opt.deploykf_minio.namespace >}}
+      {{<- $objectStoreAuth_existingSecretAccessKeyKey = tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_access_key_key" $ >}}
+      {{<- $objectStoreAuth_existingSecretSecretKeyKey = tmpl.Exec "kubeflow_pipelines.object_store.profile.generated_secret_key_key" $ >}}
+    {{<- end >}}
+  {{<- end >}}
+
+  {{<- $profile_mapping = coll.Merge $profile_mapping (
+    dict $profile.name (
+      dict
+        "objectStoreAuth_fromEnv" $objectStoreAuth_fromEnv
+        "objectStoreAuth_existingSecret" $objectStoreAuth_existingSecret
+        "objectStoreAuth_existingSecretNamespace" $objectStoreAuth_existingSecretNamespace
+        "objectStoreAuth_existingSecretAccessKeyKey" $objectStoreAuth_existingSecretAccessKeyKey
+        "objectStoreAuth_existingSecretSecretKeyKey" $objectStoreAuth_existingSecretSecretKeyKey
+    )
+  ) >}}
+{{<- end ->}}
+
+################
+## DEBUG INFO
+{{<- range $profile_name, $profile_configs := $profile_mapping >}}
+##
+## PROFILE: {{< $profile_name >}}
+{{<- range $key, $value := $profile_configs >}}
+##  - {{< $key >}}: {{< $value >}}
+{{<- end >}}
+{{<- end >}}
+################
+
+{{<- /*
+  The following ClusterPolicies clone the KFP bucket secret for each profile and trigger deployment restarts on changes.
+*/ ->}}
+{{<- range $profile_name, $profile_configs := $profile_mapping >}}
+{{<- if not $profile_configs.objectStoreAuth_fromEnv >}}
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  ## the max name length is 63, so to avoid collisions we include part of the SHA256 of the profile name
+  {{<- $this_policy_name := (printf "clone-profile-bucket-secret-%s-%s" ($profile_name | crypto.SHA256 | strings.Trunc 8) $profile_name) | strings.Trunc 63 | strings.TrimSuffix "-" >}}
+  name: {{< $this_policy_name | quote >}}
+  annotations:
+    ## kyverno policies with "generate" cant be updated: https://github.com/kyverno/kyverno/issues/7718
+    argocd.argoproj.io/sync-options: Replace=true
+    ## kyverno policies that clone resources must be synced before other resources
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  generateExisting: true
+  rules:
+    {{<- $source_secret__name := $profile_configs.objectStoreAuth_existingSecret >}}
+    {{<- $source_secret__namespace := $profile_configs.objectStoreAuth_existingSecretNamespace >}}
+    {{<- $target_secret__name := tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" $ >}}
+    {{<- $target_secret__namespace := $profile_name >}}
+    ## clone the secret from the source namespace to the target namespace
+    - name: clone-secret
+      match:
+        any:
+          - resources:
+              kinds:
+                - Namespace
+              names:
+                - {{< $target_secret__namespace | quote >}}
+      generate:
+        apiVersion: v1
+        kind: Secret
+        name: {{< $target_secret__name | quote >}}
+        namespace: "{{ request.object.metadata.name }}"
+        synchronize: true
+        clone:
+          namespace: {{< $source_secret__namespace | quote >}}
+          name: {{< $source_secret__name | quote >}}
+
+    ## annotate the ~cloned~ secret so that ArgoCD ignores it
+    - name: annotate-cloned-secret
+      match:
+        any:
+          - resources:
+              kinds:
+                - Secret
+              names:
+                - {{< $target_secret__name | quote >}}
+              namespaces:
+                - {{< $target_secret__namespace | quote >}}
+              operations:
+                - CREATE
+                - UPDATE
+              selector:
+                matchLabels:
+                  generate.kyverno.io/policy-name: {{< $this_policy_name | quote >}}
+      mutate:
+        patchStrategicMerge:
+          metadata:
+            annotations:
+              argocd.argoproj.io/compare-options: IgnoreExtraneous
+              argocd.argoproj.io/sync-options: Prune=false
+
+    ## restart deployments using the ~cloned~ secret when the ~source~ secret is updated
+    ## NOTE: kyverno ignores its own updates, so we cant trigger from the ~cloned~ secret
+    - name: trigger-deployment-restarts
+      match:
+        any:
+          - resources:
+              kinds:
+                - Secret
+              names:
+                - {{< $source_secret__name | quote >}}
+              namespaces:
+                - {{< $source_secret__namespace | quote >}}
+              operations:
+                - CREATE
+                - UPDATE
+      preconditions:
+        all:
+          - key: "{{ request.operation || 'BACKGROUND' }}"
+            operator: AnyIn
+            value:
+              - CREATE
+              - UPDATE
+      mutate:
+        targets:
+          - apiVersion: apps/v1
+            kind: Deployment
+            namespace: {{< $target_secret__namespace | quote >}}
+        patchStrategicMerge:
+          spec:
+            template:
+              metadata:
+                annotations:
+                  deploykf.org/restart-trigger: "{{ random('[0-9a-z]{32}') }}"
+              spec:
+                containers:
+                  - env:
+                      - valueFrom:
+                          secretKeyRef:
+                            <(name): {{< $target_secret__name | quote >}}
+{{<- end >}}
+{{<- end >}}
+
+{{<- /*
+  The following PodDefaults are for Kubeflow Notebooks to authenticate with the Kubeflow Pipelines API.
+*/ ->}}
+{{<- if and .Values.kubeflow_tools.pipelines.profileResourceGeneration.kfpApiTokenPodDefault .Values.kubeflow_tools.poddefaults_webhook.enabled >}}
+{{<- range $profile_name, $profile_configs := $profile_mapping >}}
+---
+apiVersion: kubeflow.org/v1alpha1
+kind: PodDefault
+metadata:
+  name: kubeflow-pipelines-api-token
+  namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
+spec:
+  desc: "Mount a serviceAccountToken to authenticate with Kubeflow Pipelines API"
+  env:
+    - name: KF_PIPELINES_SA_TOKEN_PATH
+      value: "/var/run/secrets/ml-pipeline/token"
+  selector:
+    matchLabels:
+      kubeflow-pipelines-api-token: "true"
+  volumeMounts:
+    - mountPath: "/var/run/secrets/ml-pipeline"
+      name: volume-ml-pipeline-token
+      readOnly: true
+  volumes:
+    - name: volume-ml-pipeline-token
+      projected:
+        sources:
+          - serviceAccountToken:
+              audience: pipelines.kubeflow.org
+              expirationSeconds: 7200
+              path: token
+{{<- end >}}
+{{<- end >}}
+
+{{<- /*
+  The following resources replace the need for the `pipelines-profile-controller` and `sync.py` in the upstream manifests:
+  https://github.com/kubeflow/pipelines/tree/2.0.0-alpha.7/manifests/kustomize/base/installs/multi-user/pipelines-profile-controller
+*/ ->}}
+{{<- range $profile_name, $profile_configs := $profile_mapping >}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metadata-grpc-configmap
+  namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
+data:
+  METADATA_GRPC_SERVICE_HOST: "metadata-grpc-service.kubeflow"
+  METADATA_GRPC_SERVICE_PORT: "8080"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-pipeline-visualizationserver
+  namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
+  labels:
+    app: ml-pipeline-visualizationserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ml-pipeline-visualizationserver
+  template:
+    metadata:
+      labels:
+        app: ml-pipeline-visualizationserver
+    spec:
+      serviceAccountName: default-editor
+      containers:
+        - name: ml-pipeline-visualizationserver
+          ## NOTE: $(kfp-app-version) is a Kustomize variable which is replaced during Kustomize rendering
+          image: {{< printf "%s:%s" $.Values.kubeflow_tools.pipelines.images.kfpVisualizationServer.repository ($.Values.kubeflow_tools.pipelines.images.kfpVisualizationServer.tag | default "$(kfp-app-version)") | quote >}}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8888
+          resources:
+            requests:
+              cpu: 50m
+              memory: 200Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: ml-pipeline-visualizationserver
+  namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
+spec:
+  host: ml-pipeline-visualizationserver
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: ml-pipeline-visualizationserver
+  namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
+spec:
+  selector:
+    matchLabels:
+      app: ml-pipeline-visualizationserver
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/kubeflow/sa/ml-pipeline
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ml-pipeline-visualizationserver
+  namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
+spec:
+  selector:
+    app: ml-pipeline-visualizationserver
+  ports:
+    - name: http
+      port: 8888
+      protocol: TCP
+      targetPort: 8888
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-pipeline-ui-artifact
+  namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
+  labels:
+    app: ml-pipeline-ui-artifact
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ml-pipeline-ui-artifact
+  template:
+    metadata:
+      labels:
+        app: ml-pipeline-ui-artifact
+    spec:
+      ## NOTE: we use 'default-editor' so this pod has the same access as workflow pods when using "AWS IRSA" or "GCP Workload Identity" plugins
+      serviceAccountName: default-editor
+      securityContext:
+        ## NOTE: this is important for AWS IRSA
+        fsGroup: 65534
+      containers:
+        - name: ml-pipeline-ui-artifact
+          ## NOTE: $(kfp-app-version) is a Kustomize variable which is replaced during Kustomize rendering
+          image: {{< printf "%s:%s" $.Values.kubeflow_tools.pipelines.images.kfpFrontend.repository ($.Values.kubeflow_tools.pipelines.images.kfpFrontend.tag | default "$(kfp-app-version)") | quote >}}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: 10m
+              memory: 70Mi
+            limits:
+              cpu: 100m
+              memory: 500Mi
+          env:
+            ## ================================
+            ## Minio - Object Store Configs
+            ## ================================
+            - name: MINIO_NAMESPACE
+              ## NOTE: must be empty, or kubeflow pipelines will attempt to append the namespace to MINIO_HOST
+              value: ""
+            - name: MINIO_HOST
+              value: {{< tmpl.Exec "kubeflow_pipelines.object_store.hostname" $ | quote >}}
+            - name: MINIO_PORT
+              value: {{< tmpl.Exec "kubeflow_pipelines.object_store.port" $ | quote >}}
+            - name: MINIO_SSL
+              value: {{< tmpl.Exec "kubeflow_pipelines.object_store.use_ssl" $ | quote >}}
+            - name: MINIO_ACCESS_KEY
+              {{<- if $profile_configs.objectStoreAuth_fromEnv >}}
+              value: ""
+              {{<- else >}}
+              valueFrom:
+                secretKeyRef:
+                  name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" $ | quote >}}
+                  key: {{< $profile_configs.objectStoreAuth_existingSecretAccessKeyKey | quote >}}
+              {{<- end >}}
+            - name: MINIO_SECRET_KEY
+              {{<- if $profile_configs.objectStoreAuth_fromEnv >}}
+              value: ""
+              {{<- else >}}
+              valueFrom:
+                secretKeyRef:
+                  name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" $ | quote >}}
+                  key: {{< $profile_configs.objectStoreAuth_existingSecretSecretKeyKey | quote >}}
+              {{<- end >}}
+            ## ================================
+            ## S3 - Object Store Configs
+            ## ================================
+            - name: AWS_REGION
+              value: {{< $.Values.kubeflow_tools.pipelines.bucket.region | quote >}}
+            - name: AWS_S3_ENDPOINT
+              value: {{< tmpl.Exec "kubeflow_pipelines.object_store.endpoint" $ | quote >}}
+            - name: AWS_ACCESS_KEY_ID
+              {{<- if $profile_configs.objectStoreAuth_fromEnv >}}
+              value: ""
+              {{<- else >}}
+              valueFrom:
+                secretKeyRef:
+                  name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" $ | quote >}}
+                  key: {{< $profile_configs.objectStoreAuth_existingSecretAccessKeyKey | quote >}}
+              {{<- end >}}
+            - name: AWS_SECRET_ACCESS_KEY
+              {{<- if $profile_configs.objectStoreAuth_fromEnv >}}
+              value: ""
+              {{<- else >}}
+              valueFrom:
+                secretKeyRef:
+                  name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" $ | quote >}}
+                  key: {{< $profile_configs.objectStoreAuth_existingSecretSecretKeyKey | quote >}}
+              {{<- end >}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ml-pipeline-ui-artifact
+  namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
+spec:
+  selector:
+    app: ml-pipeline-ui-artifact
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 3000
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: artifact-repositories
+  namespace: {{< $profile_name | quote >}}
+  annotations:
+    workflows.argoproj.io/default-artifact-repository: default-v1
+    
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
+data:
+  default-v1: |
+    archiveLogs: true
+    s3:
+      endpoint: {{< tmpl.Exec "kubeflow_pipelines.object_store.endpoint" $ | quote >}}
+      insecure: {{< tmpl.Exec "kubeflow_pipelines.object_store.not_use_ssl" $ >}}
+      bucket: {{< $.Values.kubeflow_tools.pipelines.bucket.name | quote >}}
+      region: {{< $.Values.kubeflow_tools.pipelines.bucket.region | quote >}}
+      keyFormat: {{< $.Values.kubeflow_dependencies.kubeflow_argo_workflows.artifactRepository.keyFormat | quote >}}
+      {{<- if $profile_configs.objectStoreAuth_fromEnv >}}
+      useSDKCreds: true
+      {{<- else >}}
+      accessKeySecret:
+        name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" $ | quote >}}
+        key: {{< $profile_configs.objectStoreAuth_existingSecretAccessKeyKey | quote >}}
+      secretKeySecret:
+        name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" $ | quote >}}
+        key: {{< $profile_configs.objectStoreAuth_existingSecretSecretKeyKey | quote >}}
+      {{<- end >}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kfp-launcher
+  namespace: {{< $profile_name | quote >}}
+  annotations:
+    ## NOTE: previously we used Kyverno to create this resource, the old values of these annotations would make ArgoCD ignore it
+    argocd.argoproj.io/compare-options: ""
+    argocd.argoproj.io/sync-options: ""
+data:
+  {{<- $defaultPipelineRoot := $.Values.kubeflow_tools.pipelines.kfpV2.defaultPipelineRoot >}}
+  {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{bucket_name}" $.Values.kubeflow_tools.pipelines.bucket.name >}}
+  {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{profile_name}" $profile_name >}}
+  defaultPipelineRoot: {{< $defaultPipelineRoot | quote >}}
+{{<- end >}}
