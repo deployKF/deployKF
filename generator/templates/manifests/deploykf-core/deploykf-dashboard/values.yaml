@@ -39,7 +39,7 @@ centralDashboard:
 
   ## the value of `REGISTRATION_FLOW` environment variable for central-dashboard
   ##
-  registrationFlow: false
+  registrationFlow: {{< .Values.deploykf_core.deploykf_dashboard.registrationFlow | quote >}}
 
   ## configs central-dashboard navigation
   ##

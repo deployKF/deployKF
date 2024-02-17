@@ -638,6 +638,11 @@ deploykf_core:
         tag: v1.7.0
         pullPolicy: IfNotPresent
 
+    ## enables automatic profile creation for users who log into Kubeflow for the first time
+    ## https://www.kubeflow.org/docs/components/central-dash/profiles/#automatic-profile-creation
+    ##
+    registrationFlow: false
+
     ## configs dashboard navigation
     ##
     navigation:
