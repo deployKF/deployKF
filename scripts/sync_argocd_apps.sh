@@ -10,6 +10,11 @@ set -euo pipefail
 # CONFIGURATION
 #######################################
 
+# the argocd application name prefix
+#  - Must have the same value as the `argocd.appNamePrefix` deployKF value.
+#    Used when multiple deployKF instances are managed with a single argocd server.
+ARGOCD_APP_NAME_PREFIX=""
+
 # the namespace where argocd is installed
 ARGOCD_NAMESPACE="argocd"
 
@@ -275,11 +280,29 @@ function argocd_app_wait() {
 function sync_argocd() {
   local _app_namespace="$1"
   local _app_selector="$2"
+  local _fail_if_missing="$3"
 
   echo ""
   echo_blue "=========================================================================================="
-  echo_blue "Getting status of '${_app_selector}' applications..."
+  echo_blue "Getting status of applications..."
+  echo_blue "Namespace: '$_app_namespace'"
+  echo_blue "Selector: '$_app_selector'"
   echo_blue "=========================================================================================="
+
+  # find all applications that match the selector
+  local _app_names
+  read -r -a _app_names <<< "$(argocd app list -l "$_app_selector" -N "$_app_namespace" -o "name")"
+
+  # if no applications are found, fail if required
+  if [[ ${#_app_names[@]} -eq 0 ]]; then
+    if [[ "$_fail_if_missing" == "true" ]]; then
+      echo_red ">>> ERROR: No applications found matching the selector"
+      exit 1
+    else
+      echo_yellow ">>> WARNING: No applications found matching the selector"
+      return
+    fi
+  fi
 
   # this associative array has "sync wave numbers" as keys, and SPACE-separated "app names" as values
   local -A _sync_waves=()
@@ -299,7 +322,7 @@ function sync_argocd() {
   local _app_operation_state
   local _app_operation_state_phase
   local _app_resources
-  for _app_name in $(argocd app list -l "$_app_selector" -N "$_app_namespace" -o "name"); do
+  for _app_name in "${_app_names[@]}"; do
 
     # get the application as JSON (and refresh at same time)
     _app_json=$(argocd app get "$_app_name" -o json --refresh)
@@ -494,29 +517,32 @@ function sync_argocd() {
 # MAIN
 #######################################
 
+# construct the base app selector for deployKF
+ARGOCD_APP_SELECTOR="app.kubernetes.io/part-of=${ARGOCD_APP_NAME_PREFIX}deploykf"
+
 # authenticate to argocd
 argocd_login "$ARGOCD_SERVER_URL" "$ARGOCD_NAMESPACE" "$ARGOCD_USERNAME" "$ARGOCD_PASSWORD"
 
 # sync the "deploykf-app-of-apps" application
-sync_argocd "$ARGOCD_NAMESPACE" "app.kubernetes.io/name=deploykf-app-of-apps"
+sync_argocd "$ARGOCD_NAMESPACE" "${ARGOCD_APP_SELECTOR},app.kubernetes.io/name=deploykf-app-of-apps" "true"
 
 # sync the "deploykf-namespaces" application
-sync_argocd "$ARGOCD_NAMESPACE" "app.kubernetes.io/name=deploykf-namespaces"
+sync_argocd "$ARGOCD_NAMESPACE" "${ARGOCD_APP_SELECTOR},app.kubernetes.io/name=deploykf-namespaces" "false"
 
 # sync all applications in the "deploykf-dependencies" group
-sync_argocd "$ARGOCD_NAMESPACE" "app.kubernetes.io/component=deploykf-dependencies"
+sync_argocd "$ARGOCD_NAMESPACE" "${ARGOCD_APP_SELECTOR},app.kubernetes.io/component=deploykf-dependencies" "false"
 
 # sync all applications in the "deploykf-core" group
-sync_argocd "$ARGOCD_NAMESPACE" "app.kubernetes.io/component=deploykf-core"
+sync_argocd "$ARGOCD_NAMESPACE" "${ARGOCD_APP_SELECTOR},app.kubernetes.io/component=deploykf-core" "false"
 
 # sync all applications in the "deploykf-opt" group
-sync_argocd "$ARGOCD_NAMESPACE" "app.kubernetes.io/component=deploykf-opt"
+sync_argocd "$ARGOCD_NAMESPACE" "${ARGOCD_APP_SELECTOR},app.kubernetes.io/component=deploykf-opt" "false"
 
 # sync all applications in the "deploykf-tools" group
-sync_argocd "$ARGOCD_NAMESPACE" "app.kubernetes.io/component=deploykf-tools"
+sync_argocd "$ARGOCD_NAMESPACE" "${ARGOCD_APP_SELECTOR},app.kubernetes.io/component=deploykf-tools" "false"
 
 # sync all applications in the "kubeflow-dependencies" group
-sync_argocd "$ARGOCD_NAMESPACE" "app.kubernetes.io/component=kubeflow-dependencies"
+sync_argocd "$ARGOCD_NAMESPACE" "${ARGOCD_APP_SELECTOR},app.kubernetes.io/component=kubeflow-dependencies" "false"
 
 # sync all applications in the "kubeflow-tools" group
-sync_argocd "$ARGOCD_NAMESPACE" "app.kubernetes.io/component=kubeflow-tools"
+sync_argocd "$ARGOCD_NAMESPACE" "${ARGOCD_APP_SELECTOR},app.kubernetes.io/component=kubeflow-tools" "false"
