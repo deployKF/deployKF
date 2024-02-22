@@ -290,8 +290,8 @@ function sync_argocd() {
   echo_blue "=========================================================================================="
 
   # find all applications that match the selector
-  local _app_names
-  read -r -a _app_names <<< "$(argocd app list -l "$_app_selector" -N "$_app_namespace" -o "name")"
+  local -a _app_names=()
+  read -r -a _app_names <<< "$(argocd app list -l "$_app_selector" -N "$_app_namespace" -o "name" | tr '\n' ' ')"
 
   # if no applications are found, fail if required
   if [[ ${#_app_names[@]} -eq 0 ]]; then
