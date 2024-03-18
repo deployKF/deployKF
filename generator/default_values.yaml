@@ -1154,6 +1154,28 @@ deploykf_opt:
     ##
     policies: []
 
+    ## a list of extra policy statements to add to the default policy
+    ## generated for each user in `deploykf_core.deploykf_profiles_generator.users`
+    ##  - each element is a map with the following keys:
+    ##     - `user` | `group`: the ID of a user or group (mutually exclusive). The additional statements will be added to the specified
+    ##                         user or to all users of the specified group.
+    ##     - `statements`: a list of policy statements to add. Each statement is a minio policy statement as a YAML map with the following keys:
+    ##                     `Effect`, `Action`, `Resource`.
+    ##
+    ## for example:
+    ## extraPolicyStatements:
+    ##    ## additional policy statements for each member of 'team-1' group
+    ##    - group: team-1
+    ##      statements:
+    ##        ## allow members of 'team-1' to see MY_BUCKET_NAME
+    ##        - Effect: Allow
+    ##          Action:
+    ##            - s3:GetBucketLocation
+    ##            - s3:ListBucket
+    ##          Resource:
+    ##            - arn:aws:s3:::MY_BUCKET_NAME
+    extraPolicyStatements: []
+
 
   ## --------------------------------------
   ##            deploykf-mysql
