@@ -33,6 +33,7 @@ deployKF:
       enabled: {{< .Values.kubeflow_tools.tensorboards.enabled | conv.ToBool >}}
 
   certManager:
+    enabled: {{< .Values.deploykf_dependencies.cert_manager.enabled | conv.ToBool >}}
     clusterIssuer:
       issuerName: {{< .Values.deploykf_dependencies.cert_manager.clusterIssuer.issuerName | quote >}}
 
@@ -65,6 +66,7 @@ deployKF:
       https: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayService.ports.https | default "~" >}}
     tls:
       enabled: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.enabled | conv.ToBool >}}
+      secretName: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.secretName | quote >}}
       clientsUseHttps: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.clientsUseHttps | conv.ToBool >}}
       matchSNI: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.matchSNI | conv.ToBool >}}
       redirect: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.redirect | conv.ToBool >}}

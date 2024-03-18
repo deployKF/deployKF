@@ -45,5 +45,5 @@ spec:
         protocol: HTTPS
       tls:
         mode: SIMPLE
-        credentialName: deploykf-istio-gateway-cert
+        credentialName: {{ .Values.deployKF.gateway.tls.secretName | default "deploykf-istio-gateway-cert" }}
     {{- end }}
