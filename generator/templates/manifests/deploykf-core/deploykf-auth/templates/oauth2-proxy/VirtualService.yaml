@@ -18,6 +18,11 @@ spec:
       match:
         - uri:
             prefix: /oauth2/
+
+        ## we publish the robots.txt which is served by oauth2-proxy (deny all robots)
+        ## https://oauth2-proxy.github.io/oauth2-proxy/features/endpoints/
+        - uri:
+            exact: /robots.txt
       route:
         - destination:
             host: oauth2-proxy.{{ .Release.Namespace }}.svc.{{ .Values.deployKF.clusterDomain }}
