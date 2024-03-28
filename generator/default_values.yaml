@@ -790,6 +790,14 @@ deploykf_core:
     gatewayDeployment:
       replicaCount: 1
 
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 2000m
+          memory: 1024Mi
+
       serviceAccount:
         name: deploykf-gateway
         annotations: {}
@@ -799,6 +807,7 @@ deploykf_core:
         minReplicas: 1
         maxReplicas: 5
         targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: null
 
       podAnnotations: {}
 

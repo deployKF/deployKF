@@ -92,6 +92,7 @@ gateway:
     minReplicas: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.minReplicas >}}
     maxReplicas: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.maxReplicas >}}
     targetCPUUtilizationPercentage: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.targetCPUUtilizationPercentage >}}
+    targetMemoryUtilizationPercentage: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.targetMemoryUtilizationPercentage >}}
 
   serviceAccount:
     name: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.name | quote >}}
@@ -126,11 +127,11 @@ gateway:
 
   resources:
     requests:
-      cpu: 100m
-      memory: 128Mi
+      cpu: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.resources.requests.cpu >}}
+      memory: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.resources.requests.memory >}}
     limits:
-      cpu: 2000m
-      memory: 1024Mi
+      cpu: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.resources.limits.cpu >}}
+      memory: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.resources.limits.memory >}}
 
   podAnnotations: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.podAnnotations | toJSON >}}
 
