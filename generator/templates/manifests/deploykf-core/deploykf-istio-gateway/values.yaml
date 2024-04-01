@@ -125,13 +125,7 @@ gateway:
         targetPort: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
       {{<- end >}}
 
-  resources:
-    requests:
-      cpu: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.resources.requests.cpu >}}
-      memory: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.resources.requests.memory >}}
-    limits:
-      cpu: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.resources.limits.cpu >}}
-      memory: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.resources.limits.memory >}}
+  resources: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.resources | toJSON >}}
 
   podAnnotations: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.podAnnotations | toJSON >}}
 
