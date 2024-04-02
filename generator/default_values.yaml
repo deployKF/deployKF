@@ -807,7 +807,6 @@ deploykf_core:
         minReplicas: 1
         maxReplicas: 5
         targetCPUUtilizationPercentage: 80
-        targetMemoryUtilizationPercentage: null
 
       podAnnotations: {}
 
