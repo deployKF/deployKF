@@ -92,7 +92,6 @@ gateway:
     minReplicas: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.minReplicas >}}
     maxReplicas: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.maxReplicas >}}
     targetCPUUtilizationPercentage: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.targetCPUUtilizationPercentage >}}
-    targetMemoryUtilizationPercentage: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.autoscaling.targetMemoryUtilizationPercentage >}}
 
   serviceAccount:
     name: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.serviceAccount.name | quote >}}
