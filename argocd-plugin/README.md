@@ -2,54 +2,77 @@
 
 The deployKF ArgoCD plugin allows using deployKF without storing the rendered manifests in a git repository.
 
-## Install Plugin - New ArgoCD
+## Installation
 
-We provide manifests to install ArgoCD, with the deployKF plugin already installed, under the [`./argocd-install/`](./argocd-install) directory.
+### New ArgoCD
 
-The [`./install_argocd.sh`](./install_argocd.sh) script will install ArgoCD from these manifests:
+If you don't already have ArgoCD on your cluster, you may use the [`./install_argocd.sh`](./install_argocd.sh) script.
+
+For example, you might run the following commands:
 
 ```bash
-# clone the deploykf repository (at the 'main' branch)
+# clone the deploykf repo
+#  NOTE: we use 'main', as the latest plugin version always lives there
 git clone -b main https://github.com/deployKF/deployKF.git ./deploykf
 
-# change to the argocd-plugin directory
-cd ./deploykf/argocd-plugin
+# ensure the script is executable
+chmod +x ./deploykf/argocd-plugin/install_argocd.sh
 
-# install argocd (with the deploykf plugin)
-# WARNING: this will install into your current kubectl context
-./install_argocd.sh
+# run the INSTALL script
+#  WARNING: this will install into your current kubectl context
+bash ./deploykf/argocd-plugin/install_argocd.sh
 ```
 
 > __WARNING:__ 
 > 
-> If you already have ArgoCD installed, take extreme caution with the `./install_argocd.sh` script.
-> If you are not certain that our manifests are compatible with your existing ArgoCD installation, you should use the manual plugin install method.
+> If you already have ArgoCD installed, DO NOT use the `./install_argocd.sh` script.
 
-## Install Plugin - Existing ArgoCD
+### Existing ArgoCD - Helm
 
-To install the deployKF plugin on an existing ArgoCD deployment, you must do the following (in your `argocd` Namespace):
+If you already have an ArgoCD that was [installed with Helm](https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd), you will need to update your Helm values.
 
-1. Create a `ConfigMap` named `argocd-deploykf-plugin` with [`./deploykf-plugin/plugin.yaml`](./argocd-install/deploykf-plugin/plugin.yaml) as a key named `plugin.yaml`.
-2. Create a `PersistentVolumeClaim` named `argocd-deploykf-plugin-assets` like [`./deploykf-plugin/assets-pvc.yaml`](./argocd-install/deploykf-plugin/assets-pvc.yaml).
-3. Patch the `argocd-repo-server` Deployment with the [`./deploykf-plugin/repo-server-patch.yaml`](./argocd-install/deploykf-plugin/repo-server-patch.yaml) patch.
+See: [`./argocd-helm/values.yaml`](./argocd-helm/values.yaml)
 
-The [`./patch_argocd.sh`](./patch_argocd.sh) script will perform these steps for you:
+> __WARNING:__ 
+> 
+> Helm list-type values are NOT merged.
+> <br>
+> If a list is redefined, the new list will replace the old one in full.
+> 
+> This means that if you already set some of the values we use, you will need to merge them manually.
+
+### Existing ArgoCD - Kustomize
+
+If you already have an ArgoCD that was [installed with Kustomize](https://argo-cd.readthedocs.io/en/stable/getting_started/), you may use the [`./patch_argocd.sh`](./patch_argocd.sh) script.
+
+For example, you might run the following commands:
 
 ```bash
-# clone the deploykf repository (at the 'main' branch)
+# clone the deploykf repo
+#  NOTE: we use 'main', as the latest plugin version always lives there
 git clone -b main https://github.com/deployKF/deployKF.git ./deploykf
 
-# change to the argocd-plugin directory
-cd ./deploykf/argocd-plugin
+# ensure the script is executable
+chmod +x ./deploykf/argocd-plugin/install_argocd.sh
 
-# patch argocd (with the deploykf plugin)
-# WARNING: this will apply into your current kubectl context
-./patch_argocd.sh
+# run the PATCH script
+#  WARNING: this will apply into your current kubectl context
+bash ./deploykf/argocd-plugin/patch_argocd.sh
 ```
 
 > __WARNING:__ 
 > 
 > Review the `./patch_argocd.sh` script to ensure it is suitable for your environment before running it.
+>
+> The script does the following:
+> 
+> 1. Creates a `ConfigMap` named `argocd-deploykf-plugin` with [`./deploykf-plugin/plugin.yaml`](./argocd-install/deploykf-plugin/plugin.yaml) as a key named `plugin.yaml`.
+> 2. Creates a `PersistentVolumeClaim` named `argocd-deploykf-plugin-assets` with [`./deploykf-plugin/assets-pvc.yaml`](./argocd-install/deploykf-plugin/assets-pvc.yaml).
+> 3. Patches the `argocd-repo-server` Deployment with the [`./deploykf-plugin/repo-server-patch.yaml`](./argocd-install/deploykf-plugin/repo-server-patch.yaml) patch.
+
+---
+
+<br>
 
 ## Plugin Usage
 
@@ -61,174 +84,23 @@ The "deploykf" plugin has the following parameters:
 
 | Parameter        | Type   | Description                                                                                                     |
 |------------------|--------|-----------------------------------------------------------------------------------------------------------------|
-| `source_version` | string | the '--source-version' to use with with the 'deploykf generate' command (mutually exclusive with `source_path`) |
-| `source_path`    | string | the '--source-path' to use with the 'deploykf generate' command (mutually exclusive with `source_version`)      |
+| `source_version` | string | the '--source-version' to use with with the 'deploykf generate' command<br>(mutually exclusive with `source_path`) |
+| `source_path`    | string | the '--source-path' to use with the 'deploykf generate' command<br>(mutually exclusive with `source_version`)      |
 | `values_files`   | array  | a list of paths (under the configured repo path) of '--values' files to use with 'deploykf generate'            |
 | `values`         | string | a string containing the contents of a '--values' file to use with 'deploykf generate'                           |
 
-### Example
+### Example Application
 
-Here is an example ArgoCD Application which provisions an "app-of-apps" using the plugin:
+See the [`./example-app-of-apps/app-of-apps.yaml`](./example-app-of-apps/app-of-apps.yaml) file for an example of using the plugin.
 
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: deploykf-app-of-apps
-  namespace: argocd
-  labels:
-    app.kubernetes.io/name: deploykf-app-of-apps
-    app.kubernetes.io/part-of: deploykf
-spec:
-  project: "default"
-  source:
-    ## source git repo configuration
-    ##  - we use the 'deploykf/deploykf' repo so we can read its 'sample-values.yaml'
-    ##    file, but you may use any repo (even one with no files)
-    ##
-    repoURL: "https://github.com/deployKF/deployKF.git"
-    targetRevision: "v0.1.4" # <-- replace with a deployKF repo tag!
-    path: "."
-
-    ## plugin configuration
-    ##
-    plugin:
-      name: "deploykf"
-      parameters:
-
-        ## the deployKF generator version
-        ##  - available versions: https://github.com/deployKF/deployKF/releases
-        ##
-        - name: "source_version"
-          string: "0.1.4" # <-- replace with a deployKF generator version!
-
-        ## paths to values files within the `repoURL` repository
-        ##  - the values in these files are merged, with later files taking precedence
-        ##  - we strongly recommend using 'sample-values.yaml' as the base of your values
-        ##    so you can easily upgrade to newer versions of deployKF
-        ##
-        - name: "values_files"
-          array:
-            - "./sample-values.yaml"
-
-        ## a string containing the contents of a values file
-        ##  - this parameter allows defining values without needing to create a file in the repo
-        ##  - these values are merged with higher precedence than those defined in `values_files`
-        ##
-        - name: "values"
-          string: |
-            ##
-            ## This demonstrates how you might structure overrides for the 'sample-values.yaml' file.
-            ## For a more comprehensive example, see the 'sample-values-overrides.yaml' in the main repo.
-            ##
-            ## Notes:
-            ##  - YAML maps are RECURSIVELY merged across values files
-            ##  - YAML lists are REPLACED in their entirety across values files
-            ##  - Do NOT include empty/null sections, as this will remove ALL values from that section.
-            ##    To include a section without overriding any values, set it to an empty map: `{}`
-            ##
-
-            ## --------------------------------------------------------------------------------
-            ##                              deploykf-dependencies
-            ## --------------------------------------------------------------------------------
-            deploykf_dependencies:
-
-              ## --------------------------------------
-              ##             cert-manager
-              ## --------------------------------------
-              cert_manager:
-                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
-
-              ## --------------------------------------
-              ##                 istio
-              ## --------------------------------------
-              istio:
-                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
-
-              ## --------------------------------------
-              ##                kyverno
-              ## --------------------------------------
-              kyverno:
-                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
-
-            ## --------------------------------------------------------------------------------
-            ##                                  deploykf-core
-            ## --------------------------------------------------------------------------------
-            deploykf_core:
-
-              ## --------------------------------------
-              ##             deploykf-auth
-              ## --------------------------------------
-              deploykf_auth:
-                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
-
-              ## --------------------------------------
-              ##        deploykf-istio-gateway
-              ## --------------------------------------
-              deploykf_istio_gateway:
-                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
-
-              ## --------------------------------------
-              ##      deploykf-profiles-generator
-              ## --------------------------------------
-              deploykf_profiles_generator:
-                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
-
-            ## --------------------------------------------------------------------------------
-            ##                                   deploykf-opt
-            ## --------------------------------------------------------------------------------
-            deploykf_opt:
-
-              ## --------------------------------------
-              ##            deploykf-minio
-              ## --------------------------------------
-              deploykf_minio:
-                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
-
-              ## --------------------------------------
-              ##            deploykf-mysql
-              ## --------------------------------------
-              deploykf_mysql:
-                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
-
-            ## --------------------------------------------------------------------------------
-            ##                                  kubeflow-tools
-            ## --------------------------------------------------------------------------------
-            kubeflow_tools:
-
-              ## --------------------------------------
-              ##                 katib
-              ## --------------------------------------
-              katib:
-                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
-
-              ## --------------------------------------
-              ##               notebooks
-              ## --------------------------------------
-              notebooks:
-                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
-
-              ## --------------------------------------
-              ##               pipelines
-              ## --------------------------------------
-              pipelines:
-                {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
-
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: "argocd"
-```
-
-For example, to apply the example app-of-apps [`./example-app-of-apps/app-of-apps.yaml`](./example-app-of-apps/app-of-apps.yaml):
+To apply the example app-of-apps, you might run the following commands:
 
 ```bash
-# clone the deploykf repository (at the 'main' branch)
+# clone the deploykf repo
 git clone -b main https://github.com/deployKF/deployKF.git ./deploykf
-
-# change to the argocd-plugin directory
-cd ./deploykf/argocd-plugin
 
 # apply the example app-of-apps
 ARGOCD_NAMESPACE="argocd"
-kubectl apply -f ./example-app-of-apps/app-of-apps.yaml --namespace "$ARGOCD_NAMESPACE"
+kubectl apply -f ./deploykf/argocd-plugin/example-app-of-apps/app-of-apps.yaml \
+  --namespace "$ARGOCD_NAMESPACE"
 ```
