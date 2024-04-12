@@ -4,7 +4,8 @@ metadata:
   name: argocd-deploykf-plugin-assets
 spec:
   accessModes:
-    ## TIP: if you have an HA argocd-repo-server deployment, you will need to make this a ReadWriteMany volume
+    ## TIP: if you have an HA argocd-repo-server deployment,
+    ##      you will need to make this a ReadWriteMany volume
     - ReadWriteOnce
   resources:
     requests:

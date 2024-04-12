@@ -7,6 +7,7 @@ metadata:
     app.kubernetes.io/name: deploykf-app-of-apps
     app.kubernetes.io/part-of: deploykf
 spec:
+  ## NOTE: if not "default", you MUST ALSO set the `argocd.project` value
   project: "default"
   source:
     ## source git repo configuration
@@ -14,7 +15,7 @@ spec:
     ##    file, but you may use any repo (even one with no files)
     ##
     repoURL: "https://github.com/deployKF/deployKF.git"
-    targetRevision: "v0.1.4" # <-- replace with a deployKF repo tag!
+    targetRevision: "v0.1.4"
     path: "."
 
     ## plugin configuration
@@ -27,7 +28,7 @@ spec:
         ##  - available versions: https://github.com/deployKF/deployKF/releases
         ##
         - name: "source_version"
-          string: "0.1.4" # <-- replace with a deployKF generator version!
+          string: "0.1.4"
 
         ## paths to values files within the `repoURL` repository
         ##  - the values in these files are merged, with later files taking precedence
@@ -54,6 +55,19 @@ spec:
             ##  - Do NOT include empty/null sections, as this will remove ALL values from that section.
             ##    To include a section without overriding any values, set it to an empty map: `{}`
             ##
+
+            ## --------------------------------------------------------------------------------
+            ##                                      argocd
+            ## --------------------------------------------------------------------------------
+            argocd:
+              namespace: argocd
+              project: default
+
+            ## --------------------------------------------------------------------------------
+            ##                                    kubernetes
+            ## --------------------------------------------------------------------------------
+            kubernetes:
+              {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
 
             ## --------------------------------------------------------------------------------
             ##                              deploykf-dependencies

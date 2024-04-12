@@ -1,3 +1,7 @@
+##
+## NOTES TO MAINTAINERS:
+##  - When updating the plugin, remember to also update the '../../argocd-helm/values.yaml' file.
+##
 apiVersion: argoproj.io/v1alpha1
 kind: ConfigManagementPlugin
 metadata:
