@@ -67,6 +67,16 @@ if [[ -z "$(command -v kubectl)" ]]; then
   exit 1
 fi
 
+# ensure ARGOCD_PRUNE_MODE is valid
+case "$ARGOCD_PRUNE_MODE" in
+  "always" | "prompt" | "skip")
+    ;;
+  *)
+    echo ">>> ERROR: Invalid ARGOCD_PRUNE_MODE: '$ARGOCD_PRUNE_MODE'"
+    exit 1
+    ;;
+esac
+
 #######################################
 # COLORS
 #######################################
@@ -150,13 +160,11 @@ function argocd_login() {
 }
 
 # syncs a list of argocd applications
-#  - if pruning is disabled, the user may be prompted to retry with pruning enabled
 function sync_argocd_apps() {
   local _enable_prune="$1"
-  local _prompt_for_prune="$2"
-  local _force_sync="$3"
-  local _resource_selectors="$4"
-  local _app_names=("${@:5}")
+  local _force_sync="$2"
+  local _resource_selectors="$3"
+  local _app_names=("${@:4}")
 
   echo ""
   echo_blue "=========================================================================================="
@@ -212,39 +220,6 @@ function sync_argocd_apps() {
     # handle pruning errors
     if [[ "$_cmd_stderr" =~ "resources require pruning" ]]; then
       echo_yellow ">>> WARNING: There are resources that need to be PRUNED"
-      if [[ "$_prompt_for_prune" == "true" ]]; then
-        echo ""
-        echo_yellow "What is PRUNING?"
-        echo_yellow "----------------"
-        echo_red "Pruning DELETES resources that are no longer part of the application."
-        echo_red "Ensure the resources listed ABOVE as '(requires pruning)' can be SAFELY deleted."
-        echo_red "Note, some resources are listed incorrectly, and will NOT actually be pruned."
-        echo_red "Please see: https://github.com/argoproj/argo-cd/issues/17188"
-        echo ""
-        while true; do
-            echo_yellow "Do you want to sync with PRUNING enabled?"
-            echo_yellow "-----------------------------------------"
-            echo "${COLOR_MAGENTA}${BOLD}OPTIONS:${NC} ${COLOR_RED}${BOLD}yes${NC}, ${COLOR_GREEN}${BOLD}no${NC} (default)"
-            echo "${COLOR_MAGENTA}${BOLD}TIMEOUT:${NC} ${ARGOCD_PRUNE_PROMPT_SECONDS} seconds"
-            read -r -t "$ARGOCD_PRUNE_PROMPT_SECONDS" -p "${COLOR_MAGENTA}${BOLD}RESPONSE:${NC} " response || echo "<no response, continuing without pruning>"
-            case "$response" in
-                "YES" | "yes" | "Y" | "y" )
-                  echo_yellow ">>> Syncing again with pruning enabled..."
-                  sync_argocd_apps "true" "false" "false" "$_resource_selectors" "${_app_names[@]}"
-                  break
-                  ;;
-                "NO" | "no" | "N" | "n" | "" )
-                  echo_yellow ">>> Continuing without pruning..."
-                  break
-                  ;;
-                * )
-                  echo ""
-                  ;;
-            esac
-        done
-      else
-        echo_yellow ">>> Continuing without pruning..."
-      fi
 
     # otherwise, exit with the error code
     else
@@ -310,6 +285,10 @@ function sync_argocd() {
   # this associative array has "app names" as keys, and "sync status" as values
   local -A _app_sync_statuses=()
 
+  # this associative array has "app names" as keys, and PIPE-separated "resource identifiers" as values
+  #  - the format of each identifier is: "<NAMESPACE> <GROUP> <KIND> <NAME>"
+  local -A _app_requires_prune_resources=()
+
   # this associative array has "app names" as keys, and SPACE-separated "argocd resource selectors" as values
   #  - the format of each resource selector is: "<GROUP>:<KIND>:<NAMESPACE>/<NAME>" or "<GROUP>:<KIND>:<NAME>"
   local -A _app_force_sync_resources=()
@@ -346,7 +325,7 @@ function sync_argocd() {
     # SPEC: https://github.com/argoproj/argo-cd/blob/v2.7.14/pkg/apis/application/v1alpha1/types.go#L1566-L1579
     _app_resources=$(echo "$_app_json" | jq -c '.status.resources[]?')
 
-    # build an array of resource selectors that require a forced sync
+    # build an array of resource selectors that require pruning or forced sync
     # TODO: remove force-sync once ArgoCD has a way to force-sync individual resources
     #       https://github.com/argoproj/gitops-engine/issues/414
     local _app_resource
@@ -358,6 +337,7 @@ function sync_argocd() {
     local _app_resource_health
     local _app_resource_health_status
     local _app_resource_requiresPruning
+    local _app_resource_prune_identifier
     local _app_resource_selector
     local _app_resource_force_sync
     IFS=$'\n'
@@ -376,6 +356,16 @@ function sync_argocd() {
         _app_resource_selector="$_app_resource_group:$_app_resource_kind:$_app_resource_namespace/$_app_resource_name"
       else
         _app_resource_selector="$_app_resource_group:$_app_resource_kind:$_app_resource_name"
+      fi
+
+      # if the resource requires pruning, add it to the array
+      if [[ "$_app_resource_requiresPruning" == "true" ]]; then
+        _app_resource_prune_identifier="${_app_resource_namespace:--} ${_app_resource_group:--} ${_app_resource_kind:--} ${_app_resource_name:--}"
+        if [[ -v _app_requires_prune_resources["$_app_name"] ]]; then
+          _app_requires_prune_resources[$_app_name]+="|$_app_resource_prune_identifier"
+        else
+          _app_requires_prune_resources[$_app_name]="$_app_resource_prune_identifier"
+        fi
       fi
 
       # check if the resource requires forced sync
@@ -482,27 +472,84 @@ function sync_argocd() {
             for _resource_str in $_force_resource_array_str; do
               echo_yellow ">>>  - $_resource_str"
             done
-            sync_argocd_apps "false" "false" "true" "$_force_resource_array_str" "$_app_name"
+            sync_argocd_apps "false" "true" "$_force_resource_array_str" "$_app_name"
           fi
         done
       fi
 
+      # display resources that require pruning
+      local _prune_required="false"
+      local _prune_resource_array
+      for _app_name in "${_out_of_sync_apps[@]}"; do
+        if [[ -v _app_requires_prune_resources["$_app_name"] ]]; then
+          ## TODO: detect if pruning should actually be ignored for this resource, because of this ArgoCD bug:
+          ##       https://github.com/argoproj/argo-cd/issues/17188
+          _prune_required="true"
+          IFS='|' read -r -a _prune_resource_array <<< "${_app_requires_prune_resources[$_app_name]}"
+          echo ""
+          echo_yellow "Resources to PRUNE in '$_app_name':"
+          echo_yellow "-------------------------${_app_name//?/-}"
+          (
+            echo "NAMESPACE GROUP KIND NAME";
+            printf "%s\n" "${_prune_resource_array[@]}";
+          ) | column -t
+        fi
+      done
+
+      # handle pruning
+      local _sync_with_prune="false"
+      if [[ "$_prune_required" == "true" ]]; then
+        case "$ARGOCD_PRUNE_MODE" in
+          # CASE: always prune resources
+          "always")
+            _sync_with_prune="true"
+            ;;
+
+          # CASE: prompt the user to decide if they want to prune
+          "prompt")
+            echo ""
+            echo_yellow "What is PRUNING?"
+            echo_yellow "----------------"
+            echo_red "Pruning DELETES resources that are no longer part of the application."
+            echo_red "Ensure that the resources listed ABOVE can be SAFELY deleted."
+            echo ""
+            while true; do
+                echo_yellow "Do you want to sync with PRUNING enabled?"
+                echo_yellow "-----------------------------------------"
+                echo "${COLOR_MAGENTA}${BOLD}OPTIONS:${NC} ${COLOR_RED}${BOLD}yes${NC}, ${COLOR_GREEN}${BOLD}no${NC} (default)"
+                echo "${COLOR_MAGENTA}${BOLD}TIMEOUT:${NC} ${ARGOCD_PRUNE_PROMPT_SECONDS} seconds"
+                read -r -t "$ARGOCD_PRUNE_PROMPT_SECONDS" -p "${COLOR_MAGENTA}${BOLD}RESPONSE:${NC} " response || echo "<no response, continuing without pruning>"
+                case "$response" in
+                    "YES" | "yes" | "Y" | "y" )
+                      _sync_with_prune="true"
+                      break
+                      ;;
+                    "NO" | "no" | "N" | "n" | "" )
+                      _sync_with_prune="false"
+                      break
+                      ;;
+                    * )
+                      echo ""
+                      ;;
+                esac
+            done
+            ;;
+
+          # CASE: continue silently without pruning
+          "skip")
+            _sync_with_prune="false"
+            ;;
+
+          # CASE: invalid
+          *)
+            echo_red ">>> ERROR: Invalid ARGOCD_PRUNE_MODE: '$ARGOCD_PRUNE_MODE'"
+            exit 1
+            ;;
+        esac
+      fi
+
       # sync the out-of-sync applications
-      case "$ARGOCD_PRUNE_MODE" in
-        "always")
-          sync_argocd_apps "true" "false" "false" "" "${_out_of_sync_apps[@]}"
-          ;;
-        "prompt")
-          sync_argocd_apps "false" "true" "false" "" "${_out_of_sync_apps[@]}"
-          ;;
-        "skip")
-          sync_argocd_apps "false" "false" "false" "" "${_out_of_sync_apps[@]}"
-          ;;
-        *)
-          echo_red ">>> ERROR: Invalid ARGOCD_PRUNE_MODE: '$ARGOCD_PRUNE_MODE'"
-          exit 1
-          ;;
-      esac
+      sync_argocd_apps "$_sync_with_prune" "false" "" "${_out_of_sync_apps[@]}"
     fi
 
     # wait for ALL applications in this sync wave to be healthy
