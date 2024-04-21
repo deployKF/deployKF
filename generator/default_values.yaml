@@ -1924,7 +1924,7 @@ kubeflow_tools:
       ##  - this is useful because pipelines compiled with v2-compatible mode use a hard-coded image
       ##    https://github.com/kubeflow/pipelines/blob/1.8.22/sdk/python/kfp/compiler/v2_compat.py#L25
       ##
-      launcherImageV2Compatible: "ghcr.io/deploykf/kubeflow-pipelines/kfp-launcher:1.8.22-deploykf.0"
+      v2CompatibleLauncherImage: "ghcr.io/deploykf/kubeflow-pipelines/kfp-launcher:1.8.22-deploykf.0"
 
     ## pipeline cache configs
     ##  - note, you can effectively disable caching (for KFP v1 mode) by setting both

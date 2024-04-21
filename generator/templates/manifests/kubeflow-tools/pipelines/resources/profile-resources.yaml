@@ -295,7 +295,7 @@ spec:
                         key: {{< $profile_configs.objectStoreAuth_existingSecretSecretKeyKey | quote >}}
                     {{<- end >}}
 
-    {{<- if $.Values.kubeflow_tools.pipelines.kfpV2.launcherImageV2Compatible >}}
+    {{<- if $.Values.kubeflow_tools.pipelines.kfpV2.v2CompatibleLauncherImage >}}
     ## ================================================================
     ## MUTATE - Patch KFP v2-compatible Launcher Image
     ## ================================================================
@@ -322,7 +322,7 @@ spec:
               ##       because runs in V2_COMPATIBLE mode still use their hard-coded launcher image:
               ##       https://github.com/kubeflow/pipelines/issues/10229#issuecomment-2067264813
               - (name): "kfp-launcher"
-                image: {{< $.Values.kubeflow_tools.pipelines.kfpV2.launcherImageV2Compatible | quote >}}
+                image: {{< $.Values.kubeflow_tools.pipelines.kfpV2.v2CompatibleLauncherImage | quote >}}
     {{<- end >}}
 {{<- end >}}
 
