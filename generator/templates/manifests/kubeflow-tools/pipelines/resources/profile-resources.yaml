@@ -191,6 +191,142 @@ spec:
 {{<- end >}}
 
 {{<- /*
+  The following ClusterPolicy patches the KFP v2 workflow Pods at runtime.
+*/ ->}}
+{{<- range $profile_name, $profile_configs := $profile_mapping >}}
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  ## the max name length is 63, so to avoid collisions we include part of the SHA256 of the profile name
+  {{<- $this_policy_name := (printf "patch-kfp-v2-pods-%s-%s" ($profile_name | crypto.SHA256 | strings.Trunc 8) $profile_name) | strings.Trunc 63 | strings.TrimSuffix "-" >}}
+  name: {{< $this_policy_name | quote >}}
+spec:
+  background: false
+  rules:
+    ## ================================================================
+    ## MUTATE - Patch KFP v2 Workflow Pods
+    ## ================================================================
+    - name: patch-v2-container-env
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - {{< $profile_name | quote >}}
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/v2_component: "true"
+                  workflows.argoproj.io/workflow: "*"
+              operations:
+                - CREATE
+      mutate:
+        patchStrategicMerge:
+          spec:
+            initContainers:
+              - (name): "*"
+                env:
+                  ## ================================
+                  ## ml-pipeline host and port
+                  ##  - https://github.com/kubeflow/pipelines/issues/9689
+                  ## ================================
+                  - name: ML_PIPELINE_SERVICE_HOST
+                    value: "ml-pipeline.kubeflow.svc.cluster.local"
+                  - name: ML_PIPELINE_SERVICE_PORT_GRPC
+                    value: "8887"
+
+                  ## ================================
+                  ## object store auth
+                  ##  - https://github.com/kubeflow/pipelines/issues/9689
+                  ##  - https://gocloud.dev/howto/blob/#s3-compatible
+                  ## ================================
+                  - name: AWS_ACCESS_KEY_ID
+                    {{<- if $profile_configs.objectStoreAuth_fromEnv >}}
+                    value: ""
+                    {{<- else >}}
+                    valueFrom:
+                      secretKeyRef:
+                        name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" $ | quote >}}
+                        key: {{< $profile_configs.objectStoreAuth_existingSecretAccessKeyKey | quote >}}
+                    {{<- end >}}
+                  - name: AWS_SECRET_ACCESS_KEY
+                    {{<- if $profile_configs.objectStoreAuth_fromEnv >}}
+                    value: ""
+                    {{<- else >}}
+                    valueFrom:
+                      secretKeyRef:
+                        name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" $ | quote >}}
+                        key: {{< $profile_configs.objectStoreAuth_existingSecretSecretKeyKey | quote >}}
+                    {{<- end >}}
+            containers:
+              - (name): "*"
+                env:
+                  ## ================================
+                  ## ml-pipeline host and port
+                  ##  - https://github.com/kubeflow/pipelines/issues/9689
+                  ## ================================
+                  - name: ML_PIPELINE_SERVICE_HOST
+                    value: "ml-pipeline.kubeflow.svc.cluster.local"
+                  - name: ML_PIPELINE_SERVICE_PORT_GRPC
+                    value: "8887"
+
+                  ## ================================
+                  ## object store auth
+                  ##  - https://github.com/kubeflow/pipelines/issues/9689
+                  ##  - https://gocloud.dev/howto/blob/#s3-compatible
+                  ## ================================
+                  - name: AWS_ACCESS_KEY_ID
+                    {{<- if $profile_configs.objectStoreAuth_fromEnv >}}
+                    value: ""
+                    {{<- else >}}
+                    valueFrom:
+                      secretKeyRef:
+                        name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" $ | quote >}}
+                        key: {{< $profile_configs.objectStoreAuth_existingSecretAccessKeyKey | quote >}}
+                    {{<- end >}}
+                  - name: AWS_SECRET_ACCESS_KEY
+                    {{<- if $profile_configs.objectStoreAuth_fromEnv >}}
+                    value: ""
+                    {{<- else >}}
+                    valueFrom:
+                      secretKeyRef:
+                        name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" $ | quote >}}
+                        key: {{< $profile_configs.objectStoreAuth_existingSecretSecretKeyKey | quote >}}
+                    {{<- end >}}
+
+    {{<- if $.Values.kubeflow_tools.pipelines.kfpV2.launcherImageV2Compatible >}}
+    ## ================================================================
+    ## MUTATE - Patch KFP v2-compatible Launcher Image
+    ## ================================================================
+    - name: patch-v2-compatible-launcher-image
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+              namespaces:
+                - {{< $profile_name | quote >}}
+              selector:
+                matchLabels:
+                  pipelines.kubeflow.org/kfp_sdk_version: "1.*"
+                  pipelines.kubeflow.org/v2_component: "true"
+                  workflows.argoproj.io/workflow: "*"
+              operations:
+                - CREATE
+      mutate:
+        patchStrategicMerge:
+          spec:
+            initContainers:
+              ## NOTE: this is needed even though we set `V2_LAUNCHER_IMAGE` on `Deployment/ml-pipeline`
+              ##       because runs in V2_COMPATIBLE mode still use their hard-coded launcher image:
+              ##       https://github.com/kubeflow/pipelines/issues/10229#issuecomment-2067264813
+              - (name): "kfp-launcher"
+                image: {{< $.Values.kubeflow_tools.pipelines.kfpV2.launcherImageV2Compatible | quote >}}
+    {{<- end >}}
+{{<- end >}}
+
+{{<- /*
   The following PodDefaults are for Kubeflow Notebooks to authenticate with the Kubeflow Pipelines API.
 */ ->}}
 {{<- if and .Values.kubeflow_tools.pipelines.profileResourceGeneration.kfpApiTokenPodDefault .Values.kubeflow_tools.poddefaults_webhook.enabled >}}
@@ -407,13 +543,17 @@ spec:
                   name: {{< tmpl.Exec "kubeflow_pipelines.object_store.profile.cloned_secret_name" $ | quote >}}
                   key: {{< $profile_configs.objectStoreAuth_existingSecretSecretKeyKey | quote >}}
               {{<- end >}}
+
             ## ================================
             ## S3 - Object Store Configs
             ## ================================
             - name: AWS_REGION
               value: {{< $.Values.kubeflow_tools.pipelines.bucket.region | quote >}}
             - name: AWS_S3_ENDPOINT
-              value: {{< tmpl.Exec "kubeflow_pipelines.object_store.endpoint" $ | quote >}}
+              ## NOTE: we use hostname only, KFP doesn't allow ports in the s3 endpoint config
+              value: {{< tmpl.Exec "kubeflow_pipelines.object_store.hostname" $ | quote >}}
+            - name: AWS_SSL
+              value: {{< tmpl.Exec "kubeflow_pipelines.object_store.use_ssl" $ | quote >}}
             - name: AWS_ACCESS_KEY_ID
               {{<- if $profile_configs.objectStoreAuth_fromEnv >}}
               value: ""
@@ -493,7 +633,15 @@ metadata:
     argocd.argoproj.io/sync-options: ""
 data:
   {{<- $defaultPipelineRoot := $.Values.kubeflow_tools.pipelines.kfpV2.defaultPipelineRoot >}}
-  {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{bucket_name}" $.Values.kubeflow_tools.pipelines.bucket.name >}}
+  {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{bucket_name}" ($.Values.kubeflow_tools.pipelines.bucket.name | urlquery) >}}
+  {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{bucket_region}" ($.Values.kubeflow_tools.pipelines.bucket.region | default "unspecified" | urlquery) >}}
+  {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{endpoint}" ((tmpl.Exec "kubeflow_pipelines.object_store.endpoint" $) | urlquery) >}}
+  {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{not_use_ssl}" ((tmpl.Exec "kubeflow_pipelines.object_store.not_use_ssl" $) | urlquery) >}}
   {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{profile_name}" $profile_name >}}
+  {{<- if tmpl.Exec "kubeflow_pipelines.object_store.is_aws_s3" $ >}}
+    {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{scheme}" "s3" >}}
+  {{<- else >}}
+    {{<- $defaultPipelineRoot = $defaultPipelineRoot | strings.ReplaceAll "{scheme}" "minio" >}}
+  {{<- end >}}
   defaultPipelineRoot: {{< $defaultPipelineRoot | quote >}}
 {{<- end >}}

@@ -41,10 +41,6 @@ resources:
   - resources/pipelines-mysql-secret.yaml
   {{<- end >}}
   {{<- end >}}
-  
-  {{<- if or .Values.kubeflow_tools.pipelines.kfpV2.minioFix .Values.kubeflow_tools.pipelines.kfpV2.launcherImage >}}
-  - resources/patch-v2-workflow-pods-clusterpolicy.yaml
-  {{<- end >}}
 
 patchesStrategicMerge:
   - patches/patch-cache-server-deployment.yaml
@@ -91,6 +87,12 @@ configMapGenerator:
       - cronScheduleTimezone="UTC"
 
       ## ================================
+      ## Workflow Image Configs
+      ## ================================
+      - driverImage={{< .Values.kubeflow_tools.pipelines.kfpV2.driverImage | quote >}}
+      - launcherImage={{< .Values.kubeflow_tools.pipelines.kfpV2.launcherImage | quote >}}
+
+      ## ================================
       ## Cache Configs
       ## ================================
       - cacheImage={{< .Values.kubeflow_tools.pipelines.cache.image | quote >}}
@@ -120,11 +122,18 @@ configMapGenerator:
       ## MySQL Configs
       ## ================================
       - ConMaxLifeTime="120s"
-      - dbHost="{{< tmpl.Exec "kubeflow_pipelines.mysql.hostname" . >}}"
-      - dbPort="{{< tmpl.Exec "kubeflow_pipelines.mysql.port" . >}}"
+      - dbType="mysql"
+      - mysqlHost="{{< tmpl.Exec "kubeflow_pipelines.mysql.hostname" . >}}"
+      - mysqlPort="{{< tmpl.Exec "kubeflow_pipelines.mysql.port" . >}}"
       - cacheDb="{{< .Values.kubeflow_tools.pipelines.mysqlDatabases.cacheDatabase >}}"
       - mlmdDb="{{< .Values.kubeflow_tools.pipelines.mysqlDatabases.metadataDatabase >}}"
       - pipelineDb="{{< .Values.kubeflow_tools.pipelines.mysqlDatabases.pipelinesDatabase >}}"
+
+      ## ================================
+      ## MySQL Configs (Legacy)
+      ## ================================
+      - dbHost="{{< tmpl.Exec "kubeflow_pipelines.mysql.hostname" . >}}"
+      - dbPort="{{< tmpl.Exec "kubeflow_pipelines.mysql.port" . >}}"
 
   - name: ml-pipeline-ui-configmap
     namespace: kubeflow

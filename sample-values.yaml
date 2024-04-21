@@ -654,38 +654,6 @@ kubeflow_tools:
       metadataDatabase: kfp_metadata
       pipelinesDatabase: kfp_pipelines
 
-    ## configs specific to Kubeflow Pipelines v2
-    ##
-    kfpV2:
-
-      ## sets the default `pipeline_root` in each profile
-      ##  - https://www.kubeflow.org/docs/components/pipelines/v1/overview/pipeline-root/
-      ##  - if `kubeflow_tools.pipelines.objectStore.useExternal` is false, then this must be left as the default
-      ##  - the following template variables are available:
-      ##     - `{bucket_name}`: the name of the bucket (see `kubeflow_tools.pipelines.bucket.name`)
-      ##     - `{profile_name}`: the name of the profile
-      ##
-      defaultPipelineRoot: "minio://{bucket_name}/v2/artifacts/{profile_name}"
-
-      ## apply fixes to make MinIO work with KFP v2
-      ##  - these fixes are needed because KFP v2 uses hard-coded configs for MinIO
-      ##    https://github.com/kubeflow/pipelines/issues/9689
-      ##  - if true:
-      ##     - the name of all cloned object store auth secrets in profiles becomes "mlpipeline-minio-artifact"
-      ##     - the key names used in generated minio auth secrets becomes "accesskey" and "secretkey"
-      ##     - the 'kfp-launcher' containers in workflow pods are patched at runtime to set:
-      ##        - `MINIO_SERVICE_SERVICE_HOST` and `MINIO_SERVICE_SERVICE_PORT`
-      ##        - `ML_PIPELINE_SERVICE_HOST` and `ML_PIPELINE_SERVICE_PORT_GRPC`
-      ##     - the value of `kubeflow_tools.pipelines.objectStore.useExternal` must be false
-      ##
-      minioFix: true
-
-      ## overrides the image of 'kfp-launcher' containers at runtime
-      ##  - this is useful because pipelines compiled with v2-compatible mode use a hard-coded image
-      ##    https://github.com/kubeflow/pipelines/blob/1.8.22/sdk/python/kfp/compiler/v2_compat.py#L25
-      ##
-      launcherImage: ""
-
     ## profile resource generation configs
     ##
     profileResourceGeneration:

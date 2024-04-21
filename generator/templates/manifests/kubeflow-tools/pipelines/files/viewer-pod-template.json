@@ -6,8 +6,9 @@ spec:
     - env:
         - name: AWS_REGION
           value: {{< .Values.kubeflow_tools.pipelines.bucket.region | quote >}}
-        - name: AWS_S3_ENDPOINT
-          value: {{< (tmpl.Exec "kubeflow_pipelines.object_store.endpoint" .) | quote >}}
+        - name: S3_ENDPOINT
+          ## NOTE: this sets `boto3.client('s3', endpoint_url=XXXX)`, so needs to be the full URL
+          value: {{< (tmpl.Exec "kubeflow_pipelines.object_store.endpoint_url" .) | quote >}}
         - name: AWS_ACCESS_KEY_ID
           {{<- if .Values.kubeflow_tools.pipelines.objectStore.auth.fromEnv >}}
           value: ""

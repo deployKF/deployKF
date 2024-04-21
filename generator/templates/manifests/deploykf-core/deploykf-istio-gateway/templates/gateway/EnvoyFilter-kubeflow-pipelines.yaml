@@ -1,6 +1,6 @@
 {{- if .Values.deployKF.kubeflow.pipelines.cache.namespaceRedirect }}
 {{- $compatible_v1_keyFormat := .Values.deployKF.argoWorkflows.artifactRepository.keyFormat | hasPrefix "artifacts/{{ workflow.namespace }}/" }}
-{{- $compatible_v2_defaultPipelineRoot := .Values.deployKF.kubeflow.pipelines.kfpV2.defaultPipelineRoot | regexMatch `^[a-zA-Z0-9]+://(?:[^/]+)/v2/artifacts/{profile_name}.*` }}
+{{- $compatible_v2_defaultPipelineRoot := .Values.deployKF.kubeflow.pipelines.kfpV2.defaultPipelineRoot | regexMatch `^(?:[^:/]+)://(?:[^/]+)/v2/artifacts/{profile_name}.*` }}
 {{- if and .Values.deployKF.kubeflow.pipelines.enabled $compatible_v1_keyFormat }}
 ################
 ## This EnvoyFilter redirects artifact requests that use an incorrect `?namespace=` query parameter for an artifact.
