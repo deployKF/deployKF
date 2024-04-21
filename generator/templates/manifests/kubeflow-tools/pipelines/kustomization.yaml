@@ -8,7 +8,7 @@ kind: Kustomization
 
 resources:
   ## upstream
-  - upstream/apps/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user
+  - upstream/manifests/kustomize/env/cert-manager/platform-agnostic-multi-user
 
   ## local
   - resources/profile-resources.yaml
