@@ -13,31 +13,31 @@ set -euo pipefail
 # the argocd application name prefix
 #  - Must have the same value as the `argocd.appNamePrefix` deployKF value.
 #    Used when multiple deployKF instances are managed with a single argocd server.
-ARGOCD_APP_NAME_PREFIX=""
+ARGOCD_APP_NAME_PREFIX="${ARGOCD_APP_NAME_PREFIX:-}"
 
 # the namespace where argocd is installed
-ARGOCD_NAMESPACE="argocd"
+ARGOCD_NAMESPACE="${ARGOCD_NAMESPACE:-argocd}"
 
 # the argocd server URL
 #  - If empty, port-forwarding will be used to connect to the argocd server.
-ARGOCD_SERVER_URL=""
+ARGOCD_SERVER_URL="${ARGOCD_SERVER_URL:-}"
 
 # credentials for argocd
 #  - If password is empty, and username is "admin", the 'argocd-initial-admin-secret' will be read from the cluster.
 #    This will NOT work if you have changed the ArgoCD admin password.
-ARGOCD_USERNAME="admin"
-ARGOCD_PASSWORD=""
+ARGOCD_USERNAME="${ARGOCD_USERNAME:-admin}"
+ARGOCD_PASSWORD="${ARGOCD_PASSWORD:-}"
 
-# how to handle resources that require pruning
-#  - 'always': prune resources without prompting (DANGER: this can delete resources that are still in use)
-#  - 'prompt': ask the user if they want to prune resources (defaults to 'no' after timeout)
-#  - 'skip': continue silently without pruning (WARNING: deployKF may not work correctly)
-ARGOCD_PRUNE_MODE="prompt"
-ARGOCD_PRUNE_PROMPT_SECONDS="60"
+# how to handle resources that require PRUNING (deletion)
+#  - 'always': always PRUNE resources without prompting
+#  - 'prompt': for each application that requires pruning, prompt the user to confirm
+#  - 'ask': prompt the user to choose a mode
+ARGOCD_PRUNE_MODE="${ARGOCD_PRUNE_MODE:-ask}"
+ARGOCD_PRUNE_MODE=$(echo "$ARGOCD_PRUNE_MODE" | tr '[:upper:]' '[:lower:]')
 
 # timeouts for argocd commands
-ARGOCD_SYNC_TIMEOUT_SECONDS="600"
-ARGOCD_WAIT_TIMEOUT_SECONDS="300"
+ARGOCD_SYNC_TIMEOUT_SECONDS="${ARGOCD_SYNC_TIMEOUT_SECONDS:-600}"
+ARGOCD_WAIT_TIMEOUT_SECONDS="${ARGOCD_WAIT_TIMEOUT_SECONDS:-300}"
 
 #######################################
 # REQUIREMENTS
@@ -79,6 +79,8 @@ if [[ -t 1 ]] && [[ -n "$(command -v tput)" ]] && [[ $(tput colors) -ge 8 ]]; th
   COLOR_BLUE=$(tput setaf 4)
   COLOR_MAGENTA=$(tput setaf 5)
   BOLD=$(tput bold)
+  UL_S=$(tput smul)
+  UL_E=$(tput rmul)
   NC=$(tput sgr0)
 else
   COLOR_RED=""
@@ -125,7 +127,10 @@ function argocd_login() {
   if [[ "$_argocd_username" == "admin" && -z "$_argocd_password" ]]; then
     echo ""
     echo_blue "=========================================================================================="
-    echo_blue "Getting admin password from 'Secret/argocd-initial-admin-secret'..."
+    echo_blue "Getting ArgoCD admin password..."
+    echo_blue "------------------------------------------------------------------------------------------"
+    echo_blue "Namespace: '$_argocd_namespace'"
+    echo_blue "Secret Name: 'argocd-initial-admin-secret'"
     echo_blue "=========================================================================================="
     _argocd_password=$(
       kubectl -n "$_argocd_namespace" get secret "argocd-initial-admin-secret" -o jsonpath="{.data.password}" \
@@ -137,7 +142,12 @@ function argocd_login() {
   # log in to argocd
   echo ""
   echo_blue "=========================================================================================="
-  echo_blue "Logging in to ArgoCD..."
+  echo_blue "Authenticating with ArgoCD..."
+  echo_blue "------------------------------------------------------------------------------------------"
+  echo_blue "Server: ${_argocd_server_url:-<port-forward>}"
+  echo_blue "Namespace: '$_argocd_namespace'"
+  echo_blue "Username: '$_argocd_username'"
+  echo_blue "Password: '**********'"
   echo_blue "=========================================================================================="
   if [[ -n "$_argocd_server_url" ]]; then
     argocd login "$_argocd_server_url" --username "$_argocd_username" --password "$_argocd_password"
@@ -160,7 +170,9 @@ function sync_argocd_apps() {
 
   echo ""
   echo_blue "=========================================================================================="
-  echo_blue "Syncing applications with timeout of ${ARGOCD_SYNC_TIMEOUT_SECONDS}s:"
+  echo_blue "Syncing ArgoCD applications..."
+  echo_blue "------------------------------------------------------------------------------------------"
+  echo_blue "Applications:"
   local _app_name
   for _app_name in "${_app_names[@]}"; do
     echo_blue " - $_app_name"
@@ -174,6 +186,7 @@ function sync_argocd_apps() {
   fi
   echo_blue "Pruning: $_enable_prune"
   echo_blue "Force Sync: $_force_sync"
+  echo_blue "Timeout Seconds: $ARGOCD_SYNC_TIMEOUT_SECONDS"
   echo_blue "=========================================================================================="
 
   # build sync command arguments
@@ -210,38 +223,11 @@ function sync_argocd_apps() {
   if [[ $_cmd_exit_code -ne 0 ]]; then
 
     # handle pruning errors
+    # NOTE: argocd will exit non-zero if pruning is required
     if [[ "$_cmd_stderr" =~ "resources require pruning" ]]; then
       echo_yellow ">>> WARNING: There are resources that need to be PRUNED"
       if [[ "$_prompt_for_prune" == "true" ]]; then
-        echo ""
-        echo_yellow "What is PRUNING?"
-        echo_yellow "----------------"
-        echo_red "Pruning DELETES resources that are no longer part of the application."
-        echo_red "Ensure the resources listed ABOVE as '(requires pruning)' can be SAFELY deleted."
-        echo_red "Note, some resources are listed incorrectly, and will NOT actually be pruned."
-        echo_red "Please see: https://github.com/argoproj/argo-cd/issues/17188"
-        echo ""
-        while true; do
-            echo_yellow "Do you want to sync with PRUNING enabled?"
-            echo_yellow "-----------------------------------------"
-            echo "${COLOR_MAGENTA}${BOLD}OPTIONS:${NC} ${COLOR_RED}${BOLD}yes${NC}, ${COLOR_GREEN}${BOLD}no${NC} (default)"
-            echo "${COLOR_MAGENTA}${BOLD}TIMEOUT:${NC} ${ARGOCD_PRUNE_PROMPT_SECONDS} seconds"
-            read -r -t "$ARGOCD_PRUNE_PROMPT_SECONDS" -p "${COLOR_MAGENTA}${BOLD}RESPONSE:${NC} " response || echo "<no response, continuing without pruning>"
-            case "$response" in
-                "YES" | "yes" | "Y" | "y" )
-                  echo_yellow ">>> Syncing again with pruning enabled..."
-                  sync_argocd_apps "true" "false" "false" "$_resource_selectors" "${_app_names[@]}"
-                  break
-                  ;;
-                "NO" | "no" | "N" | "n" | "" )
-                  echo_yellow ">>> Continuing without pruning..."
-                  break
-                  ;;
-                * )
-                  echo ""
-                  ;;
-            esac
-        done
+        ask_sync_again_with_prune "$_resource_selectors" "${_app_names[@]}"
       else
         echo_yellow ">>> Continuing without pruning..."
       fi
@@ -256,17 +242,93 @@ function sync_argocd_apps() {
   fi
 }
 
+# ask the user to sync again with pruning enabled
+function ask_sync_again_with_prune() {
+  local _resource_selectors="$1"
+  local _app_names=("${@:2}")
+
+  echo ""
+  echo_blue "=========================================================================================="
+  echo_blue "Prompting to sync again with PRUNING enabled..."
+  echo_blue "------------------------------------------------------------------------------------------"
+  echo_blue "Applications:"
+  local _app_name
+  local _apps_include__apps_of_apps="false"
+  local _apps_include__profile_generator="false"
+  for _app_name in "${_app_names[@]}"; do
+    echo_blue " - $_app_name"
+    # NOTE: some apps have special TIPS which we will show to the user
+    if [[ "$_app_name" =~ "deploykf-app-of-apps" ]]; then
+      _apps_include__apps_of_apps="true"
+    elif [[ "$_app_name" =~ "deploykf-profiles-generator" ]]; then
+      _apps_include__profile_generator="true"
+    fi
+  done
+  if [[ -n "$_resource_selectors" ]]; then
+    echo_blue "Resource Selectors:"
+    local _resource_selector
+    for _resource_selector in $_resource_selectors; do
+      echo_blue " - $_resource_selector"
+    done
+  fi
+  echo_blue "=========================================================================================="
+  echo ""
+  echo_red ">>> WARNING: the previous sync failed because some resources require PRUNING (deletion)."
+  echo ""
+  echo_yellow ">>> NOTES:"
+  echo_yellow ">>>  - review the above resources which say '(requires pruning)'"
+  echo_yellow ">>>    alternatively, review the application(s) in the ArgoCD UI"
+  echo_yellow ">>>  - ArgoCD incorrectly lists some resources as needing to be pruned"
+  echo_yellow ">>>    https://github.com/argoproj/argo-cd/issues/17188"
+  echo ""
+  if [[ "$_apps_include__apps_of_apps" == "true" ]]; then
+    echo_blue ">>> TIPS: 'deploykf-app-of-apps'"
+    echo_blue ">>>  - component Namespaces are never actually pruned"
+    echo_blue ">>>    you must manually delete these Namespaces to avoid future prune errors"
+    echo ""
+  fi
+  if [[ "$_apps_include__profile_generator" == "true" ]]; then
+    echo_blue ">>> TIPS: 'deploykf-profiles-generator'"
+    echo_blue ">>>  - carefully review any Profile resources that say '(requires pruning)'"
+    echo_blue ">>>    removing a Profile resource will delete the associated Namespace"
+    echo ""
+  fi
+
+  # prompt the user to sync again with pruning enabled
+  while true; do
+      echo "${COLOR_MAGENTA}${BOLD}Run sync again with PRUNING enabled? ${NC}(${BOLD}${UL_S}Y${UL_E}ES${NC} continue / ${BOLD}${UL_S}N${UL_E}O${NC} fail)${NC}"
+      read -r -p "${COLOR_MAGENTA}${BOLD}RESPONSE:${NC} " response || echo "<no response>"
+      case $(echo "$response" | tr '[:upper:]' '[:lower:]') in
+          "yes" | "y" )
+            echo_yellow ">>> Syncing again with pruning enabled..."
+            sync_argocd_apps "true" "false" "false" "$_resource_selectors" "${_app_names[@]}"
+            break
+            ;;
+          "no" | "n" )
+            echo_red ">>> ERROR: Sync Failed, pruning required"
+            exit 1
+            ;;
+          * )
+            echo ""
+            ;;
+      esac
+  done
+}
+
 # wait for an argocd application to be healthy
 function argocd_app_wait() {
   local _app_names=("$@")
 
   echo ""
   echo_blue "=========================================================================================="
-  echo_blue "Waiting ${ARGOCD_WAIT_TIMEOUT_SECONDS}s for applications to be healthy:"
+  echo_blue "Waiting for ArgoCD applications to be healthy..."
+  echo_blue "------------------------------------------------------------------------------------------"
+  echo_blue "Applications:"
   local _app_name
   for _app_name in "${_app_names[@]}"; do
     echo_blue " - $_app_name"
   done
+  echo_blue "Timeout Seconds: $ARGOCD_WAIT_TIMEOUT_SECONDS"
   echo_blue "=========================================================================================="
 
   # wait for the application to be healthy
@@ -284,9 +346,11 @@ function sync_argocd() {
 
   echo ""
   echo_blue "=========================================================================================="
-  echo_blue "Getting status of applications..."
+  echo_blue "Getting status of ArgoCD applications..."
+  echo_blue "------------------------------------------------------------------------------------------"
   echo_blue "Namespace: '$_app_namespace'"
-  echo_blue "Selector: '$_app_selector'"
+  echo_blue "Application Selector:"
+  echo_blue " - $_app_selector"
   echo_blue "=========================================================================================="
 
   # find all applications that match the selector
@@ -495,9 +559,6 @@ function sync_argocd() {
         "prompt")
           sync_argocd_apps "false" "true" "false" "" "${_out_of_sync_apps[@]}"
           ;;
-        "skip")
-          sync_argocd_apps "false" "false" "false" "" "${_out_of_sync_apps[@]}"
-          ;;
         *)
           echo_red ">>> ERROR: Invalid ARGOCD_PRUNE_MODE: '$ARGOCD_PRUNE_MODE'"
           exit 1
@@ -513,6 +574,35 @@ function sync_argocd() {
   done
 }
 
+# ask the user to set a prune mode
+function ask_prune_mode() {
+  echo ""
+  echo_blue "=========================================================================================="
+  echo_blue "Prompting for PRUNE MODE..."
+  echo_blue "=========================================================================================="
+  echo_yellow ">>> Sometimes resources need to be ${COLOR_RED}PRUNED${COLOR_YELLOW} (deleted) as part of a sync."
+  echo_yellow ">>> The PRUNE MODE determines how we handle these situations."
+  echo_yellow ">>> (TIP: avoid this prompt by setting a default ${BOLD}ARGOCD_PRUNE_MODE${NC}${COLOR_YELLOW})"
+  echo ""
+  while true; do
+    echo "${COLOR_MAGENTA}${BOLD}Which PRUNE MODE should we use? ${NC}(${BOLD}${UL_S}A${UL_E}LWAYS${NC} prune / ${BOLD}${UL_S}P${UL_E}ROMPT${NC} for each)"
+    read -r -p "${COLOR_MAGENTA}${BOLD}RESPONSE:${NC} " response || echo "<no response>"
+    case $(echo "$response" | tr '[:upper:]' '[:lower:]') in
+       "always" | "a" )
+          ARGOCD_PRUNE_MODE="always"
+          break
+          ;;
+        "prompt" | "p" )
+          ARGOCD_PRUNE_MODE="prompt"
+          break
+          ;;
+        * )
+          echo ""
+          ;;
+    esac
+  done
+}
+
 #######################################
 # MAIN
 #######################################
@@ -522,6 +612,11 @@ ARGOCD_APP_SELECTOR="app.kubernetes.io/part-of=${ARGOCD_APP_NAME_PREFIX}deploykf
 
 # authenticate to argocd
 argocd_login "$ARGOCD_SERVER_URL" "$ARGOCD_NAMESPACE" "$ARGOCD_USERNAME" "$ARGOCD_PASSWORD"
+
+# ask the user to set a prune mode
+if [[ "$ARGOCD_PRUNE_MODE" == "ask" ]]; then
+  ask_prune_mode
+fi
 
 # sync the "deploykf-app-of-apps" application
 sync_argocd "$ARGOCD_NAMESPACE" "${ARGOCD_APP_SELECTOR},app.kubernetes.io/name=deploykf-app-of-apps" "true"
