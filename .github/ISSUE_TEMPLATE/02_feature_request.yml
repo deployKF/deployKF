@@ -14,7 +14,7 @@ body:
       options:
         - label: I have searched the [existing issues](https://github.com/deployKF/deployKF).
           required: true
-        - label: This request is NOT specific to the CLI. (If so, please open an issue on the [CLI repo](https://github.com/deployKF/cli/issues))
+        - label: This request is NOT specific to the CLI. (Please open a [CLI issue](https://github.com/deployKF/cli/issues))
           required: true
   - type: textarea
     id: motivation
