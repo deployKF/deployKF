@@ -43,9 +43,9 @@ ARGOCD_WAIT_TIMEOUT_SECONDS="${ARGOCD_WAIT_TIMEOUT_SECONDS:-300}"
 # REQUIREMENTS
 #######################################
 
-# ensure bash version 4.2+
-if [[ ${BASH_VERSINFO[0]} -lt 4 || (${BASH_VERSINFO[0]} -eq 4 && ${BASH_VERSINFO[1]} -lt 2) ]]; then
-  echo ">>> ERROR: Bash version 4.2+ is required to run this script, current version: '${BASH_VERSION}'"
+# ensure bash version 4.4+
+if [[ ${BASH_VERSINFO[0]} -lt 4 || (${BASH_VERSINFO[0]} -eq 4 && ${BASH_VERSINFO[1]} -lt 4) ]]; then
+  echo ">>> ERROR: Bash version 4.4+ is required to run this script, current version: '${BASH_VERSION}'"
   exit 1
 fi
 
