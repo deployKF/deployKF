@@ -11,10 +11,10 @@ set -euo pipefail
 #######################################
 
 # the istio namespace
-ISTIO_NAMESPACE="istio-system"
+ISTIO_NAMESPACE="${ISTIO_NAMESPACE:-istio-system}"
 
 # the istio revision
-ISTIO_REVISION="default"
+ISTIO_REVISION="${ISTIO_REVISION:-default}"
 
 #######################################
 # REQUIREMENTS
