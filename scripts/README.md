@@ -29,17 +29,15 @@ By default, the script will:
 To run the script with the default settings:
 
 ```bash
-# clone the deploykf repository (at the 'main' branch)
+# clone the deploykf repo
+# NOTE: we use 'main', as the latest script always lives there
 git clone -b main https://github.com/deployKF/deployKF.git ./deploykf
 
-# change to the argocd-plugin directory
-cd ./deploykf/scripts
-
 # ensure the script is executable
-chmod +x ./sync_argocd_apps.sh
+chmod +x ./deploykf/scripts/sync_argocd_apps.sh
 
-# sync all deployKF ArgoCD applications
-./sync_argocd_apps.sh
+# run the script
+bash ./deploykf/scripts/sync_argocd_apps.sh
 ```
 
 > __NOTE:__
@@ -57,9 +55,9 @@ This script restarts Pods with istio sidecar versions that do not match the curr
 ### Requirements:
 
 - Bash `4.4` or later _(macOS has `3.2` by default, update with `brew install bash`)_
+- The `istioctl` CLI is installed ([install guide](https://istio.io/latest/docs/ops/diagnostic-tools/istioctl/))
 - The `kubectl` CLI is installed ([install guide](https://kubernetes.io/docs/tasks/tools/install-kubectl/))
 - The `jq` CLI is installed ([install guide](https://stedolan.github.io/jq/download/))
-- The `istioctl` CLI is installed ([install guide](https://istio.io/latest/docs/ops/diagnostic-tools/istioctl/))
 
 ### Behavior:
 
@@ -69,22 +67,20 @@ By default, the script will:
 - Prompt for confirmation before restarting Pods.
 - For each Pod with an outdated sidecar, it will:
   - Use `kubectl` to get the `metadata.ownerReferences` for the Pod.
-  - Use `kubectl rollout restart` to restart the Pod.
+  - Use `kubectl rollout restart` to restart the owner of the Pod (e.g. Deployment, StatefulSet, etc.).
 
 ### Usage:
 
 To run the script with the default settings:
 
 ```bash
-# clone the deploykf repository (at the 'main' branch)
+# clone the deploykf repo
+# NOTE: we use 'main', as the latest script always lives there
 git clone -b main https://github.com/deployKF/deployKF.git ./deploykf
 
-# change to the argocd-plugin directory
-cd ./deploykf/scripts
-
 # ensure the script is executable
-chmod +x ./sync_argocd_apps.sh
+chmod +x ./deploykf/scripts/update_istio_sidecars.sh
 
-# restart Pods with outdated Istio sidecars
-./update_istio_sidecars.sh
+# run the script
+bash ./deploykf/scripts/update_istio_sidecars.sh
 ```
