@@ -50,7 +50,7 @@ bash ./deploykf/scripts/sync_argocd_apps.sh
 
 ## [`update_istio_sidecars.sh`](./update_istio_sidecars.sh)
 
-This script restarts Pods with istio sidecar versions that do not match the current Istio version.
+This script restarts Pods with Istio sidecar versions that do not match the current Istio version.
 
 ### Requirements:
 
@@ -84,3 +84,10 @@ chmod +x ./deploykf/scripts/update_istio_sidecars.sh
 # run the script
 bash ./deploykf/scripts/update_istio_sidecars.sh
 ```
+
+> __WARNING:__
+>
+> - This script will restart Pods in your cluster (if you confirm when prompted).
+> - It is recommended to run this script during a maintenance window or when you can tolerate downtime.
+> - When restarting Notebook Pods (which show as StatefulSets), all in-progress and unsaved work will be lost!
+> - All out-of-date Pods are restarted at the SAME TIME, which may not be suitable for large clusters.
