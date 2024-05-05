@@ -66,6 +66,8 @@ else
   COLOR_BLUE=""
   COLOR_MAGENTA=""
   BOLD=""
+  UL_S=""
+  UL_E=""
   NC=""
 fi
 
@@ -333,8 +335,6 @@ function restart_istio_sidecars() {
       _pod_name=$(echo "$_pod_key" | cut -d':' -f3)
       _pod_istio_version=$(echo "$_pod_key" | cut -d':' -f4)
       echo "${COLOR_YELLOW} - ${BOLD}${_pod_controller_kind}${NC}${COLOR_YELLOW}: ${_pod_controller_name} | ${BOLD}Pod${NC}${COLOR_YELLOW}: ${_pod_name} | ${BOLD}Istio${NC}${COLOR_YELLOW}: ${_pod_istio_version}${NC}"
-      #echo_yellow " - ${_pod_controller_kind}: ${_pod_controller_name} | Pod: ${_pod_name} | Istio: ${_pod_istio_version}"
-      #echo "${COLOR_YELLOW} - ${_pod_controller_kind}: ${COLOR_MAGENTA}${_pod_controller_name}${NC}${COLOR_YELLOW} | Pod: ${COLOR_MAGENTA}${_pod_name}${NC}${COLOR_YELLOW} | Istio: ${COLOR_RED}${_pod_istio_version}${NC}"
       _controllers_to_restart+=("$_namespace:$_pod_controller_kind:$_pod_controller_name")
     done
   done
@@ -366,7 +366,3 @@ function restart_istio_sidecars() {
 
 # restart all Istio sidecars with incorrect versions
 restart_istio_sidecars "$ISTIO_NAMESPACE" "$ISTIO_REVISION"
-
-# TODO:
-#  - make sure we throw a warning/error if there are no pods found.
-#    (the user might have the wrong ISTIO_NAMESPACE or ISTIO_REVISION)
