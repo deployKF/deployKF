@@ -89,6 +89,8 @@ else
   COLOR_BLUE=""
   COLOR_MAGENTA=""
   BOLD=""
+  UL_S=""
+  UL_E=""
   NC=""
 fi
 
