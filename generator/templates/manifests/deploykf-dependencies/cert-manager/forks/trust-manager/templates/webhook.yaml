@@ -2,10 +2,10 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "trust-manager.name" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "trust-manager.namespace" . }}
   labels:
     app: {{ include "trust-manager.name" . }}
-{{ include "trust-manager.labels" . | indent 4 }}
+    {{- include "trust-manager.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.app.webhook.service.type }}
   ports:
@@ -25,13 +25,14 @@ metadata:
   name: {{ include "trust-manager.name" . }}
   labels:
     app: {{ include "trust-manager.name" . }}
-{{ include "trust-manager.labels" . | indent 4 }}
+    {{- include "trust-manager.labels" . | nindent 4 }}
   annotations:
-    cert-manager.io/inject-ca-from: "{{ .Release.Namespace }}/{{ include "trust-manager.name" . }}"
+    cert-manager.io/inject-ca-from: "{{ include "trust-manager.namespace" . }}/{{ include "trust-manager.name" . }}"
+    #################### BEGIN CHANGE ####################
     {{- if .Values.app.webhook.validatingWebhookConfigurationAnnotations }}
     {{- toYaml .Values.app.webhook.validatingWebhookConfigurationAnnotations | nindent 4 }}
     {{- end }}
-
+    ##################### END CHANGE #####################
 webhooks:
   - name: trust.cert-manager.io
     rules:
@@ -51,5 +52,5 @@ webhooks:
     clientConfig:
       service:
         name: {{ include "trust-manager.name" . }}
-        namespace: {{ .Release.Namespace | quote }}
-        path: /validate
+        namespace: {{ include "trust-manager.namespace" . }}
+        path: /validate-trust-cert-manager-io-v1alpha1-bundle

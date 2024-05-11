@@ -2,34 +2,93 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: {{ include "trust-manager.name" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "trust-manager.namespace" . }}
   #################### BEGIN CHANGE ####################
   annotations:
     {{- toYaml .Values.app.certificateAnnotations | nindent 4 }}
   ##################### END CHANGE #####################
   labels:
-{{ include "trust-manager.labels" . | indent 4 }}
-
+    {{- include "trust-manager.labels" . | nindent 4 }}
 spec:
   selfSigned: {}
+
 ---
+
 apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ include "trust-manager.name" . }}
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ include "trust-manager.namespace" . }}
   #################### BEGIN CHANGE ####################
   annotations:
     {{- toYaml .Values.app.certificateAnnotations | nindent 4 }}
   ##################### END CHANGE #####################
   labels:
-{{ include "trust-manager.labels" . | indent 4 }}
+    {{- include "trust-manager.labels" . | nindent 4 }}
 spec:
+  commonName: "{{ include "trust-manager.name" . }}.{{ include "trust-manager.namespace" . }}.svc"
   dnsNames:
-  - "{{ include "trust-manager.name" . }}.{{ .Release.Namespace }}.svc"
+  - "{{ include "trust-manager.name" . }}.{{ include "trust-manager.namespace" . }}.svc"
   secretName: {{ include "trust-manager.name" . }}-tls
   revisionHistoryLimit: 1
   issuerRef:
     name: {{ include "trust-manager.name" . }}
     kind: Issuer
     group: cert-manager.io
+
+---
+
+{{- if .Values.app.webhook.tls.approverPolicy.enabled -}}
+
+apiVersion: policy.cert-manager.io/v1alpha1
+kind: CertificateRequestPolicy
+metadata:
+  name: trust-manager-policy
+  labels:
+    {{- include "trust-manager.labels" . | nindent 4 }}
+spec:
+  allowed:
+    commonName:
+      value: "{{ include "trust-manager.name" . }}.{{ include "trust-manager.namespace" . }}.svc"
+      required: true
+    dnsNames:
+      values: ["{{ include "trust-manager.name" . }}.{{ include "trust-manager.namespace" . }}.svc"]
+      required: true
+  selector:
+    issuerRef:
+      name: {{ include "trust-manager.name" . }}
+      kind: Issuer
+      group: cert-manager.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: trust-manager-policy-role
+  labels:
+    {{- include "trust-manager.labels" . | nindent 4 }}
+rules:
+  - apiGroups: ["policy.cert-manager.io"]
+    resources: ["certificaterequestpolicies"]
+    verbs: ["use"]
+    resourceNames: ["trust-manager-policy"]
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: trust-manager-policy-binding
+  labels:
+    {{- include "trust-manager.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: trust-manager-policy-role
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.app.webhook.tls.approverPolicy.certManagerServiceAccount }}
+  namespace: {{ .Values.app.webhook.tls.approverPolicy.certManagerNamespace }}
+
+{{ end }}

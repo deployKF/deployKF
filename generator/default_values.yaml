@@ -116,7 +116,7 @@ deploykf_dependencies:
       trustManager:
         name: trust-manager
         ## NOTE: we fork the upstream trust-manager chart to fix race conditions with cert-manager
-        version: 0.5.0-deploykf
+        version: 0.9.2-deploykf
         repository: file://forks/trust-manager
 
     ## image overrides
