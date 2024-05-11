@@ -25,7 +25,6 @@ deploykf_dependencies:
     {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
 
     ## extra manifests
-    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#step-2-create-a-clusterissuer
     ##
     #extraManifests:
     #  - |
@@ -38,7 +37,7 @@ deploykf_dependencies:
     #        << YOUR ACME CONFIGURATION >>
 
     ## istio gateway certificate issuer configs
-    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#step-3-configure-the-istio-gateway
+    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#use-lets-encrypt-with-cert-manager
     ##
     #clusterIssuer:
     #  enabled: false
@@ -89,8 +88,7 @@ deploykf_core:
     {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
 
     ## extra manifests
-    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#expose-with-ingress
-    ##  - we recommend using a LoadBalancer Service instead of an Ingress
+    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#use-a-kubernetes-ingress
     ##
     #extraManifests:
     #  - |
@@ -102,7 +100,7 @@ deploykf_core:
     #      << YOUR INGRESS CONFIGURATION >>
 
     ## istio gateway configs
-    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#2-configure-dns
+    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#configure-dns-records
     ##
     #gateway:
     #  hostname: deploykf.example.com
@@ -111,7 +109,7 @@ deploykf_core:
     #    https: 443
 
     ## istio gateway service configs
-    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#expose-with-loadbalancer-service
+    ##  - https://www.deploykf.org/guides/platform/deploykf-gateway/#use-a-loadbalancer-service
     ##
     #gatewayService:
     #  name: deploykf-gateway
@@ -148,7 +146,7 @@ deploykf_core:
           {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
 
           ## the default Kubeflow Pipelines object store auth configs for profiles
-          ##  - https://www.deploykf.org/guides/tools/external-object-store/#authentication
+          ##  - https://www.deploykf.org/guides/external/object-store/#connect-an-external-object-store
           ##  - the matching secret is CLONED into the profile namespace for use by Kubeflow Pipelines
           ##  - you will need to manually create the secrets you reference here
           ##  - you can have all profiles share the same secret, by removing '{profile_name}' from the name
@@ -235,7 +233,7 @@ kubeflow_tools:
     {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
 
     ## mysql connection configs
-    ##  - https://www.deploykf.org/guides/tools/external-mysql/#2-connect-katib
+    ##  - https://www.deploykf.org/guides/external/mysql/#3-connect-katib
     ##  - we recommend storing credentials in a Secret, rather than in plaintext
     ##
     #mysql:
@@ -314,7 +312,7 @@ kubeflow_tools:
     #  region: ""
 
     ## object store configs
-    ##  - https://www.deploykf.org/guides/tools/external-object-store/#2-connect-kubeflow-pipelines
+    ##  - https://www.deploykf.org/guides/external/object-store/#connect-an-external-object-store
     ##
     objectStore:
       {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
@@ -339,7 +337,7 @@ kubeflow_tools:
       #  existingSecretSecretKeyKey: "AWS_SECRET_ACCESS_KEY"
 
     ## mysql connection configs
-    ##  - https://www.deploykf.org/guides/tools/external-mysql/#3-connect-kubeflow-pipelines
+    ##  - https://www.deploykf.org/guides/external/mysql/#4-connect-kubeflow-pipelines
     ##  - we recommend storing credentials in a Secret, rather than in plaintext
     ##
     #mysql:
@@ -377,6 +375,6 @@ kubeflow_tools:
     {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
 
     ## if a PodDefault named "kubeflow-pipelines-api-token" should be generated in each profile namespace
-    ##  - https://www.deploykf.org/user-guides/access-kubeflow-pipelines-api/#authenticate-with-kubernetes-serviceaccount-token
+    ##  - https://www.deploykf.org/user-guides/access-kubeflow-pipelines-api/#automatically-mount-a-token-volume-with-poddefaults
     ##
     #kfpApiTokenPodDefault: true

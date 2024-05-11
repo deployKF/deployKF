@@ -149,16 +149,13 @@ deploykf_core:
       ##     - echo "PASSWORD_STRING" | htpasswd -BinC 10 NULL | cut -d: -f2
       ##     - python -c 'import bcrypt; print(bcrypt.hashpw(b"PASSWORD_STRING", bcrypt.gensalt(10)).decode())'
       ##
-      staticPasswords:
-        - email: "admin@example.com"
-          password:
-            value: "admin"
-        - email: "user1@example.com"
-          password:
-            value: "user1"
-        - email: "user2@example.com"
-          password:
-            value: "user2"
+      #staticPasswords:
+      #  - email: "user1@example.com"
+      #    password:
+      #      value: "user1"
+      #  - email: "user2@example.com"
+      #    password:
+      #      value: "user2"
 
       ## dex connectors
       ##  - dex connectors which allow bridging trust to external identity providers
@@ -284,14 +281,6 @@ deploykf_core:
       ##
       profileNamePrefix: ""
 
-      ## the default email to set as the owner of profiles
-      ##  - [WARNING] treat the default owner as a super-admin service account,
-      ##              that is, people should NOT use this account day-to-day
-      ##  - [WARNING] changing the `ownerEmail` of profiles requires ~manual~ steps
-      ##              https://github.com/kubeflow/kubeflow/issues/6576
-      ##
-      ownerEmail: "admin@example.com"
-
       ## the default access for members of profiles, when not explicitly specified
       ##  - `role`: the Kubernetes RBAC role to bind to the user in the profile namespace
       ##      - "edit": binds "ClusterRole/kubeflow-edit" (can view/create/delete resources)
@@ -336,27 +325,7 @@ deploykf_core:
 
           ## the default Kubeflow Pipelines object store auth configs for profiles
           ##  - the behaviour of these configs depends on `kubeflow_tools.kubeflow_pipelines.objectStore`
-          ##  - when `kubeflow_tools.kubeflow_pipelines.objectStore.useExternal`:
-          ##     - is false (default):
-          ##        - minio is automatically configured to generate unique service-account credentials for each
-          ##          profile and store them in a kubernetes secret named `existingSecret` in the minio namespace
-          ##        - this secret will be cloned into the profile's namespace and kept in sync with the original
-          ##        - note, generated credentials only have access to `kubeflow_tools.pipelines.bucket` under "artifacts/{profile_name}/"
-          ##        - note, no credentials are generated for profiles which set `objectStoreAuth`
-          ##        - note, the value of `existingSecret` MUST contain "{profile_name}"
-          ##        - note, the value of `existingSecretNamespace` is ignored
-          ##     - is true:
-          ##        - a kubernetes secret named `existingSecret` must exist the namespace `existingSecretNamespace`
-          ##          with the keys `existingSecretAccessKeyKey` and `existingSecretSecretKeyKey`
-          ##        - this secret will be cloned into the profile's namespace and kept in sync with the original
-          ##        - note, all occurances of "{profile_name}" in `existingSecret` are replaced with the profile name
-          ##        - note, the default value of `existingSecretNamespace` is the kubeflow-pipelines namespace
-          ##  - when `kubeflow_tools.kubeflow_pipelines.objectStore.auth.fromEnv`:
-          ##     - is false (default):
-          ##        - normal behaviour
-          ##     - is true:
-          ##        - default configs are ignored to allow for environment-based authentication (e.g. AWS IRSA)
-          ##        - if a profile explicitly sets `objectStoreAuth` then it will still be used
+          ##  - override these defaults for a specific profile by setting `tools.kubeflowPipelines.objectStoreAuth` in that profile
           ##
           objectStoreAuth:
             existingSecret: "kubeflow-pipelines--profile-object-store-auth--{profile_name}"
@@ -370,11 +339,11 @@ deploykf_core:
     ##     - `id`: a unique identifier for the user
     ##     - `email`: the email of the user (must exactly match the email from your identity provider)
     ##
-    users:
-      - id: user-1
-        email: "user1@example.com"
-      - id: user-2
-        email: "user2@example.com"
+    #users:
+    #  - id: user-1
+    #    email: "user1@example.com"
+    #  - id: user-2
+    #    email: "user2@example.com"
 
     ## group entities
     ##  - a list of groups that can be referenced when defining profile members
@@ -382,15 +351,13 @@ deploykf_core:
     ##     - `id`: a unique identifier for the group
     ##     - `users`: a list of user IDs that are members of the group
     ##
-    groups:
-      - id: team-1
-        users:
-          - user-1
-          - user-2
+    #groups:
+    #  - id: team-1
+    #    users:
+    #      - user-1
+    #      - user-2
 
     ## profile definitions
-    ##  - [WARNING] changing the `ownerEmail` of a profile requires ~manual~ steps
-    ##              https://github.com/kubeflow/kubeflow/issues/6576
     ##  - a list of profile definitions to be generated
     ##  - each element is a map with the following keys:
     ##     - `name`: the name of the profile (must be unique)
@@ -403,7 +370,6 @@ deploykf_core:
     ##           - `access`: a map with configs for this member's access to the profile:
     ##               - `role`: the Kubernetes RBAC role to bind to the user (default: `profileDefaults.memberAccess.role`)
     ##               - `notebooksAccess`: if the user can ~connect~ to kubeflow notebooks (default: `profileDefaults.memberAccess.notebooksAccess`)
-    ##     - `ownerEmail`: the email to set as the owner of the profile (default: `profileDefaults.ownerEmail`)
     ##     - `plugins`: the list of plugins for this profile (default: `profileDefaults.plugins`)
     ##     - `resourceQuotaSpec`: the resource quota for this profile (default: `profileDefaults.resourceQuotaSpec`)
     ##     - `tools`: a map with configs for tools:
@@ -414,20 +380,20 @@ deploykf_core:
     ##                 - `existingSecretAccessKeyKey`: the key within the secret that contains the access-key (default: "access_key")
     ##                 - `existingSecretSecretKeyKey`: the key within the secret that contains the secret-key (default: "secret_key")
     ##
-    profiles:
-      - name: team-1
-        members:
-          - group: team-1
-            access:
-              role: edit
-              notebooksAccess: true
-
-      - name: team-1-prod
-        members:
-          - group: team-1
-            access:
-              role: view
-              notebooksAccess: false
+    #profiles:
+    #  - name: team-1
+    #    members:
+    #      - group: team-1
+    #        access:
+    #          role: edit
+    #          notebooksAccess: true
+    #
+    #  - name: team-1-prod
+    #    members:
+    #      - group: team-1
+    #        access:
+    #          role: view
+    #          notebooksAccess: false
 
 
 ## --------------------------------------------------------------------------------
@@ -606,22 +572,7 @@ kubeflow_tools:
       useSSL: true
 
       ## object store auth configs
-      ##  - if `fromEnv` is true, all other configs are ignored to allow for environment-based authentication like
-      ##     - AWS IRSA: https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html
-      ##     - GCP Workload Identity: https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity
-      ##       [WARNING] GCP Workload Identity is not currently supported by Kubeflow Pipelines, this is because
-      ##                 the api-server uses an S3 client to access the object store (even GCS), until a native
-      ##                 GCS client is used, GCS can only be used via its S3 API with HMAC keys for authentication
-      ##  - if `fromEnv` is true, you will likely need to set appropriate Pod ServiceAccount annotations:
-      ##     - annotations for Kubeflow Pipelines backend are set with these values:
-      ##        - `kubeflow_tools.pipelines.serviceAccounts.apiServer.annotations`
-      ##        - `kubeflow_tools.pipelines.serviceAccounts.frontend.annotations`
-      ##     - annotations for Argo Workflows backend are set with these values:
-      ##        - `kubeflow_dependencies.kubeflow_argo_workflows.controller.serviceAccount.annotations`
-      ##        - `kubeflow_dependencies.kubeflow_argo_workflows.workflow.serviceAccount.annotations`
-      ##     - annotations for Pods in Profiles are set using profile plugins, which are configured with these values:
-      ##        - `deploykf_core.deploykf_profiles_generator.profileDefaults.plugins`
-      ##        - `deploykf_core.deploykf_profiles_generator.profiles[].plugins`
+      ##  - https://www.deploykf.org/guides/external/object-store/#connect-an-external-object-store
       ##
       auth:
         fromEnv: false
