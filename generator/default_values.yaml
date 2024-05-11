@@ -454,7 +454,7 @@ deploykf_core:
 
       oauth2Proxy:
         repository: quay.io/oauth2-proxy/oauth2-proxy
-        tag: v7.5.1
+        tag: v7.6.0
         pullPolicy: IfNotPresent
 
       kubectl:
