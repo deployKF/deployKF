@@ -376,6 +376,9 @@ function sync_argocd() {
   # this associative array has "app names" as keys, and "sync status" as values
   local -A _app_sync_statuses=()
 
+  # this associative array has "app names" as keys, and "last operation phase" as values
+  local -A _app_last_operation_phases=()
+
   # this associative array has "app names" as keys, and SPACE-separated "argocd resource selectors" as values
   #  - the format of each resource selector is: "<GROUP>:<KIND>:<NAMESPACE>/<NAME>" or "<GROUP>:<KIND>:<NAME>"
   local -A _app_force_sync_resources=()
@@ -489,6 +492,9 @@ function sync_argocd() {
     # add the application to the sync status array
     _app_sync_statuses[$_app_name]="$_app_sync_status"
 
+    # add the application to the last operation phase array
+    _app_last_operation_phases[$_app_name]="$_app_operation_state_phase"
+
     # add the application to the sync wave array
     if [[ -v _sync_waves["$_app_sync_wave"] ]]; then
       _sync_waves[$_app_sync_wave]+=" $_app_name"
@@ -514,7 +520,7 @@ function sync_argocd() {
     echo ""
     echo_yellow ">>> Sync wave $_sync_wave:"
     for _app_name in "${_sync_wave_apps[@]}"; do
-      echo_yellow ">>>  - $_app_name (status: ${_app_sync_statuses[$_app_name]})"
+      echo_yellow ">>>  - $_app_name (sync status: ${_app_sync_statuses[$_app_name]}) (last operation: ${_app_last_operation_phases[$_app_name]})"
     done
   done
 
@@ -525,22 +531,23 @@ function sync_argocd() {
   for _sync_wave in "${_sync_waves_sorted[@]}"; do
     IFS=' ' read -r -a _sync_wave_apps <<< "${_sync_waves[$_sync_wave]}"
 
-    # build an array of out-of-sync applications in this sync wave
-    local -a _out_of_sync_apps=()
+    # build an array of applications which require syncing in this wave
+    local -a _require_sync_apps=()
     for _app_name in "${_sync_wave_apps[@]}"; do
-      if [[ "${_app_sync_statuses[$_app_name]}" != "Synced" ]]; then
-        _out_of_sync_apps+=("$_app_name")
+      # if the application is not synced, or the last operation did not succeed, add it to the list
+      if [[ "${_app_sync_statuses[$_app_name]}" != "Synced" || "${_app_last_operation_phases[$_app_name]}" != "Succeeded" ]]; then
+        _require_sync_apps+=("$_app_name")
       fi
     done
 
-    # sync the out-of-sync applications
-    if [[ -n "${_out_of_sync_apps[*]}" ]]; then
+    # if there are applications to sync, do it
+    if [[ -n "${_require_sync_apps[*]}" ]]; then
 
-      # force sync specific resources from the out-of-sync applications
+      # force-sync specific resources for each application
       local _force_resource_array_str
       local _resource_str
       if [[ ${#_app_force_sync_resources[@]} -gt 0 ]]; then
-        for _app_name in "${_out_of_sync_apps[@]}"; do
+        for _app_name in "${_require_sync_apps[@]}"; do
           if [[ -v _app_force_sync_resources["$_app_name"] ]]; then
             _force_resource_array_str="${_app_force_sync_resources[$_app_name]}"
             echo ""
@@ -553,13 +560,13 @@ function sync_argocd() {
         done
       fi
 
-      # sync the out-of-sync applications
+      # sync the applications
       case "$ARGOCD_PRUNE_MODE" in
         "always")
-          sync_argocd_apps "true" "false" "false" "" "${_out_of_sync_apps[@]}"
+          sync_argocd_apps "true" "false" "false" "" "${_require_sync_apps[@]}"
           ;;
         "prompt")
-          sync_argocd_apps "false" "true" "false" "" "${_out_of_sync_apps[@]}"
+          sync_argocd_apps "false" "true" "false" "" "${_require_sync_apps[@]}"
           ;;
         *)
           echo_red ">>> ERROR: Invalid ARGOCD_PRUNE_MODE: '$ARGOCD_PRUNE_MODE'"
