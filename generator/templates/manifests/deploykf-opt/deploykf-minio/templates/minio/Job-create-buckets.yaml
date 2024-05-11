@@ -23,9 +23,14 @@ spec:
         app.kubernetes.io/component: minio
     spec:
       restartPolicy: OnFailure
-      {{- if .Values.minio.mcImage.pullSecret }}
+      {{- if or .Values.minio.mcImage.pullSecret .Values.minio.shellImage.pullSecret }}
       imagePullSecrets:
+        {{- if .Values.minio.mcImage.pullSecret }}
         - name: {{ .Values.minio.mcImage.pullSecret | quote }}
+        {{- end }}
+        {{- if .Values.minio.shellImage.pullSecret }}
+        - name: {{ .Values.minio.shellImage.pullSecret | quote }}
+        {{- end }}
       {{- end }}
       nodeSelector: {}
       affinity: {}
@@ -37,14 +42,30 @@ spec:
       {{- else }}
       securityContext: {}
       {{- end }}
-      initContainers: []
-      containers:
-        - name: create-buckets
+      initContainers:
+        - name: copy-mc
           image: {{ .Values.minio.mcImage.repository }}:{{ .Values.minio.mcImage.tag }}
-          imagePullPolicy: {{ .Values.minio.image.pullPolicy }}
+          imagePullPolicy: {{ .Values.minio.mcImage.pullPolicy }}
           securityContext:
             runAsUser: {{ .Values.minio.mcImage.uid }}
             runAsGroup: {{ .Values.minio.mcImage.gid }}
+          command:
+            - "/bin/sh"
+            - "-c"
+          args:
+            - |
+              echo "copying 'mc' binary to shared volume...";
+              cp -f "$(which mc)" /shared-bin/mc;
+          volumeMounts:
+            - name: shared-bin
+              mountPath: "/shared-bin/"
+      containers:
+        - name: create-buckets
+          image: {{ .Values.minio.shellImage.repository }}:{{ .Values.minio.shellImage.tag }}
+          imagePullPolicy: {{ .Values.minio.shellImage.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.minio.shellImage.uid }}
+            runAsGroup: {{ .Values.minio.shellImage.gid }}
           command:
             - "/job-scripts/create_buckets.sh"
           args: []
@@ -76,6 +97,9 @@ spec:
             - name: mc-config
               ## we must mount a writable volume at the `/.mc/` path so that the `mc` command can store its configs
               mountPath: "/.mc/"
+            - name: shared-bin
+              mountPath: "/usr/local/bin/mc"
+              subPath: "mc"
             {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
             - name: gateway-root-ca-cert
               mountPath: "/.mc/certs/CAs/"
@@ -90,6 +114,8 @@ spec:
                 path: create_buckets.sh
                 mode: 0755
         - name: mc-config
+          emptyDir: {}
+        - name: shared-bin
           emptyDir: {}
         {{- if .Values.deployKF_helpers.deploykf_gateway.is_self_signed_cert }}
         - name: gateway-root-ca-cert
