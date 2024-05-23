@@ -1040,17 +1040,25 @@ deploykf_opt:
     images:
       minio:
         repository: docker.io/minio/minio
-        tag: RELEASE.2023-08-04T17-40-21Z
+        tag: RELEASE.2024-05-10T01-41-38Z
         pullPolicy: IfNotPresent
 
       minioMc:
-        repository: docker.io/minio/mc
-        tag: RELEASE.2023-08-01T23-30-57Z
+        ## NOTE: we copy `mc` to a volume for use in our init jobs. we use the bitnami image because `/usr/bin/mc`
+        ##       isn't readable by non-root in the official image: https://github.com/minio/mc/issues/4932
+        repository: docker.io/bitnami/minio-client
+        tag: 2024.5.9-debian-12-r0
         pullPolicy: IfNotPresent
 
       kubectl:
         repository: docker.io/bitnami/kubectl
         tag: 1.26.15-debian-12-r4
+        pullPolicy: IfNotPresent
+
+      shell:
+        ## NOTE: this image must have `bash`, `curl` and `jq` installed
+        repository: docker.io/bitnami/os-shell
+        tag: 12-debian-12-r20
         pullPolicy: IfNotPresent
 
     ## persistence configs

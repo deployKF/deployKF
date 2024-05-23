@@ -89,6 +89,16 @@ minio:
     uid: 1000
     gid: 1000
 
+  ## configs for the os-shell container image
+  ##
+  shellImage:
+    repository: {{< .Values.deploykf_opt.deploykf_minio.images.shell.repository | quote >}}
+    tag: {{< .Values.deploykf_opt.deploykf_minio.images.shell.tag | quote >}}
+    pullPolicy: {{< .Values.deploykf_opt.deploykf_minio.images.shell.pullPolicy | quote >}}
+    pullSecret: ""
+    uid: 1000
+    gid: 1000
+
   ## the securityContext configs for minio Pods
   ## - spec for PodSecurityContext:
   ##   https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.20/#podsecuritycontext-v1-core
