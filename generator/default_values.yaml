@@ -110,7 +110,7 @@ deploykf_dependencies:
     charts:
       certManager:
         name: cert-manager
-        version: 1.12.2
+        version: 1.12.10
         repository: https://charts.jetstack.io
 
       trustManager:
