@@ -54,41 +54,4 @@ spec:
   {{- else }}
   resourceQuotaSpec: {}
   {{- end }}
----
-{{- /*
-The Kubeflow Profile Controller generates an `AuthorizationPolicy/ns-owner-access-istio` in each profile which dooes
-not check the source principal for its `request.headers[kubeflow-userid]` rule, this mean anyone can access any pod
-in the profile namespace by simply setting the "kubeflow-userid" header to the owner's email.
-
-This AuthorizationPolicy explicitly checks for traffic attemptign this bypass and denies it.
-
-TODO: this issue should be patched in a future release of the upstream Kubeflow Profile Controller
-*/}}
-apiVersion: security.istio.io/v1beta1
-kind: AuthorizationPolicy
-metadata:
-  name: ns-owner-access-istio--override
-  namespace: {{ $profile_name | quote }}
-  labels:
-    helm.sh/chart: {{ include "deploykf-profiles-generator.labels.chart" $ }}
-    app.kubernetes.io/name: {{ include "deploykf-profiles-generator.labels.name" $ }}
-    app.kubernetes.io/instance: {{ $.Release.Name }}
-    app.kubernetes.io/managed-by: {{ $.Release.Service }}
-spec:
-  action: DENY
-  rules:
-    ## deny requests with "kubeflow-userid" header set to "admin@example.com" if they do not come from safe sources
-    - from:
-        - source:
-            notPrincipals:
-              - "{{ $.Values.deployKF.clusterDomain }}/ns/{{ $.Values.deployKF.gateway.namespace }}/sa/{{ $.Values.deployKF.gateway.serviceAccount }}"
-              {{- if $.Values.deployKF.kubeflow.pipelines.enabled }}
-              ## the `ml-pipeline-ui` pod will proxy some requests into the user's namespace,
-              ## for example, to view logs on the object store
-              - "{{ $.Values.deployKF.clusterDomain }}/ns/{{ $.Values.deployKF.kubeflow.pipelines.pipelineUI.namespace }}/sa/{{ $.Values.deployKF.kubeflow.pipelines.pipelineUI.serviceAccount }}"
-              {{- end }}
-      when:
-        - key: request.headers[{{ $.Values.deployKF.kubeflow.useridHeader }}]
-          values:
-            - {{ $profile_ownerEmail | quote }}
 {{- end }}

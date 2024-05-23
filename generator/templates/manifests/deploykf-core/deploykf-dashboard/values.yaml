@@ -10,7 +10,14 @@ deployKF:
   clusterDomain: cluster.local
 
   kubeflow:
+    namespace: kubeflow
     useridHeader: kubeflow-userid
+    notebooks:
+      controller:
+        serviceAccount: notebook-controller-service-account
+    pipelines:
+      frontend:
+        serviceAccount: ml-pipeline-ui
 
   gateway:
     namespace: {{< .Values.deploykf_core.deploykf_istio_gateway.namespace | quote >}}
@@ -185,8 +192,9 @@ profileController:
     tag: {{< .Values.deploykf_core.deploykf_dashboard.images.profileController.tag | quote >}}
     pullPolicy: {{< .Values.deploykf_core.deploykf_dashboard.images.profileController.pullPolicy | quote >}}
     pullSecret: ""
-    uid: 0
-    gid: 0
+    ## https://github.com/GoogleContainerTools/distroless/blob/761e3d2e151f080ed5c80cd1f26c12d68bd89ad9/common/variables.bzl#L18
+    uid: 65532
+    gid: 65532
 
   ## resource requests/limits for the profile-controller Pods
   ## - spec for ResourceRequirements:
@@ -228,8 +236,9 @@ kfamAPI:
     tag: {{< .Values.deploykf_core.deploykf_dashboard.images.kfamApi.tag | quote >}}
     pullPolicy: {{< .Values.deploykf_core.deploykf_dashboard.images.kfamApi.pullPolicy | quote >}}
     pullSecret: ""
-    uid: 0
-    gid: 0
+    ## https://github.com/GoogleContainerTools/distroless/blob/761e3d2e151f080ed5c80cd1f26c12d68bd89ad9/common/variables.bzl#L18
+    uid: 65532
+    gid: 65532
 
   ## resource requests/limits for the kfam-api Pods
   ## - spec for ResourceRequirements:

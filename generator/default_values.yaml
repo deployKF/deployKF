@@ -630,12 +630,12 @@ deploykf_core:
 
       profileController:
         repository: kubeflownotebookswg/profile-controller
-        tag: v1.7.0
+        tag: v1.8.0
         pullPolicy: IfNotPresent
 
       kfamApi:
         repository: kubeflownotebookswg/kfam
-        tag: v1.7.0
+        tag: v1.8.0
         pullPolicy: IfNotPresent
 
     ## configs dashboard navigation

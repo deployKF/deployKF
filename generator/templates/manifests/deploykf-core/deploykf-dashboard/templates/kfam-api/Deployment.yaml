@@ -44,6 +44,14 @@ spec:
           resources:
           {{- toYaml .Values.kfamAPI.resources | nindent 12 }}
           {{- end }}
+          env:
+            ## Istio AuthorizationPolicy principal configs
+            ## https://github.com/kubeflow/kubeflow/blob/v1.8.0/components/access-management/kfam/bindings.go#L80-L86
+            - name: ISTIO_INGRESS_GATEWAY_PRINCIPAL
+              value: "{{ .Values.deployKF.clusterDomain }}/ns/{{ .Values.deployKF.gateway.namespace }}/sa/{{ .Values.deployKF.gateway.serviceAccount }}"
+            - name: KFP_UI_PRINCIPAL
+              ## TODO: there should be a way to unset this when not using kubeflow pipelines
+              value: "{{ .Values.deployKF.clusterDomain }}/ns/{{ .Values.deployKF.kubeflow.namespace }}/sa/{{ .Values.deployKF.kubeflow.pipelines.frontend.serviceAccount }}"
           command:
             - /access-management
             - -userid-header
