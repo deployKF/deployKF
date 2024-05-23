@@ -234,13 +234,13 @@ deploykf_dependencies:
       istioBase:
         name: base
         ## NOTE: this version should be aligned with `deploykf_core.deploykf_istio_gateway.charts.istioGateway.version`
-        version: 1.17.3
+        version: 1.17.8
         repository: https://istio-release.storage.googleapis.com/charts
 
       istioDaemon:
         name: istiod
         ## NOTE: this version should be aligned with `deploykf_core.deploykf_istio_gateway.charts.istioGateway.version`
-        version: 1.17.3
+        version: 1.17.8
         repository: https://istio-release.storage.googleapis.com/charts
 
     ## image overrides
@@ -696,7 +696,7 @@ deploykf_core:
         enabled: true
         name: gateway
         ## NOTE: this version should be aligned with `deploykf_dependencies.istio.charts.istioDaemon.version`
-        version: 1.17.3
+        version: 1.17.8
         repository: https://istio-release.storage.googleapis.com/charts
 
     ## istio gateway configs
