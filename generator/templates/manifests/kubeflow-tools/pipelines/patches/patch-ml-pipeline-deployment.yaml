@@ -46,7 +46,35 @@ spec:
                   key: USERID_PREFIX
 
             ## ================================
+            ## Workflow Image Configs
+            ## ================================
+            - name: V2_DRIVER_IMAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: driverImage
+            - name: V2_LAUNCHER_IMAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: pipeline-install-config
+                  key: launcherImage
+
+            ## ================================
             ## MySQL Secrets
+            ## ================================
+            - name: DBCONFIG_MYSQLCONFIG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{< tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_name" . | quote >}}
+                  key: {{< tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_username_key" . | quote >}}
+            - name: DBCONFIG_MYSQLCONFIG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{< tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_name" . | quote >}}
+                  key: {{< tmpl.Exec "kubeflow_pipelines.mysql.auth.secret_password_key" . | quote >}}
+
+            ## ================================
+            ## MySQL Secrets (Legacy)
             ## ================================
             - name: DBCONFIG_USER
               valueFrom:

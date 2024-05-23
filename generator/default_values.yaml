@@ -1773,45 +1773,45 @@ kubeflow_tools:
     ##
     images:
       kfpCacheServer:
-        repository: gcr.io/ml-pipeline/cache-server
-        tag: ~
+        repository: ghcr.io/deploykf/kubeflow-pipelines/cache-server
+        tag: 2.1.0-deploykf.0
 
       kfpMetadataEnvoy:
-        repository: gcr.io/ml-pipeline/metadata-envoy
-        tag: ~
+        repository: ghcr.io/deploykf/kubeflow-pipelines/metadata-envoy
+        tag: 2.1.0-deploykf.0
 
       kfpMetadataWriter:
-        repository: gcr.io/ml-pipeline/metadata-writer
-        tag: ~
+        repository: ghcr.io/deploykf/kubeflow-pipelines/metadata-writer
+        tag: 2.1.0-deploykf.0
 
       kfpApiServer:
-        repository: gcr.io/ml-pipeline/api-server
-        tag: ~
+        repository: ghcr.io/deploykf/kubeflow-pipelines/api-server
+        tag: 2.1.0-deploykf.0
 
       kfpPersistenceagent:
-        repository: gcr.io/ml-pipeline/persistenceagent
-        tag: ~
+        repository: ghcr.io/deploykf/kubeflow-pipelines/persistenceagent
+        tag: 2.1.0-deploykf.0
 
       kfpScheduledworkflow:
-        repository: gcr.io/ml-pipeline/scheduledworkflow
-        tag: ~
+        repository: ghcr.io/deploykf/kubeflow-pipelines/scheduledworkflow
+        tag: 2.1.0-deploykf.0
 
       kfpFrontend:
-        repository: gcr.io/ml-pipeline/frontend
-        tag: ~
+        repository: ghcr.io/deploykf/kubeflow-pipelines/frontend
+        tag: 2.1.0-deploykf.0
 
       kfpViewerCrdController:
-        repository: gcr.io/ml-pipeline/viewer-crd-controller
-        tag: ~
+        repository: ghcr.io/deploykf/kubeflow-pipelines/viewer-crd-controller
+        tag: 2.1.0-deploykf.0
 
       kfpVisualizationServer:
-        repository: gcr.io/ml-pipeline/visualization-server
-        tag: ~
+        repository: ghcr.io/deploykf/kubeflow-pipelines/visualization-server
+        tag: 2.1.0-deploykf.0
 
       tfxMlMetadataStoreServer:
-        repository: gcr.io/tfx-oss-public/ml_metadata_store_server
+        repository: ghcr.io/deploykf/ml_metadata_store_server
         ## NOTE: this tag is not aligned to the other KFP images
-        tag: ~
+        tag: 1.14.0-deploykf.0
 
     ## service account configs
     ##
@@ -1900,32 +1900,31 @@ kubeflow_tools:
     kfpV2:
 
       ## sets the default `pipeline_root` in each profile
-      ##  - https://www.kubeflow.org/docs/components/pipelines/v1/overview/pipeline-root/
       ##  - if `kubeflow_tools.pipelines.objectStore.useExternal` is false, then this must be left as the default
       ##  - the following template variables are available:
-      ##     - `{bucket_name}`: the name of the bucket (see `kubeflow_tools.pipelines.bucket.name`)
+      ##     - `{scheme}`: "s3" if the object store host is AWS S3, otherwise "minio"
+      ##     - `{bucket_name}`: the name of the bucket, value of `kubeflow_tools.pipelines.bucket.name`
+      ##     - `{bucket_region}`: the region of the bucket, value of `kubeflow_tools.pipelines.bucket.region`
+      ##                          (if empty, defaults the literal string: "unspecified")
+      ##     - `{endpoint}`: the endpoint of the object store, in the format "{host}:{port}"
+      ##     - `{not_use_ssl}`: "false" if `kubeflow_tools.pipelines.objectStore.useSSL` is true, "true" otherwise
       ##     - `{profile_name}`: the name of the profile
       ##
-      defaultPipelineRoot: "minio://{bucket_name}/v2/artifacts/{profile_name}"
+      defaultPipelineRoot: "{scheme}://{bucket_name}/v2/artifacts/{profile_name}?region={bucket_region}&endpoint={endpoint}&disableSSL={not_use_ssl}&s3ForcePathStyle=true"
 
-      ## apply fixes to make MinIO work with KFP v2
-      ##  - these fixes are needed because KFP v2 uses hard-coded configs for MinIO
-      ##    https://github.com/kubeflow/pipelines/issues/9689
-      ##  - if true:
-      ##     - the name of all cloned object store auth secrets in profiles becomes "mlpipeline-minio-artifact"
-      ##     - the key names used in generated minio auth secrets becomes "accesskey" and "secretkey"
-      ##     - the 'kfp-launcher' containers in workflow pods are patched at runtime to set:
-      ##        - `MINIO_SERVICE_SERVICE_HOST` and `MINIO_SERVICE_SERVICE_PORT`
-      ##        - `ML_PIPELINE_SERVICE_HOST` and `ML_PIPELINE_SERVICE_PORT_GRPC`
-      ##     - the value of `kubeflow_tools.pipelines.objectStore.useExternal` must be false
+      ## sets the "driver" image used in v2 workflows
       ##
-      minioFix: false
+      driverImage: "ghcr.io/deploykf/kubeflow-pipelines/kfp-driver:2.1.0-deploykf.0"
 
-      ## overrides the image of 'kfp-launcher' containers at runtime
+      ## sets the "launcher" image used in v2 workflows
+      ##
+      launcherImage: "ghcr.io/deploykf/kubeflow-pipelines/kfp-launcher:2.1.0-deploykf.0"
+
+      ## sets the "launcher" image used in v2-compatible workflows
       ##  - this is useful because pipelines compiled with v2-compatible mode use a hard-coded image
       ##    https://github.com/kubeflow/pipelines/blob/1.8.22/sdk/python/kfp/compiler/v2_compat.py#L25
       ##
-      launcherImage: ""
+      v2CompatibleLauncherImage: "ghcr.io/deploykf/kubeflow-pipelines/kfp-launcher:1.8.22-deploykf.0"
 
     ## pipeline cache configs
     ##  - note, you can effectively disable caching (for KFP v1 mode) by setting both

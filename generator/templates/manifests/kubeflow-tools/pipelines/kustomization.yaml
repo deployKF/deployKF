@@ -8,7 +8,7 @@ kind: Kustomization
 
 resources:
   ## upstream
-  - upstream/apps/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user
+  - upstream/manifests/kustomize/env/cert-manager/platform-agnostic-multi-user
 
   ## local
   - resources/profile-resources.yaml
@@ -40,10 +40,6 @@ resources:
   {{<- if not .Values.kubeflow_tools.pipelines.mysql.auth.existingSecret >}}
   - resources/pipelines-mysql-secret.yaml
   {{<- end >}}
-  {{<- end >}}
-  
-  {{<- if or .Values.kubeflow_tools.pipelines.kfpV2.minioFix .Values.kubeflow_tools.pipelines.kfpV2.launcherImage >}}
-  - resources/patch-v2-workflow-pods-clusterpolicy.yaml
   {{<- end >}}
 
 patchesStrategicMerge:
@@ -91,6 +87,12 @@ configMapGenerator:
       - cronScheduleTimezone="UTC"
 
       ## ================================
+      ## Workflow Image Configs
+      ## ================================
+      - driverImage={{< .Values.kubeflow_tools.pipelines.kfpV2.driverImage | quote >}}
+      - launcherImage={{< .Values.kubeflow_tools.pipelines.kfpV2.launcherImage | quote >}}
+
+      ## ================================
       ## Cache Configs
       ## ================================
       - cacheImage={{< .Values.kubeflow_tools.pipelines.cache.image | quote >}}
@@ -120,11 +122,18 @@ configMapGenerator:
       ## MySQL Configs
       ## ================================
       - ConMaxLifeTime="120s"
-      - dbHost="{{< tmpl.Exec "kubeflow_pipelines.mysql.hostname" . >}}"
-      - dbPort="{{< tmpl.Exec "kubeflow_pipelines.mysql.port" . >}}"
+      - dbType="mysql"
+      - mysqlHost="{{< tmpl.Exec "kubeflow_pipelines.mysql.hostname" . >}}"
+      - mysqlPort="{{< tmpl.Exec "kubeflow_pipelines.mysql.port" . >}}"
       - cacheDb="{{< .Values.kubeflow_tools.pipelines.mysqlDatabases.cacheDatabase >}}"
       - mlmdDb="{{< .Values.kubeflow_tools.pipelines.mysqlDatabases.metadataDatabase >}}"
       - pipelineDb="{{< .Values.kubeflow_tools.pipelines.mysqlDatabases.pipelinesDatabase >}}"
+
+      ## ================================
+      ## MySQL Configs (Legacy)
+      ## ================================
+      - dbHost="{{< tmpl.Exec "kubeflow_pipelines.mysql.hostname" . >}}"
+      - dbPort="{{< tmpl.Exec "kubeflow_pipelines.mysql.port" . >}}"
 
   - name: ml-pipeline-ui-configmap
     namespace: kubeflow

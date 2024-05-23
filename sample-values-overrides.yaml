@@ -366,11 +366,6 @@ kubeflow_tools:
     kfpV2:
       {} # <-- REMOVE THIS, IF YOU INCLUDE VALUES UNDER THIS SECTION!
 
-      ## apply fixes to make MinIO work with KFP v2
-      ##  - you must set this to 'false' if you are using an external object store
-      ##
-      #minioFix: false
-
   ## profile resource generation configs
   ##
   profileResourceGeneration:
