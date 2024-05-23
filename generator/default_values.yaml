@@ -927,7 +927,7 @@ deploykf_core:
           ##        - a kubernetes secret named `existingSecret` must exist the namespace `existingSecretNamespace`
           ##          with the keys `existingSecretAccessKeyKey` and `existingSecretSecretKeyKey`
           ##        - this secret will be cloned into the profile's namespace and kept in sync with the original
-          ##        - note, all occurances of "{profile_name}" in `existingSecret` are replaced with the profile name
+          ##        - note, all occurrences of "{profile_name}" in `existingSecret` are replaced with the profile name
           ##        - note, the default value of `existingSecretNamespace` is the kubeflow-pipelines namespace
           ##  - when `kubeflow_tools.kubeflow_pipelines.objectStore.auth.fromEnv`:
           ##     - is false (default):
