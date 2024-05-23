@@ -131,6 +131,8 @@ spec:
             - "/bin/bash"
             - "-c"
           args:
+            ## NOTE: the istio mesh is NOT available in initContainers, so this check must be done in the main container
+            ##       https://github.com/istio/istio/issues/11130#issuecomment-2126255390
             - |
               ## if Minio can't GET the OPENID URL on start, it never tries again
               ## so we must ensure the URL is reachable before starting Minio
@@ -154,12 +156,11 @@ spec:
               done
 
               ## run minio
-              exec /usr/bin/docker-entrypoint.sh \
-                minio server \
-                  "/minio-data" \
-                  --address=:9000 \
-                  --console-address=:9001 \
-                  --certs-dir=/etc/minio/certs/
+              exec minio server \
+                "/minio-data" \
+                --address=:9000 \
+                --console-address=:9001 \
+                --certs-dir=/etc/minio/certs/
           ports:
             - name: http-api
               containerPort: 9000

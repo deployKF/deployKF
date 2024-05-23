@@ -1039,8 +1039,10 @@ deploykf_opt:
     ##
     images:
       minio:
-        repository: docker.io/minio/minio
-        tag: RELEASE.2024-05-10T01-41-38Z
+        ## NOTE: we use the bitnami image because the upstream image does not contain `curl` and we
+        ##       need it to run checks before starting minio: https://github.com/minio/minio/issues/18373
+        repository: docker.io/bitnami/minio
+        tag: 2024.5.10-debian-12-r2
         pullPolicy: IfNotPresent
 
       minioMc:
