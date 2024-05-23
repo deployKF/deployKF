@@ -28,8 +28,8 @@ centralDashboard:
     tag: {{< .Values.deploykf_core.deploykf_dashboard.images.dashboard.tag | quote >}}
     pullPolicy: {{< .Values.deploykf_core.deploykf_dashboard.images.dashboard.pullPolicy | quote >}}
     pullSecret: ""
-    uid: 0
-    gid: 0
+    uid: 1000
+    gid: 1000
 
   ## resource requests/limits for the central-dashboard Pods
   ## - spec for ResourceRequirements:
@@ -54,17 +54,17 @@ centralDashboard:
         icon: book
         link: "/jupyter/"
       {{<- end >}}
+      {{<- if .Values.kubeflow_tools.tensorboards.enabled >}}
+      - type: item
+        text: TensorBoards
+        icon: assessment
+        link: "/tensorboards/"
+      {{<- end >}}
       {{<- if .Values.kubeflow_tools.volumes.enabled >}}
       - type: item
         text: Volumes
         icon: device:storage
         link: "/volumes/"
-      {{<- end >}}
-      {{<- if .Values.kubeflow_tools.tensorboards.enabled >}}
-      - type: item
-        text: Tensorboards
-        icon: assessment
-        link: "/tensorboards/"
       {{<- end >}}
       {{<- if .Values.kubeflow_tools.katib.enabled >}}
       - type: item
@@ -73,30 +73,28 @@ centralDashboard:
         link: "/katib/"
       {{<- end >}}
       {{<- if .Values.kubeflow_tools.pipelines.enabled >}}
-      - type: item
-        text: KFP - Pipelines
+      - type: section
+        text: Pipelines
         icon: kubeflow:pipeline-centered
-        link: "/pipeline/#/pipelines"
-      - type: item
-        text: KFP - Experiments
-        icon: done-all
-        link: "/pipeline/#/experiments"
-      - type: item
-        text: KFP - Runs
-        icon: maps:directions-run
-        link: "/pipeline/#/runs"
-      - type: item
-        text: KFP - Recurring Runs
-        icon: device:access-alarm
-        link: "/pipeline/#/recurringruns"
-      - type: item
-        text: KFP - Artifacts
-        icon: editor:bubble-chart
-        link: "/pipeline/#/artifacts"
-      - type: item
-        text: KFP - Executions
-        icon: av:play-arrow
-        link: "/pipeline/#/executions"
+        items:
+          - type: item
+            text: Pipelines
+            link: "/pipeline/#/pipelines"
+          - type: item
+            text: Experiments
+            link: "/pipeline/#/experiments"
+          - type: item
+            text: Runs
+            link: "/pipeline/#/runs"
+          - type: item
+            text: Recurring Runs
+            link: "/pipeline/#/recurringruns"
+          - type: item
+            text: Artifacts
+            link: "/pipeline/#/artifacts"
+          - type: item
+            text: Executions
+            link: "/pipeline/#/executions"
       {{<- end >}}
 
     ## external links that appear in the sidebar
@@ -108,9 +106,9 @@ centralDashboard:
         text: Argo Server
         icon: settings-input-composite
         {{<- if .Values.deploykf_core.deploykf_istio_gateway.gateway.tls.clientsUseHttps >}}
-        link: "https://argo-server.{{< tmpl.Exec "deploykf_gateway.https_endpoint" . >}}"
+        link: "https://argo-server.{{< tmpl.Exec "deploykf_gateway.https_endpoint" . >}}/workflows/{ns}"
         {{<- else >}}
-        link: "http://argo-server.{{< tmpl.Exec "deploykf_gateway.http_endpoint" . >}}"
+        link: "http://argo-server.{{< tmpl.Exec "deploykf_gateway.http_endpoint" . >}}/workflows/{ns}"
         {{<- end >}}
       {{<- end >}}
       {{<- if .Values.deploykf_opt.deploykf_minio.enabled >}}

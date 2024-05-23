@@ -1,0 +1,39 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: kfam-api-deny
+  labels:
+    helm.sh/chart: {{ include "deploykf-dashboard.labels.chart" . }}
+    app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+    app.kubernetes.io/component: kfam-api
+spec:
+  action: DENY
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "deploykf-dashboard.labels.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/managed-by: {{ .Release.Service }}
+      app.kubernetes.io/component: kfam-api
+  rules:
+    - to:
+        ## disable "create role binding" operation (deployKF manages profiles with values)
+        - operation:
+            ports:
+              - "8081"
+            methods:
+              - POST
+            paths:
+              - /kfam/v1/bindings
+              - /kfam/v1/bindings/**
+
+        ## disable "delete role binding" operation (deployKF manages profiles with values)
+        - operation:
+            ports:
+              - "8081"
+            methods:
+              - DELETE
+            paths:
+              - /kfam/v1/bindings
+              - /kfam/v1/bindings/**

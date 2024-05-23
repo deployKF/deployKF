@@ -14,6 +14,75 @@ spec:
   hosts:
     - {{ .Values.deployKF.gateway.hostname | quote }}
   http:
+    ## deny adding profile contributors
+    - match:
+        - ignoreUriCase: true
+          uri:
+            prefix: /api/workgroup/add-contributor
+          method:
+            exact: POST
+      directResponse:
+        status: 403
+        body:
+          string: |-
+            { "error": "deployKF does not support adding profile contributors with the dashboard." }
+      headers:
+        response:
+          set:
+            content-type: application/json
+
+    ## deny removing profile contributors
+    - match:
+        - ignoreUriCase: true
+          uri:
+            prefix: /api/workgroup/remove-contributor
+          method:
+            exact: DELETE
+      directResponse:
+        status: 403
+        body:
+          string: |-
+            { "error": "deployKF does not support removing profile contributors with the dashboard." }
+      headers:
+        response:
+          set:
+            content-type: application/json
+
+    ## deny creating profiles
+    - match:
+        - ignoreUriCase: true
+          uri:
+            prefix: /api/workgroup/create
+          method:
+            exact: POST
+      directResponse:
+        status: 403
+        body:
+          string: |-
+            { "error": "deployKF does not support creating profiles with the dashboard." }
+      headers:
+        response:
+          set:
+            content-type: application/json
+
+    ## deny deleting profiles
+    - match:
+        - ignoreUriCase: true
+          uri:
+            prefix: /api/workgroup/nuke-self
+          method:
+            exact: DELETE
+      directResponse:
+        status: 403
+        body:
+          string: |-
+            { "error": "deployKF does not support deleting profiles with the dashboard." }
+      headers:
+        response:
+          set:
+            content-type: application/json
+
+    ## route all other requests to the central-dashboard service
     - match:
         - uri:
             prefix: /
