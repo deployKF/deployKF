@@ -55,6 +55,11 @@ spec:
             - name: GOMPLATE_RIGHT_DELIM
               value: ">>"
 
+            ## connector configs don't provide a way to escape `$`, and can already read env vars with gomplate
+            ## https://github.com/dexidp/dex/pull/1902
+            - name: DEX_EXPAND_ENV
+              value: "false"
+
             {{- range $user:= .Values.dex.staticPasswords }}
             {{- if and $user.password.existingSecret $user.password.existingSecretKey }}
             {{- $password_env := include "deploykf-auth.dex.password_env" (dict "name" $user.password.existingSecret "key" $user.password.existingSecretKey) }}

@@ -449,7 +449,7 @@ deploykf_core:
     images:
       dex:
         repository: ghcr.io/dexidp/dex
-        tag: v2.37.0
+        tag: v2.39.1
         pullPolicy: IfNotPresent
 
       oauth2Proxy:
