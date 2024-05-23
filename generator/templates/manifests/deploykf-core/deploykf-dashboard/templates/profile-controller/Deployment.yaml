@@ -46,6 +46,17 @@ spec:
           resources:
           {{- toYaml .Values.profileController.resources | nindent 12 }}
           {{- end }}
+          env:
+            ## Istio AuthorizationPolicy principal configs
+            ## https://github.com/kubeflow/kubeflow/blob/v1.8.0/components/profile-controller/controllers/profile_controller.go#L420-L430
+            - name: ISTIO_INGRESS_GATEWAY_PRINCIPAL
+              value: "{{ .Values.deployKF.clusterDomain }}/ns/{{ .Values.deployKF.gateway.namespace }}/sa/{{ .Values.deployKF.gateway.serviceAccount }}"
+            - name: NOTEBOOK_CONTROLLER_PRINCIPAL
+              ## TODO: there should be a way to unset this when not using kubeflow notebooks
+              value: "{{ .Values.deployKF.clusterDomain }}/ns/{{ .Values.deployKF.kubeflow.namespace }}/sa/{{ .Values.deployKF.kubeflow.notebooks.controller.serviceAccount }}"
+            - name: KFP_UI_PRINCIPAL
+              ## TODO: there should be a way to unset this when not using kubeflow pipelines
+              value: "{{ .Values.deployKF.clusterDomain }}/ns/{{ .Values.deployKF.kubeflow.namespace }}/sa/{{ .Values.deployKF.kubeflow.pipelines.frontend.serviceAccount }}"
           command:
             - /manager
             - -userid-header
