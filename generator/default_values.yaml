@@ -1188,7 +1188,7 @@ deploykf_opt:
     images:
       mysql:
         repository: docker.io/mysql
-        tag: 8.0.33
+        tag: 8.0.37
         pullPolicy: IfNotPresent
 
       kubectl:
