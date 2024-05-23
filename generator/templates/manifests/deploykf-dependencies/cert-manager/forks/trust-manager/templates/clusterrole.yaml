@@ -2,7 +2,7 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   labels:
-{{ include "trust-manager.labels" . | indent 4 }}
+    {{- include "trust-manager.labels" . | nindent 4 }}
   name: {{ include "trust-manager.name" . }}
 rules:
 - apiGroups:
@@ -23,14 +23,21 @@ rules:
   - "trust.cert-manager.io"
   resources:
   - "bundles/status"
+  verbs: ["patch"]
+
+- apiGroups:
+  - "trust.cert-manager.io"
+  resources:
+  - "bundles"
+  # We also need update here so we can perform migrations from old CSA to SSA.
   verbs: ["update"]
 
 - apiGroups:
   - ""
   resources:
   - "configmaps"
-  verbs: ["get", "list", "create", "update", "watch", "delete"]
-
+  # We also need update here so we can perform migrations from old CSA to SSA.
+  verbs: ["get", "list", "create", "update", "patch", "watch", "delete"]
 - apiGroups:
   - ""
   resources:
@@ -42,3 +49,25 @@ rules:
   resources:
   - "events"
   verbs: ["create", "patch"]
+
+{{- if .Values.secretTargets.enabled }}
+{{- if .Values.secretTargets.authorizedSecretsAll }}
+- apiGroups:
+  - ""
+  resources:
+  - "secrets"
+  verbs: ["get", "list", "create", "patch", "watch", "delete"]
+{{- else if .Values.secretTargets.authorizedSecrets }}
+- apiGroups:
+  - ""
+  resources:
+  - "secrets"
+  verbs: ["get", "list", "watch"]
+- apiGroups:
+  - ""
+  resources:
+  - "secrets"
+  verbs: ["create", "patch", "delete"]
+  resourceNames: {{ .Values.secretTargets.authorizedSecrets | toYaml | nindent 2 }}
+{{- end -}}
+{{- end -}}

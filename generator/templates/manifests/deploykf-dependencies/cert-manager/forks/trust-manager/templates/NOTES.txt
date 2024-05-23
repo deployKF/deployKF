@@ -1,3 +1,11 @@
+{{- if (lt (int .Values.replicaCount) 2) }}
+⚠️  WARNING: Consider increasing the Helm value `replicaCount` to 2 if you require high availability.
+{{- end }}
+
+{{- if (not .Values.podDisruptionBudget.enabled) }}
+⚠️  WARNING: Consider setting the Helm value `podDisruptionBudget.enabled` to true if you require high availability.
+{{- end }}
+
 trust-manager {{ .Chart.AppVersion }} has been deployed successfully!
 
 {{- if .Values.defaultPackage.enabled }}

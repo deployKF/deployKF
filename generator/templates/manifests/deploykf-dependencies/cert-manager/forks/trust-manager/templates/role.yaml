@@ -4,7 +4,7 @@ metadata:
   name: {{ include "trust-manager.name" . }}
   namespace: {{ .Values.app.trust.namespace }}
   labels:
-{{ include "trust-manager.labels" . | indent 4 }}
+    {{- include "trust-manager.labels" . | nindent 4 }}
 rules:
 - apiGroups:
   - ""
@@ -14,6 +14,15 @@ rules:
   - "get"
   - "list"
   - "watch"
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ include "trust-manager.name" . }}:leaderelection
+  namespace: {{ include "trust-manager.namespace" . }}
+  labels:
+    {{- include "trust-manager.labels" . | nindent 4 }}
+rules:
 - apiGroups:
   - "coordination.k8s.io"
   resources:

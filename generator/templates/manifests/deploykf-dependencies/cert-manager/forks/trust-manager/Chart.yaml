@@ -1,19 +1,33 @@
-annotations:
-  artifacthub.io/prerelease: "false"
 apiVersion: v2
-appVersion: v0.5.0
-description: trust-manager is the easiest way to manage TLS trust bundles in Kubernetes
-  and OpenShift clusters
-home: https://github.com/cert-manager/trust-manager
-kubeVersion: '>= 1.22.0-0'
-maintainers:
-- email: cert-manager-maintainers@googlegroups.com
-  name: cert-manager-maintainers
-  url: https://cert-manager.io
+
 name: trust-manager
+type: application
+description: trust-manager is the easiest way to manage TLS trust bundles in Kubernetes and OpenShift clusters
+
+home: https://cert-manager.io/docs/trust/trust-manager
+icon: https://raw.githubusercontent.com/cert-manager/community/4d35a69437d21b76322157e6284be4cd64e6d2b7/logo/logo-small.png
+keywords:
+  - trust-manager
+  - cert-manager
+  - tls
+  - trust bundle
+  - trust anchor
+annotations:
+  artifacthub.io/license: Apache-2.0
+  artifacthub.io/category: security
+  artifacthub.io/recommendations: |
+    - url: https://artifacthub.io/packages/helm/cert-manager/cert-manager
+  artifacthub.io/prerelease: "false"
+maintainers:
+- name: cert-manager-maintainers
+  email: cert-manager-maintainers@googlegroups.com
+  url: https://cert-manager.io
 sources:
 - https://github.com/cert-manager/trust-manager
-type: application
+
+kubeVersion: ">= 1.25.0-0"  # The -0 is required for EKS: https://github.com/helm/helm/issues/10375
+
+appVersion: v0.9.2
 #################### BEGIN CHANGE ####################
-version: 0.5.0-deploykf
+version: 0.9.2-deploykf
 ##################### END CHANGE #####################
