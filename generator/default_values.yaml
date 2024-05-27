@@ -1288,6 +1288,7 @@ deploykf_opt:
       [mysqld]
       disable_log_bin
       default_authentication_plugin=mysql_native_password
+      log_error_suppression_list='MY-013360'
 
 
 ## --------------------------------------------------------------------------------
