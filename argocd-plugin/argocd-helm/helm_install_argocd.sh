@@ -17,5 +17,5 @@ helm repo add "argo" https://argoproj.github.io/argo-helm
 helm install "$HELM_RELEASE_NAME" "argo/argo-cd" \
   --namespace "$ARGOCD_NAMESPACE" \
   --create-namespace \
-  --version "6.7.11" \
+  --version "6.7.18" \
   --values ./values.yaml
