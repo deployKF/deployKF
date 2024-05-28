@@ -790,6 +790,14 @@ deploykf_core:
     gatewayDeployment:
       replicaCount: 1
 
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 2000m
+          memory: 1024Mi
+
       serviceAccount:
         name: deploykf-gateway
         annotations: {}

@@ -124,13 +124,7 @@ gateway:
         targetPort: {{< .Values.deploykf_core.deploykf_istio_gateway.gateway.ports.https >}}
       {{<- end >}}
 
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 2000m
-      memory: 1024Mi
+  resources: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.resources | toJSON >}}
 
   podAnnotations: {{< .Values.deploykf_core.deploykf_istio_gateway.gatewayDeployment.podAnnotations | toJSON >}}
 
