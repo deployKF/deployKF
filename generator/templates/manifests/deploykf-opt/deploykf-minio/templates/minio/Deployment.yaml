@@ -30,6 +30,10 @@ spec:
         {{- if not .Values.minio.rootUser.existingSecret }}
         checksum/root-user: {{ include (print $.Template.BasePath "/minio/Secret-root-user.yaml") . | sha256sum }}
         {{- end }}
+        ## because we use a 'deploykf.org/restart-trigger' annotation to restart the deployment
+        ## there needs to be at least one normal annotation, otherwise argocd will show it as
+        ## "out of sync" after a secret change (it wants to remove the `annotations` field entirely)
+        dummy: "stops ArgoCD from removing the annotations field"
       labels:
         app.kubernetes.io/name: {{ include "deploykf-minio.labels.name" . }}
         app.kubernetes.io/instance: {{ .Release.Name }}
