@@ -6,7 +6,7 @@ metadata:
   namespace: {{< .Values.argocd.namespace | quote >}}
   annotations:
     ## applications in 'kubeflow-tools' come after 'kubeflow-dependencies'
-    argocd.argoproj.io/sync-wave: "60"
+    argocd.argoproj.io/sync-wave: "61"
   labels:
     app.kubernetes.io/name: tensorboards-web-app
     app.kubernetes.io/component: kubeflow-tools

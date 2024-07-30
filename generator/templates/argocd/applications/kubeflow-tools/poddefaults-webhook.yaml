@@ -6,6 +6,7 @@ metadata:
   namespace: {{< .Values.argocd.namespace | quote >}}
   annotations:
     ## applications in 'kubeflow-tools' come after 'kubeflow-dependencies'
+    ## NOTE: 'kf-tools--poddefaults-webhook' must come FIRST, as other 'kubeflow-tools' applications depend on it
     argocd.argoproj.io/sync-wave: "60"
   labels:
     app.kubernetes.io/name: poddefaults-webhook
