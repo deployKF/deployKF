@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metadata-envoy-deployment
+spec:
+  template:
+    spec:
+      containers:
+        - name: container
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 5
+            httpGet:
+              path: "/"
+              port: md-envoy
+              httpHeaders:
+                - name: Content-Type
+                  value: application/grpc-web-text
