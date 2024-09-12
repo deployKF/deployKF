@@ -27,6 +27,7 @@ ARGOCD_SERVER_URL="${ARGOCD_SERVER_URL:-}"
 #    This will NOT work if you have changed the ArgoCD admin password.
 ARGOCD_USERNAME="${ARGOCD_USERNAME:-admin}"
 ARGOCD_PASSWORD="${ARGOCD_PASSWORD:-}"
+ARGOCD_AUTH_TOKEN="${ARGOCD_AUTH_TOKEN:-}"
 
 # how to handle resources that require PRUNING (deletion)
 #  - 'always': always PRUNE resources without prompting
@@ -58,12 +59,6 @@ fi
 # ensure 'jq' is installed
 if [[ -z "$(command -v jq)" ]]; then
   echo ">>> ERROR: 'jq' must be installed to run this script"
-  exit 1
-fi
-
-# ensure 'kubectl' is installed
-if [[ -z "$(command -v kubectl)" ]]; then
-  echo ">>> ERROR: 'kubectl' must be installed to run this script"
   exit 1
 fi
 
@@ -134,6 +129,11 @@ function argocd_login() {
     echo_blue "Namespace: '$_argocd_namespace'"
     echo_blue "Secret Name: 'argocd-initial-admin-secret'"
     echo_blue "=========================================================================================="
+    # ensure 'kubectl' is installed
+    if [[ -z "$(command -v kubectl)" ]]; then
+      echo ">>> ERROR: 'kubectl' must be installed to run this script"
+      exit 1
+    fi
     _argocd_password=$(
       kubectl -n "$_argocd_namespace" get secret "argocd-initial-admin-secret" -o jsonpath="{.data.password}" \
       | base64 -d
@@ -142,21 +142,33 @@ function argocd_login() {
   fi
 
   # log in to argocd
-  echo ""
-  echo_blue "=========================================================================================="
-  echo_blue "Authenticating with ArgoCD..."
-  echo_blue "------------------------------------------------------------------------------------------"
-  echo_blue "Server: ${_argocd_server_url:-<port-forward>}"
-  echo_blue "Namespace: '$_argocd_namespace'"
-  echo_blue "Username: '$_argocd_username'"
-  echo_blue "Password: '**********'"
-  echo_blue "=========================================================================================="
-  if [[ -n "$_argocd_server_url" ]]; then
-    argocd login "$_argocd_server_url" --username "$_argocd_username" --password "$_argocd_password"
+  if [[ -n "$ARGOCD_AUTH_TOKEN" ]]; then
+    echo ""
+    echo_blue "=========================================================================================="
+    echo_blue "Using Auth Token with ArgoCD..."
+    echo_blue "------------------------------------------------------------------------------------------"
+    echo_blue "Server: ${_argocd_server_url:-<port-forward>}"
+    echo_blue "Namespace: '$_argocd_namespace'"
+    echo_blue "Token: '**********'"
+    echo_blue "=========================================================================================="
+    export ARGOCD_OPTS="--auth-token $ARGOCD_AUTH_TOKEN"
   else
-    # NOTE: we must export ARGOCD_OPTS for all the argocd commands to see it
-    export ARGOCD_OPTS="--port-forward --port-forward-namespace '$_argocd_namespace'"
-    argocd login --username "$_argocd_username" --password "$_argocd_password"
+    echo ""
+    echo_blue "=========================================================================================="
+    echo_blue "Authenticating with ArgoCD..."
+    echo_blue "------------------------------------------------------------------------------------------"
+    echo_blue "Server: ${_argocd_server_url:-<port-forward>}"
+    echo_blue "Namespace: '$_argocd_namespace'"
+    echo_blue "Username: '$_argocd_username'"
+    echo_blue "Password: '**********'"
+    echo_blue "=========================================================================================="
+    if [[ -n "$_argocd_server_url" ]]; then
+      argocd login "$_argocd_server_url" --username "$_argocd_username" --password "$_argocd_password"
+    else
+      # NOTE: we must export ARGOCD_OPTS for all the argocd commands to see it
+      export ARGOCD_OPTS="--port-forward --port-forward-namespace '$_argocd_namespace'"
+      argocd login --username "$_argocd_username" --password "$_argocd_password"
+    fi
   fi
   echo_green ">>> DONE"
 }
