@@ -29,5 +29,5 @@ images:
   - name: docker.io/kubeflownotebookswg/notebook-controller
     newName: {{< .Values.kubeflow_tools.notebooks.images.notebookController.repository | quote >}}
     {{<- if .Values.kubeflow_tools.notebooks.images.notebookController.tag >}}
-    newTag: {{< .Values.kubeflow_tools.notebooks.images.jupyterWebApp.tag | quote >}}
+    newTag: {{< .Values.kubeflow_tools.notebooks.images.notebookController.tag | quote >}}
     {{<- end >}}
