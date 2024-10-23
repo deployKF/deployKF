@@ -60,7 +60,7 @@ plugin:
     {{<- end >}}
     {{<- if $values >}}
     - name: "values"
-      string: {{< $values | quote >}}
+      string: {{< $values | yaml | toJSON | quote >}}
     {{<- end >}}
     {{<- if $values_files >}}
     - name: "values_files"
