@@ -20,6 +20,19 @@
 
 ## --------------------------------------------------------------------------------
 ##
+##                              deploykf-dependencies
+##
+## --------------------------------------------------------------------------------
+
+## --------------------------------------
+##                 istio
+## --------------------------------------
+{{<- if and .Values.deploykf_dependencies.istio.enabled (not .Values.deploykf_core.deploykf_istio_gateway.charts.istioGateway.enabled) >}}
+  {{< fail "`deploykf_dependencies.istio.enabled` must be false if `deploykf_core.deploykf_istio_gateway.charts.istioGateway.enabled` is false (you must manage your own istio when using a custom gateway)" >}}
+{{<- end >}}
+
+## --------------------------------------------------------------------------------
+##
 ##                                  deploykf-core
 ##
 ## --------------------------------------------------------------------------------
