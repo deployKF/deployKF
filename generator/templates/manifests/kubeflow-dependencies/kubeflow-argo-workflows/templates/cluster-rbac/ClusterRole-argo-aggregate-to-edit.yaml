@@ -28,6 +28,7 @@ rules:
       - cronworkflows/finalizers
       - clusterworkflowtemplates
       - clusterworkflowtemplates/finalizers
+      - workflowtaskresults
     verbs:
       - create
       - delete
